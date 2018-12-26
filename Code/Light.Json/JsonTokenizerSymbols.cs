@@ -4,5 +4,9 @@
     {
         public const char StringDelimiter = '"';
         public const char EscapeCharacter = '\\';
+        public const char FalseStartCharacter = 'f';
+        public const string False = "false";
+        public const char TrueStartCharacter = 't';
+        public const string True = "true";
     }
 }

@@ -7,16 +7,23 @@ namespace Light.Json
         public readonly JsonTokenType Type;
         public readonly ReadOnlySpan<char> Text;
 
-        private JsonToken(JsonTokenType type, ReadOnlySpan<char> text)
+        public JsonToken(JsonTokenType type, ReadOnlySpan<char> text = default)
         {
             Type = type;
             Text = text;
         }
 
-        public static JsonToken IntegerNumber(ReadOnlySpan<char> numberText) => new JsonToken(JsonTokenType.IntegerNumber, numberText);
+        public bool Equals(JsonToken other) =>
+            Type == other.Type &&
+            Text == other.Text;
 
-        public static JsonToken FloatingPointNumber(ReadOnlySpan<char> numberText) => new JsonToken(JsonTokenType.FloatingPointNumber, numberText);
+        public override bool Equals(object obj) =>
+            throw new NotSupportedException("ref structs do not support object.Equals as they cannot live on the heap.");
 
-        public static JsonToken String(ReadOnlySpan<char> text) => new JsonToken(JsonTokenType.String, text);
+        public override int GetHashCode() =>
+            throw new NotSupportedException("ref structs do not support object.GetHashCode as they cannot live on the heap.");
+
+        public static bool operator ==(JsonToken x, JsonToken y) => x.Equals(y);
+        public static bool operator !=(JsonToken x, JsonToken y) => !x.Equals(y);
     }
 }
