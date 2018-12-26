@@ -35,6 +35,15 @@ namespace Light.Json.Tests
             token.Text.Length.Should().Be(0);
         }
 
+        [Fact]
+        public static void TokenizeNull()
+        {
+            var token = GetSingleToken("null");
+
+            token.Type.Should().Be(JsonTokenType.Null);
+            token.Text.Length.Should().Be(0);
+        }
+
         private static JsonToken GetSingleToken(string json)
         {
             var tokenizer = new InMemoryTokenizer(json);

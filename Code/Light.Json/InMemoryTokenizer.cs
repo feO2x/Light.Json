@@ -19,13 +19,17 @@ namespace Light.Json
                 return new JsonToken(JsonTokenType.EndOfDocument);
 
             var currentCharacter = _json[_currentIndex];
-            switch (currentCharacter) {
+            switch (currentCharacter)
+            {
                 case JsonTokenizerSymbols.StringDelimiter:
                     return ReadString();
                 case JsonTokenizerSymbols.FalseStartCharacter:
                     return ReadConstant(JsonTokenType.False, JsonTokenizerSymbols.False);
                 case JsonTokenizerSymbols.TrueStartCharacter:
                     return ReadConstant(JsonTokenType.True, JsonTokenizerSymbols.True);
+                case JsonTokenizerSymbols.NullStartCharacter:
+                    return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
+
                 default:
                     throw new NotImplementedException();
             }

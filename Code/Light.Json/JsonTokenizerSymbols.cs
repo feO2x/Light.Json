@@ -8,5 +8,7 @@
         public const string False = "false";
         public const char TrueStartCharacter = 't';
         public const string True = "true";
+        public const char NullStartCharacter = 'n';
+        public const string Null = "null";
     }
 }
