@@ -29,10 +29,26 @@ namespace Light.Json
                     return ReadConstant(JsonTokenType.True, JsonTokenizerSymbols.True);
                 case JsonTokenizerSymbols.NullStartCharacter:
                     return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
-
-                default:
-                    throw new NotImplementedException();
             }
+
+            if (char.IsDigit(currentCharacter))
+                return ReadNumber();
+
+            throw new NotImplementedException();
+        }
+
+        private JsonToken ReadNumber()
+        {
+            int i;
+            for (i = _currentIndex + 1; i < _json.Length; ++i)
+            {
+                if (!char.IsDigit(_json[i]))
+                    break;
+            }
+
+            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            _currentIndex = i;
+            return token;
         }
 
         private JsonToken ReadConstant(JsonTokenType type, string expectedTokenText)
@@ -41,7 +57,7 @@ namespace Light.Json
             if (constantTokenText != expectedTokenText.AsSpan())
                 throw new DeserializationException($"Expected token \"{expectedTokenText}\" but actually found \"{constantTokenText.ToString()}\".");
             _currentIndex += expectedTokenText.Length;
-            return new JsonToken(type);
+            return new JsonToken(type, constantTokenText);
         }
 
         private JsonToken ReadString()

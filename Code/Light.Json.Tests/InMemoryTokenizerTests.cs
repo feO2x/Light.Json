@@ -20,28 +20,42 @@ namespace Light.Json.Tests
         [Fact]
         public static void TokenizeFalse()
         {
-            var token = GetSingleToken("false");
+            var token = GetSingleToken(JsonTokenizerSymbols.False);
 
             token.Type.Should().Be(JsonTokenType.False);
-            token.Text.Length.Should().Be(0);
+            token.Text.ToString().Should().Be(JsonTokenizerSymbols.False);
         }
 
         [Fact]
         public static void TokenizeTrue()
         {
-            var token = GetSingleToken("true");
+            var token = GetSingleToken(JsonTokenizerSymbols.True);
 
             token.Type.Should().Be(JsonTokenType.True);
-            token.Text.Length.Should().Be(0);
+            token.Text.ToString().Should().Be(JsonTokenizerSymbols.True);
         }
 
         [Fact]
         public static void TokenizeNull()
         {
-            var token = GetSingleToken("null");
+            var token = GetSingleToken(JsonTokenizerSymbols.Null);
 
             token.Type.Should().Be(JsonTokenType.Null);
-            token.Text.Length.Should().Be(0);
+            token.Text.ToString().Should().Be(JsonTokenizerSymbols.Null);
+        }
+
+        [Theory]
+        [InlineData(42)]
+        [InlineData(8)]
+        [InlineData(1006)]
+        [InlineData(17853)]
+        public static void TokenizePositiveNumber(int number)
+        {
+            var jsonNumber = number.ToString();
+            var token = GetSingleToken(jsonNumber);
+
+            token.Type.Should().Be(JsonTokenType.IntegerNumber);
+            token.Text.ToString().Should().Be(jsonNumber);
         }
 
         private static JsonToken GetSingleToken(string json)
