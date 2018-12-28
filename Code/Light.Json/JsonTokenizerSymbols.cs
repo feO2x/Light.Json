@@ -10,5 +10,6 @@
         public const string True = "true";
         public const char NullStartCharacter = 'n';
         public const string Null = "null";
+        public const char MinusSign = '-';
     }
 }

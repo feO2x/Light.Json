@@ -29,6 +29,8 @@ namespace Light.Json
                     return ReadConstant(JsonTokenType.True, JsonTokenizerSymbols.True);
                 case JsonTokenizerSymbols.NullStartCharacter:
                     return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
+                case JsonTokenizerSymbols.MinusSign:
+                    return ReadNegativeNumber();
             }
 
             if (char.IsDigit(currentCharacter))
@@ -45,6 +47,23 @@ namespace Light.Json
                 if (!char.IsDigit(_json[i]))
                     break;
             }
+
+            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            _currentIndex = i;
+            return token;
+        }
+
+        private JsonToken ReadNegativeNumber()
+        {
+            int i;
+            for (i = _currentIndex + 1; i < _json.Length; ++i)
+            {
+                if (!char.IsDigit(_json[i]))
+                    break;
+            }
+
+            if (i == _currentIndex + 1)
+                throw new DeserializationException("Expected number after minus sign.");
 
             var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;

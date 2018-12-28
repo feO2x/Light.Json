@@ -49,7 +49,12 @@ namespace Light.Json.Tests
         [InlineData(8)]
         [InlineData(1006)]
         [InlineData(17853)]
-        public static void TokenizePositiveNumber(int number)
+        [InlineData(-35)]
+        [InlineData(-108)]
+        [InlineData(0)]
+        [InlineData(int.MinValue)]
+        [InlineData(int.MaxValue)]
+        public static void TokenizeInteger(int number)
         {
             var jsonNumber = number.ToString();
             var token = GetSingleToken(jsonNumber);
