@@ -44,11 +44,32 @@ namespace Light.Json
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
             {
+                var currentCharacter = _json[i];
+                if (char.IsDigit(currentCharacter))
+                    continue;
+
+                if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
+                    return ReadFloatingPointNumber(i);
+            }
+
+            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            _currentIndex = i;
+            return token;
+        }
+
+        private JsonToken ReadFloatingPointNumber(int decimalSymbolIndex)
+        {
+            int i;
+            for (i = decimalSymbolIndex + 1; i < _json.Length; i++)
+            {
                 if (!char.IsDigit(_json[i]))
                     break;
             }
 
-            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            if (i == decimalSymbolIndex)
+                throw new DeserializationException("Expected digit after decimal symbol.");
+
+            var token = new JsonToken(JsonTokenType.FloatingPointNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
             return token;
         }
@@ -58,8 +79,12 @@ namespace Light.Json
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
             {
-                if (!char.IsDigit(_json[i]))
-                    break;
+                var currentCharacter = _json[i];
+                if (char.IsDigit(currentCharacter))
+                    continue;
+
+                if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
+                    return ReadFloatingPointNumber(i);
             }
 
             if (i == _currentIndex + 1)

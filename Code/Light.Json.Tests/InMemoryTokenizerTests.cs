@@ -54,13 +54,26 @@ namespace Light.Json.Tests
         [InlineData(0)]
         [InlineData(int.MinValue)]
         [InlineData(int.MaxValue)]
-        public static void TokenizeInteger(int number)
+        public static void TokenizeIntegerNumber(int number)
         {
             var jsonNumber = number.ToString();
             var token = GetSingleToken(jsonNumber);
 
             token.Type.Should().Be(JsonTokenType.IntegerNumber);
             token.Text.ToString().Should().Be(jsonNumber);
+        }
+
+        [Theory]
+        [InlineData("42.75")]
+        [InlineData("745237823932.472392")]
+        [InlineData("-150.2299")]
+        [InlineData("-0.2")]
+        public static void TokenizeFloatingPointNumber(string numberAsJson)
+        {
+            var token = GetSingleToken(numberAsJson);
+
+            token.Type.Should().Be(JsonTokenType.FloatingPointNumber);
+            token.Text.ToString().Should().Be(numberAsJson);
         }
 
         private static JsonToken GetSingleToken(string json)
