@@ -76,6 +76,15 @@ namespace Light.Json.Tests
             token.Text.ToString().Should().Be(numberAsJson);
         }
 
+        [Fact]
+        public static void ReadBeginOfObject()
+        {
+            var token = GetSingleToken("{");
+
+            token.Type.Should().Be(JsonTokenType.BeginOfObject);
+            token.Text.ToString().Should().Be("{");
+        }
+
         private static JsonToken GetSingleToken(string json)
         {
             var tokenizer = new InMemoryTokenizer(json);

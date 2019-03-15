@@ -12,5 +12,9 @@
         public const string Null = "null";
         public const char MinusSign = '-';
         public const char DecimalSymbol = '.';
+        public const char BeginOfObject = '{';
+        public const char EndOfObject = '}';
+        public const char BeginOfArray = '[';
+        public const char EndOfArray = ']';
     }
 }

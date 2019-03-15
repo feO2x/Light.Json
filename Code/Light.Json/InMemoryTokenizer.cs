@@ -31,12 +31,19 @@ namespace Light.Json
                     return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
                 case JsonTokenizerSymbols.MinusSign:
                     return ReadNegativeNumber();
+                case JsonTokenizerSymbols.BeginOfObject:
+                    return ReadSingleCharacter(JsonTokenType.BeginOfObject);
             }
 
             if (char.IsDigit(currentCharacter))
                 return ReadNumber();
 
             throw new NotImplementedException();
+        }
+
+        private JsonToken ReadSingleCharacter(JsonTokenType tokenType)
+        {
+            return new JsonToken(tokenType, _json.Slice(_currentIndex++, 1));
         }
 
         private JsonToken ReadNumber()
