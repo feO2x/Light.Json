@@ -43,6 +43,8 @@ namespace Light.Json
                     return ReadNegativeNumber();
                 case JsonTokenizerSymbols.BeginOfObject:
                     return ReadSingleCharacter(JsonTokenType.BeginOfObject);
+                case JsonTokenizerSymbols.EndOfObject:
+                    return ReadSingleCharacter(JsonTokenType.EndOfObject);
             }
 
             if (char.IsDigit(currentCharacter))
