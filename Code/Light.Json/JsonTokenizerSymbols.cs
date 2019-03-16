@@ -16,5 +16,6 @@
         public const char EndOfObject = '}';
         public const char BeginOfArray = '[';
         public const char EndOfArray = ']';
+        public const char PairDelimiter = ',';
     }
 }

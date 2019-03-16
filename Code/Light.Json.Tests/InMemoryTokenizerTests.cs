@@ -70,6 +70,9 @@ namespace Light.Json.Tests
         [Fact]
         public static void TokenizeEndOfArray() => TestTokenizer("]", JsonTokenType.EndOfArray);
 
+        [Fact]
+        public static void TokenizeValueDelimiter() => TestTokenizer(",", JsonTokenType.PairDelimiter);
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json, expectedTokenType);
 
