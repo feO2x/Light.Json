@@ -45,6 +45,8 @@ namespace Light.Json
                     return ReadSingleCharacter(JsonTokenType.BeginOfObject);
                 case JsonTokenizerSymbols.EndOfObject:
                     return ReadSingleCharacter(JsonTokenType.EndOfObject);
+                case JsonTokenizerSymbols.BeginOfArray:
+                    return ReadSingleCharacter(JsonTokenType.BeginOfArray);
             }
 
             if (char.IsDigit(currentCharacter))

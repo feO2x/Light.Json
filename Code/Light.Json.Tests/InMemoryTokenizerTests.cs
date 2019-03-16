@@ -90,7 +90,7 @@ namespace Light.Json.Tests
         }
 
         [Fact]
-        public static void ReadBeginOfObject()
+        public static void TokenizeBeginOfObject()
         {
             var token = GetSingleToken("{");
 
@@ -99,12 +99,21 @@ namespace Light.Json.Tests
         }
 
         [Fact]
-        public static void ReadEndOfObject()
+        public static void TokenizeEndOfObject()
         {
             var token = GetSingleToken("}");
 
             token.Type.Should().Be(JsonTokenType.EndOfObject);
             token.Text.ToString().Should().Be("}");
+        }
+
+        [Fact]
+        public static void TokenizeBeginOfArray()
+        {
+            var token = GetSingleToken("[");
+
+            token.Type.Should().Be(JsonTokenType.BeginOfArray);
+            token.Text.ToString().Should().Be("[");
         }
 
         private static JsonToken GetSingleToken(string json)
