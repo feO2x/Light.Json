@@ -1,24 +1,34 @@
 ﻿using System;
+using System.Net;
+using Light.GuardClauses;
 
 namespace Light.Json
 {
     public ref struct InMemoryTokenizer
     {
+        private static readonly string NewLineCharacters = Environment.NewLine;
+        private static readonly char NewLineFirstCharacter = NewLineCharacters[0];
         private readonly ReadOnlySpan<char> _json;
         private int _currentIndex;
+        private int _currentLine;
+        private int _currentPosition;
 
         public InMemoryTokenizer(ReadOnlySpan<char> json)
         {
             _json = json;
             _currentIndex = 0;
+            _currentLine = 1;
+            _currentPosition = 1;
         }
+
+        public int CurrentIndex => _currentIndex;
+
+        public int CurrentLine => _currentLine;
 
         public JsonToken GetNextToken()
         {
-            if (_currentIndex >= _json.Length)
+            if (!TryReadNextCharacter(out var currentCharacter))
                 return new JsonToken(JsonTokenType.EndOfDocument);
-
-            var currentCharacter = _json[_currentIndex];
             switch (currentCharacter)
             {
                 case JsonTokenizerSymbols.StringDelimiter:
@@ -39,6 +49,55 @@ namespace Light.Json
                 return ReadNumber();
 
             throw new NotImplementedException();
+        }
+
+        private bool TryReadNextCharacter(out char currentCharacter)
+        {
+            // Read until the end of the document is reached
+            while (_currentIndex < _json.Length)
+            {
+                currentCharacter = _json[_currentIndex];
+
+                // If the current character is not white space, then return it
+                if (!currentCharacter.IsWhiteSpace())
+                    return true;
+
+                // If the current Character is not a new line charter, advance position and index
+                if (currentCharacter != NewLineFirstCharacter)
+                {
+                    ++_currentIndex;
+                    ++_currentPosition;
+                    continue;
+                }
+
+                // Handle new line characters with length 1
+                if (NewLineCharacters.Length == 1)
+                {
+                    ++_currentIndex;
+                    ++_currentLine;
+                    _currentPosition = 1;
+                    continue;
+                }
+
+                // Check if there is enough space for a second line character
+                if (_currentIndex + 2 >= _json.Length)
+                {
+                    currentCharacter = default;
+                    return false;
+                }
+
+                currentCharacter = _json[++_currentIndex];
+                ++_currentPosition;
+                if (currentCharacter == NewLineCharacters[1])
+                {
+                    ++_currentIndex;
+                    ++_currentLine;
+                    _currentPosition = 1;
+                }
+            }
+
+            currentCharacter = default;
+            return false;
         }
 
         private JsonToken ReadSingleCharacter(JsonTokenType tokenType)
@@ -105,7 +164,7 @@ namespace Light.Json
         private JsonToken ReadConstant(JsonTokenType type, string expectedTokenText)
         {
             var constantTokenText = _json.Slice(_currentIndex, expectedTokenText.Length);
-            if (constantTokenText != expectedTokenText.AsSpan())
+            if (!constantTokenText.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
                 throw new DeserializationException($"Expected token \"{expectedTokenText}\" but actually found \"{constantTokenText.ToString()}\".");
             _currentIndex += expectedTokenText.Length;
             return new JsonToken(type, constantTokenText);
