@@ -12,50 +12,30 @@ namespace Light.Json.Tests
         [InlineData("  \"Qux\"")]
         [InlineData("\"Qux\" ")]
         [InlineData("\t\"Gorge\"")]
-        public static void TokenizeJsonString(string json)
-        {
-            var token = GetSingleToken(json);
-
-            token.Type.Should().Be(JsonTokenType.String);
-            token.Text.ToString().Should().Be(json.Trim());
-        }
+        public static void TokenizeJsonString(string json) =>
+            TestTokenizer(json, json.Trim(), JsonTokenType.String);
 
         [Theory]
         [InlineData("false")]
         [InlineData(" false")]
         [InlineData("false ")]
         [InlineData("\tfalse")]
-        public static void TokenizeFalse(string json)
-        {
-            var token = GetSingleToken(json);
-
-            token.Type.Should().Be(JsonTokenType.False);
-            token.Text.ToString().Should().Be(JsonTokenizerSymbols.False);
-        }
+        public static void TokenizeFalse(string json) =>
+            TestTokenizer(json, JsonTokenizerSymbols.False, JsonTokenType.False);
 
         [Theory]
         [InlineData("true")]
         [InlineData("\ttrue")]
         [InlineData(" true")]
-        public static void TokenizeTrue(string json)
-        {
-            var token = GetSingleToken(json);
-
-            token.Type.Should().Be(JsonTokenType.True);
-            token.Text.ToString().Should().Be(JsonTokenizerSymbols.True);
-        }
+        public static void TokenizeTrue(string json) =>
+            TestTokenizer(json, JsonTokenizerSymbols.True, JsonTokenType.True);
 
         [Theory]
         [InlineData("null")]
         [InlineData(" null")]
         [InlineData("\tnull")]
-        public static void TokenizeNull(string json)
-        {
-            var token = GetSingleToken(json);
-
-            token.Type.Should().Be(JsonTokenType.Null);
-            token.Text.ToString().Should().Be(JsonTokenizerSymbols.Null);
-        }
+        public static void TokenizeNull(string json) =>
+            TestTokenizer(json, JsonTokenizerSymbols.Null, JsonTokenType.Null);
 
         [Theory]
         [InlineData(42)]
@@ -67,54 +47,34 @@ namespace Light.Json.Tests
         [InlineData(0)]
         [InlineData(int.MinValue)]
         [InlineData(int.MaxValue)]
-        public static void TokenizeIntegerNumber(int number)
-        {
-            var jsonNumber = number.ToString();
-            var token = GetSingleToken(jsonNumber);
-
-            token.Type.Should().Be(JsonTokenType.IntegerNumber);
-            token.Text.ToString().Should().Be(jsonNumber);
-        }
+        public static void TokenizeIntegerNumber(int number) =>
+            TestTokenizer(number.ToString(), JsonTokenType.IntegerNumber);
 
         [Theory]
         [InlineData("42.75")]
         [InlineData("  745237823932.472392")]
         [InlineData("\t-150.2299")]
         [InlineData("-0.2")]
-        public static void TokenizeFloatingPointNumber(string numberAsJson)
-        {
-            var token = GetSingleToken(numberAsJson);
-
-            token.Type.Should().Be(JsonTokenType.FloatingPointNumber);
-            token.Text.ToString().Should().Be(numberAsJson.TrimStart());
-        }
+        public static void TokenizeFloatingPointNumber(string numberAsJson) =>
+            TestTokenizer(numberAsJson, numberAsJson.TrimStart(), JsonTokenType.FloatingPointNumber);
 
         [Fact]
-        public static void TokenizeBeginOfObject()
-        {
-            var token = GetSingleToken("{");
-
-            token.Type.Should().Be(JsonTokenType.BeginOfObject);
-            token.Text.ToString().Should().Be("{");
-        }
+        public static void TokenizeBeginOfObject() => TestTokenizer("{", JsonTokenType.BeginOfObject);
 
         [Fact]
-        public static void TokenizeEndOfObject()
-        {
-            var token = GetSingleToken("}");
-
-            token.Type.Should().Be(JsonTokenType.EndOfObject);
-            token.Text.ToString().Should().Be("}");
-        }
+        public static void TokenizeEndOfObject() => TestTokenizer("}", JsonTokenType.EndOfObject);
 
         [Fact]
-        public static void TokenizeBeginOfArray()
-        {
-            var token = GetSingleToken("[");
+        public static void TokenizeBeginOfArray() => TestTokenizer("[", JsonTokenType.BeginOfArray);
 
-            token.Type.Should().Be(JsonTokenType.BeginOfArray);
-            token.Text.ToString().Should().Be("[");
-        }
+        [Fact]
+        public static void TokenizeEndOfArray() => TestTokenizer("]", JsonTokenType.EndOfArray);
+
+        private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
+            GetSingleToken(json).ShouldEqual(json, expectedTokenType);
+
+        private static void TestTokenizer(string json, string expectedToken, JsonTokenType expectedTokenType) =>
+            GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
 
         private static JsonToken GetSingleToken(string json)
         {
@@ -126,6 +86,12 @@ namespace Light.Json.Tests
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
             secondToken.Text.Length.Should().Be(0);
             return token;
+        }
+
+        private static void ShouldEqual(this JsonToken token, string expected, JsonTokenType tokenType)
+        {
+            token.Type.Should().Be(tokenType);
+            token.Text.ToString().Should().Be(expected);
         }
     }
 }

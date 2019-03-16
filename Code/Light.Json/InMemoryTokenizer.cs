@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using Light.GuardClauses;
 
 namespace Light.Json
@@ -47,6 +46,8 @@ namespace Light.Json
                     return ReadSingleCharacter(JsonTokenType.EndOfObject);
                 case JsonTokenizerSymbols.BeginOfArray:
                     return ReadSingleCharacter(JsonTokenType.BeginOfArray);
+                case JsonTokenizerSymbols.EndOfArray:
+                    return ReadSingleCharacter(JsonTokenType.EndOfArray);
             }
 
             if (char.IsDigit(currentCharacter))
