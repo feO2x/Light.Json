@@ -126,6 +126,70 @@ namespace Light.Json.Tests
         public static void TokenizeNameValueSeparator() =>
             TestTokenizer(":", JsonTokenType.NameValueSeparator);
 
+        [Fact]
+        public static void TokenizeComplexObject()
+        {
+            const string json = @"
+{
+    ""firstName"": ""John"",
+    ""lastName"": ""Doe"",
+    ""age"": 42
+}";
+            var tokenizer = new InMemoryTokenizer(json);
+
+            tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
+            tokenizer.GetNextToken().ShouldEqual("\"firstName\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
+            tokenizer.GetNextToken().ShouldEqual("\"John\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("\"lastName\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
+            tokenizer.GetNextToken().ShouldEqual("\"Doe\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("\"age\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
+            tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
+            tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
+            tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
+        }
+
+        [Fact]
+        public static void TokenizeArray()
+        {
+            const string json = @"
+[
+    ""This is a JSON string"",
+    true,
+    false,
+    null,
+    {
+        ""this is"": ""a complex object""
+    },
+    78
+]
+";
+            var tokenizer = new InMemoryTokenizer(json);
+
+            tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
+            tokenizer.GetNextToken().ShouldEqual("\"This is a JSON string\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("true", JsonTokenType.True);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("false", JsonTokenType.False);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("null", JsonTokenType.Null);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
+            tokenizer.GetNextToken().ShouldEqual("\"this is\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
+            tokenizer.GetNextToken().ShouldEqual("\"a complex object\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("78", JsonTokenType.IntegerNumber);
+            tokenizer.GetNextToken().ShouldEqual("]", JsonTokenType.EndOfArray);
+            tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
+        }
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json, expectedTokenType);
 
