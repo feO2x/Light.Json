@@ -13,6 +13,8 @@ namespace Light.Json.Tests
         [InlineData("  \"Qux\"")]
         [InlineData("\"Qux\" ")]
         [InlineData("\t\"Gorge\"")]
+        [InlineData("\"\\\"Boom\\\"\"")]
+        [InlineData("\"Boom\"")]
         public static void TokenizeJsonString(string json) =>
             TestTokenizer(json, json.Trim(), JsonTokenType.String);
 

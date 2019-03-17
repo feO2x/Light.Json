@@ -194,6 +194,10 @@ namespace Light.Json
                 if (leftBoundedJson[i] != JsonTokenizerSymbols.StringDelimiter)
                     continue;
 
+                var previousIndex = i - 1;
+                if (previousIndex > 0 && leftBoundedJson[previousIndex] == JsonTokenizerSymbols.EscapeCharacter)
+                    continue;
+
                 var targetSpan = leftBoundedJson.Slice(0, i + 1);
                 _currentIndex += targetSpan.Length;
                 _currentPosition += targetSpan.Length;
