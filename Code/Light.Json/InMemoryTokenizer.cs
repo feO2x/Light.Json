@@ -107,10 +107,8 @@ namespace Light.Json
             return false;
         }
 
-        private JsonToken ReadSingleCharacter(JsonTokenType tokenType)
-        {
-            return new JsonToken(tokenType, _json.Slice(_currentIndex++, 1));
-        }
+        private JsonToken ReadSingleCharacter(JsonTokenType tokenType) =>
+            new JsonToken(tokenType, _json.Slice(_currentIndex++, 1));
 
         private JsonToken ReadNumber()
         {
@@ -127,6 +125,7 @@ namespace Light.Json
 
             var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
+            _currentPosition += token.Text.Length;
             return token;
         }
 
@@ -140,10 +139,11 @@ namespace Light.Json
             }
 
             if (i == decimalSymbolIndex)
-                throw new DeserializationException("Expected digit after decimal symbol.");
+                Throw($"Expected digit after decimal symbol at line {_currentLine} position {_currentPosition}.");
 
             var token = new JsonToken(JsonTokenType.FloatingPointNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
+            _currentPosition += token.Text.Length;
             return token;
         }
 
@@ -161,18 +161,21 @@ namespace Light.Json
             }
 
             if (i == _currentIndex + 1)
-                throw new DeserializationException("Expected number after minus sign.");
+                Throw($"Expected number after minus sign at line {_currentLine} position {_currentPosition}");
 
             var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
+            _currentPosition += token.Text.Length;
             return token;
         }
 
         private JsonToken ReadConstant(JsonTokenType type, string expectedTokenText)
         {
+            if (_currentIndex + expectedTokenText.Length > _json.Length)
+                ThrowInvalidConstant(expectedTokenText, _json.Slice(_currentIndex));
             var constantTokenText = _json.Slice(_currentIndex, expectedTokenText.Length);
             if (!constantTokenText.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
-                throw new DeserializationException($"Expected token \"{expectedTokenText}\" but actually found \"{constantTokenText.ToString()}\".");
+                ThrowInvalidConstant(expectedTokenText, constantTokenText);
             _currentIndex += expectedTokenText.Length;
             return new JsonToken(type, constantTokenText);
         }
@@ -188,10 +191,25 @@ namespace Light.Json
 
                 var targetSpan = leftBoundedJson.Slice(0, i + 1);
                 _currentIndex += targetSpan.Length;
+                _currentPosition += targetSpan.Length;
                 return new JsonToken(JsonTokenType.String, targetSpan);
             }
 
-            throw new DeserializationException($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
+            Throw($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
+            return default;
         }
+
+        private void ThrowInvalidConstant(string expectedTokenText, ReadOnlySpan<char> actualTokenText) =>
+            Throw($"Expected token \"{expectedTokenText}\" but actually found \"{actualTokenText.ToString()}\" at line {_currentLine} position {_currentPosition}.");
+
+        private static void Throw(string message) =>
+            throw new DeserializationException(message);
+
+        public override bool Equals(object obj) =>
+            throw new NotSupportedException("ref structs do not support object.Equals as they cannot live on the heap.");
+
+        public override int GetHashCode() =>
+            throw new NotSupportedException("ref structs do not support object.GetHashCode as they cannot live on the heap.");
+
     }
 }
