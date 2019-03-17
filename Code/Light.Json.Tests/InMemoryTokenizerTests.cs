@@ -73,7 +73,7 @@ namespace Light.Json.Tests
         public static void TokenizeEndOfArray() => TestTokenizer("]", JsonTokenType.EndOfArray);
 
         [Fact]
-        public static void TokenizeValueDelimiter() => TestTokenizer(",", JsonTokenType.PairDelimiter);
+        public static void TokenizeValueDelimiter() => TestTokenizer(",", JsonTokenType.EntrySeparator);
 
         [Theory]
         [InlineData("fals", "false", "fals", 1)]
