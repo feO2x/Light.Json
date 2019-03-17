@@ -50,6 +50,8 @@ namespace Light.Json
                     return ReadSingleCharacter(JsonTokenType.EndOfArray);
                 case JsonTokenizerSymbols.EntrySeparator:
                     return ReadSingleCharacter(JsonTokenType.EntrySeparator);
+                case JsonTokenizerSymbols.NameValueSeparator:
+                    return ReadSingleCharacter(JsonTokenType.NameValueSeparator);
             }
 
             if (char.IsDigit(currentCharacter))

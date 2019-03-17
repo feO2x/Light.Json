@@ -73,7 +73,7 @@ namespace Light.Json.Tests
         public static void TokenizeEndOfArray() => TestTokenizer("]", JsonTokenType.EndOfArray);
 
         [Fact]
-        public static void TokenizeValueDelimiter() => TestTokenizer(",", JsonTokenType.EntrySeparator);
+        public static void TokenizeEntrySeparator() => TestTokenizer(",", JsonTokenType.EntrySeparator);
 
         [Theory]
         [InlineData("fals", "false", "fals", 1)]
@@ -119,6 +119,10 @@ namespace Light.Json.Tests
             act.Should().ThrowExactly<DeserializationException>()
                .And.Message.Should().Contain($"Expected digit after decimal symbol in token \"{invalidToken}\" at line 1 position {position}.");
         }
+
+        [Fact]
+        public static void TokenizeNameValueSeparator() =>
+            TestTokenizer(":", JsonTokenType.NameValueSeparator);
 
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json, expectedTokenType);
