@@ -14,7 +14,6 @@
         True,
         False,
         Null,
-        EndOfDocument,
-        Error
+        EndOfDocument
     }
 }

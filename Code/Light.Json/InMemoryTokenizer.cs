@@ -121,6 +121,7 @@ namespace Light.Json
 
                 if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
                     return ReadFloatingPointNumber(i);
+                break;
             }
 
             var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
@@ -138,10 +139,11 @@ namespace Light.Json
                     break;
             }
 
-            if (i == decimalSymbolIndex)
-                Throw($"Expected digit after decimal symbol at line {_currentLine} position {_currentPosition}.");
+            var textSpan = _json.Slice(_currentIndex, i - _currentIndex);
+            if (i == decimalSymbolIndex + 1)
+                Throw($"Expected digit after decimal symbol in token \"{textSpan.ToString()}\" at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonToken(JsonTokenType.FloatingPointNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            var token = new JsonToken(JsonTokenType.FloatingPointNumber, textSpan);
             _currentIndex = i;
             _currentPosition += token.Text.Length;
             return token;
@@ -158,10 +160,11 @@ namespace Light.Json
 
                 if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
                     return ReadFloatingPointNumber(i);
+                break;
             }
 
             if (i == _currentIndex + 1)
-                Throw($"Expected number after minus sign at line {_currentLine} position {_currentPosition}");
+                Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
             var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
