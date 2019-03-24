@@ -20,7 +20,7 @@ namespace Light.Json.Performance
         [Benchmark]
         public Contact Imperative()
         {
-            var tokenizer = new InMemoryTokenizer(Json);
+            var tokenizer = new SpanTokenizer(Json);
             string firstName = null;
             string lastName = null;
             var age = 0;

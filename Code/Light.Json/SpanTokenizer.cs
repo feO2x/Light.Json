@@ -3,7 +3,7 @@ using Light.GuardClauses;
 
 namespace Light.Json
 {
-    public ref struct InMemoryTokenizer
+    public ref struct SpanTokenizer
     {
         private static readonly string NewLineCharacters = Environment.NewLine;
         private static readonly char NewLineFirstCharacter = NewLineCharacters[0];
@@ -12,7 +12,7 @@ namespace Light.Json
         private int _currentLine;
         private int _currentPosition;
 
-        public InMemoryTokenizer(ReadOnlySpan<char> json)
+        public SpanTokenizer(ReadOnlySpan<char> json)
         {
             _json = json;
             _currentIndex = 0;
