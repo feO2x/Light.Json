@@ -126,6 +126,17 @@ namespace Light.Json.Tests
         public static void TokenizeNameValueSeparator() =>
             TestTokenizer(":", JsonTokenType.NameValueSeparator);
 
+        [Theory]
+        [InlineData("\\", '\\', 1, 1)]
+        [InlineData("\r\n\\", '\\', 2, 1)]
+        public static void InvalidObjectAndArrayTokens(string invalidJson, char invalidCharacter, int line, int position)
+        {
+            Action act = () => GetSingleToken(invalidJson);
+
+            act.Should().ThrowExactly<DeserializationException>()
+               .And.Message.Should().Contain($"Unexpected character \"{invalidCharacter}\" at line {line} position {position}.");
+        }
+
         [Fact]
         public static void TokenizeComplexObject()
         {

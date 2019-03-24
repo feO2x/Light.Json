@@ -57,7 +57,7 @@ namespace Light.Json
             if (char.IsDigit(currentCharacter))
                 return ReadNumber();
 
-            throw new NotImplementedException();
+            throw new DeserializationException($"Unexpected character \"{currentCharacter}\" at line {_currentLine} position {_currentPosition}.");
         }
 
         private bool TryReadNextCharacter(out char currentCharacter)
