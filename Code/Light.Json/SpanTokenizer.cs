@@ -62,14 +62,42 @@ namespace Light.Json
 
         private bool TryReadNextCharacter(out char currentCharacter)
         {
-            // Read until the end of the document is reached
+            // In this method, we search for the first character of the next token.
+            var isInSingleLineComment = false;
             while (_currentIndex < _json.Length)
             {
                 currentCharacter = _json[_currentIndex];
 
-                // If the current character is not white space, then return it
-                if (!currentCharacter.IsWhiteSpace())
-                    return true;
+                // If the current character is not white space and we are not in a single line comment, then return it
+                if (!currentCharacter.IsWhiteSpace() && !isInSingleLineComment)
+                {
+                    // Check if the character is the beginning of a single line comment.
+                    // If not, it can be returned and processed.
+                    if (currentCharacter != JsonTokenizerSymbols.SingleLineCommentCharacter)
+                        return true;
+
+                    // If it is, then check if there is enough space for another slash.
+                    // If not, then return the current character, as this will result
+                    // in an exception reporting an unexpected character.
+                    if (_currentIndex + 1 >= _json.Length)
+                        return true;
+
+                    // Else check if the next character is actually the second slash of a comment.
+                    // If it is not, then return the slash as this will result in an exception
+                    // reporting an unexpected character (as above).
+                    currentCharacter = _json[_currentIndex + 1];
+                    if (currentCharacter != JsonTokenizerSymbols.SingleLineCommentCharacter)
+                    {
+                        currentCharacter = '/';
+                        return true;
+                    }
+
+                    // Else we are in a single line comment until we find a new line
+                    isInSingleLineComment = true;
+                    _currentIndex += 2;
+                    _currentPosition += 2;
+                    continue;
+                }
 
                 // If the current Character is not a new line charter, advance position and index
                 if (currentCharacter != NewLineFirstCharacter)
@@ -85,6 +113,7 @@ namespace Light.Json
                     ++_currentIndex;
                     ++_currentLine;
                     _currentPosition = 1;
+                    isInSingleLineComment = false;
                     continue;
                 }
 
@@ -102,6 +131,7 @@ namespace Light.Json
                     ++_currentIndex;
                     ++_currentLine;
                     _currentPosition = 1;
+                    isInSingleLineComment = false;
                 }
             }
 

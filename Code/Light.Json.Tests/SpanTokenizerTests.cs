@@ -201,6 +201,35 @@ namespace Light.Json.Tests
             tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
         }
 
+        [Fact]
+        public static void IgnoreSingleLineComments()
+        {
+            const string json = @"
+// This is a single line comment at the beginning of the file
+{
+    ""someCollection"": [
+        // Here is a comment within a collection
+        42,
+        18,
+        30
+    ]
+}";
+            var tokenizer = new SpanTokenizer(json);
+
+            tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
+            tokenizer.GetNextToken().ShouldEqual("\"someCollection\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
+            tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
+            tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("18", JsonTokenType.IntegerNumber);
+            tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
+            tokenizer.GetNextToken().ShouldEqual("30", JsonTokenType.IntegerNumber);
+            tokenizer.GetNextToken().ShouldEqual("]", JsonTokenType.EndOfArray);
+            tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
+            tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
+        }
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json, expectedTokenType);
 
