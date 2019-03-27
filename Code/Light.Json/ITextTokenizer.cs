@@ -2,6 +2,6 @@
 {
     public interface ITextTokenizer
     {
-        JsonToken GetNextToken();
+        JsonTextToken GetNextToken();
     }
 }

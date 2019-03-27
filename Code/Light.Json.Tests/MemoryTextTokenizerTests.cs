@@ -236,7 +236,7 @@ namespace Light.Json.Tests
         private static void TestTokenizer(string json, string expectedToken, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
 
-        private static JsonToken GetSingleToken(string json)
+        private static JsonTextToken GetSingleToken(string json)
         {
             var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
@@ -248,7 +248,7 @@ namespace Light.Json.Tests
             return token;
         }
 
-        private static void ShouldEqual(this JsonToken token, string expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonTextToken token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
             token.Text.ToString().Should().Be(expected);

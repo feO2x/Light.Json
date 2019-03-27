@@ -26,7 +26,7 @@ namespace Light.Json.Performance
             var age = 0;
 
             tokenizer.GetNextToken().Type.MustBe(JsonTokenType.BeginOfObject);
-            JsonToken currentToken;
+            JsonTextToken currentToken;
             do
             {
                 currentToken = tokenizer.GetNextToken();
