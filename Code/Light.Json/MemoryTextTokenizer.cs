@@ -3,16 +3,16 @@ using Light.GuardClauses;
 
 namespace Light.Json
 {
-    public ref struct SpanTokenizer
+    public struct MemoryTextTokenizer : ITextTokenizer
     {
         private static readonly string NewLineCharacters = Environment.NewLine;
         private static readonly char NewLineFirstCharacter = NewLineCharacters[0];
-        private readonly ReadOnlySpan<char> _json;
+        private readonly ReadOnlyMemory<char> _json;
         private int _currentIndex;
         private int _currentLine;
         private int _currentPosition;
 
-        public SpanTokenizer(ReadOnlySpan<char> json)
+        public MemoryTextTokenizer(ReadOnlyMemory<char> json)
         {
             _json = json;
             _currentIndex = 0;
@@ -26,47 +26,48 @@ namespace Light.Json
 
         public JsonToken GetNextToken()
         {
-            if (!TryReadNextCharacter(out var currentCharacter))
+            var span = _json.Span;
+            if (!TryReadNextCharacter(span, out var currentCharacter))
                 return new JsonToken(JsonTokenType.EndOfDocument);
             switch (currentCharacter)
             {
                 case JsonTokenizerSymbols.StringDelimiter:
-                    return ReadString();
+                    return ReadString(span);
                 case JsonTokenizerSymbols.FalseStartCharacter:
-                    return ReadConstant(JsonTokenType.False, JsonTokenizerSymbols.False);
+                    return ReadConstant(span, JsonTokenType.False, JsonTokenizerSymbols.False);
                 case JsonTokenizerSymbols.TrueStartCharacter:
-                    return ReadConstant(JsonTokenType.True, JsonTokenizerSymbols.True);
+                    return ReadConstant(span, JsonTokenType.True, JsonTokenizerSymbols.True);
                 case JsonTokenizerSymbols.NullStartCharacter:
-                    return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
+                    return ReadConstant(span, JsonTokenType.Null, JsonTokenizerSymbols.Null);
                 case JsonTokenizerSymbols.MinusSign:
-                    return ReadNegativeNumber();
+                    return ReadNegativeNumber(span);
                 case JsonTokenizerSymbols.BeginOfObject:
-                    return ReadSingleCharacter(JsonTokenType.BeginOfObject);
+                    return ReadSingleCharacter(span, JsonTokenType.BeginOfObject);
                 case JsonTokenizerSymbols.EndOfObject:
-                    return ReadSingleCharacter(JsonTokenType.EndOfObject);
+                    return ReadSingleCharacter(span, JsonTokenType.EndOfObject);
                 case JsonTokenizerSymbols.BeginOfArray:
-                    return ReadSingleCharacter(JsonTokenType.BeginOfArray);
+                    return ReadSingleCharacter(span, JsonTokenType.BeginOfArray);
                 case JsonTokenizerSymbols.EndOfArray:
-                    return ReadSingleCharacter(JsonTokenType.EndOfArray);
+                    return ReadSingleCharacter(span, JsonTokenType.EndOfArray);
                 case JsonTokenizerSymbols.EntrySeparator:
-                    return ReadSingleCharacter(JsonTokenType.EntrySeparator);
+                    return ReadSingleCharacter(span, JsonTokenType.EntrySeparator);
                 case JsonTokenizerSymbols.NameValueSeparator:
-                    return ReadSingleCharacter(JsonTokenType.NameValueSeparator);
+                    return ReadSingleCharacter(span, JsonTokenType.NameValueSeparator);
             }
 
             if (char.IsDigit(currentCharacter))
-                return ReadNumber();
+                return ReadNumber(span);
 
             throw new DeserializationException($"Unexpected character \"{currentCharacter}\" at line {_currentLine} position {_currentPosition}.");
         }
 
-        private bool TryReadNextCharacter(out char currentCharacter)
+        private bool TryReadNextCharacter(in ReadOnlySpan<char> json, out char currentCharacter)
         {
             // In this method, we search for the first character of the next token.
             var isInSingleLineComment = false;
             while (_currentIndex < _json.Length)
             {
-                currentCharacter = _json[_currentIndex];
+                currentCharacter = json[_currentIndex];
 
                 // If the current character is not white space and we are not in a single line comment, then return it
                 if (!currentCharacter.IsWhiteSpace() && !isInSingleLineComment)
@@ -85,7 +86,7 @@ namespace Light.Json
                     // Else check if the next character is actually the second slash of a comment.
                     // If it is not, then return the slash as this will result in an exception
                     // reporting an unexpected character (as above).
-                    currentCharacter = _json[_currentIndex + 1];
+                    currentCharacter = json[_currentIndex + 1];
                     if (currentCharacter != JsonTokenizerSymbols.SingleLineCommentCharacter)
                     {
                         currentCharacter = '/';
@@ -124,7 +125,7 @@ namespace Light.Json
                     return false;
                 }
 
-                currentCharacter = _json[++_currentIndex];
+                currentCharacter = json[++_currentIndex];
                 ++_currentPosition;
                 if (currentCharacter == NewLineCharacters[1])
                 {
@@ -139,39 +140,39 @@ namespace Light.Json
             return false;
         }
 
-        private JsonToken ReadSingleCharacter(JsonTokenType tokenType) =>
-            new JsonToken(tokenType, _json.Slice(_currentIndex++, 1));
+        private JsonToken ReadSingleCharacter(in ReadOnlySpan<char> json, JsonTokenType tokenType) =>
+            new JsonToken(tokenType, json.Slice(_currentIndex++, 1));
 
-        private JsonToken ReadNumber()
+        private JsonToken ReadNumber(in ReadOnlySpan<char> json)
         {
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
             {
-                var currentCharacter = _json[i];
+                var currentCharacter = json[i];
                 if (char.IsDigit(currentCharacter))
                     continue;
 
                 if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
-                    return ReadFloatingPointNumber(i);
+                    return ReadFloatingPointNumber(json, i);
                 break;
             }
 
-            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            var token = new JsonToken(JsonTokenType.IntegerNumber, json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
             _currentPosition += token.Text.Length;
             return token;
         }
 
-        private JsonToken ReadFloatingPointNumber(int decimalSymbolIndex)
+        private JsonToken ReadFloatingPointNumber(in ReadOnlySpan<char> json, int decimalSymbolIndex)
         {
             int i;
             for (i = decimalSymbolIndex + 1; i < _json.Length; i++)
             {
-                if (!char.IsDigit(_json[i]))
+                if (!char.IsDigit(json[i]))
                     break;
             }
 
-            var textSpan = _json.Slice(_currentIndex, i - _currentIndex);
+            var textSpan = json.Slice(_currentIndex, i - _currentIndex);
             if (i == decimalSymbolIndex + 1)
                 Throw($"Expected digit after decimal symbol in token \"{textSpan.ToString()}\" at line {_currentLine} position {_currentPosition}.");
 
@@ -181,43 +182,43 @@ namespace Light.Json
             return token;
         }
 
-        private JsonToken ReadNegativeNumber()
+        private JsonToken ReadNegativeNumber(in ReadOnlySpan<char> json)
         {
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
             {
-                var currentCharacter = _json[i];
+                var currentCharacter = json[i];
                 if (char.IsDigit(currentCharacter))
                     continue;
 
                 if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
-                    return ReadFloatingPointNumber(i);
+                    return ReadFloatingPointNumber(json, i);
                 break;
             }
 
             if (i == _currentIndex + 1)
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            var token = new JsonToken(JsonTokenType.IntegerNumber, json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
             _currentPosition += token.Text.Length;
             return token;
         }
 
-        private JsonToken ReadConstant(JsonTokenType type, string expectedTokenText)
+        private JsonToken ReadConstant(in ReadOnlySpan<char> json, JsonTokenType type, string expectedTokenText)
         {
-            if (_currentIndex + expectedTokenText.Length > _json.Length)
-                ThrowInvalidConstant(expectedTokenText, _json.Slice(_currentIndex));
-            var constantTokenText = _json.Slice(_currentIndex, expectedTokenText.Length);
+            if (_currentIndex + expectedTokenText.Length > json.Length)
+                ThrowInvalidConstant(expectedTokenText, json.Slice(_currentIndex));
+            var constantTokenText = json.Slice(_currentIndex, expectedTokenText.Length);
             if (!constantTokenText.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
                 ThrowInvalidConstant(expectedTokenText, constantTokenText);
             _currentIndex += expectedTokenText.Length;
             return new JsonToken(type, constantTokenText);
         }
 
-        private JsonToken ReadString()
+        private JsonToken ReadString(in ReadOnlySpan<char> json)
         {
-            var leftBoundedJson = _json.Slice(_currentIndex);
+            var leftBoundedJson = json.Slice(_currentIndex);
 
             for (var i = 1; i < leftBoundedJson.Length; ++i)
             {

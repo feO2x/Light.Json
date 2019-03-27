@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Light.Json.Tests
 {
-    public static class SpanTokenizerTests
+    public static class MemoryTextTokenizerTests
     {
         [Theory]
         [InlineData("\"Foo\"")]
@@ -146,7 +146,7 @@ namespace Light.Json.Tests
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var tokenizer = new SpanTokenizer(json);
+            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("\"firstName\"", JsonTokenType.String);
@@ -179,7 +179,7 @@ namespace Light.Json.Tests
     78
 ]
 ";
-            var tokenizer = new SpanTokenizer(json);
+            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("\"This is a JSON string\"", JsonTokenType.String);
@@ -214,7 +214,7 @@ namespace Light.Json.Tests
         30
     ]
 }";
-            var tokenizer = new SpanTokenizer(json);
+            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("\"someCollection\"", JsonTokenType.String);
@@ -238,7 +238,7 @@ namespace Light.Json.Tests
 
         private static JsonToken GetSingleToken(string json)
         {
-            var tokenizer = new SpanTokenizer(json);
+            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             var token = tokenizer.GetNextToken();
 
