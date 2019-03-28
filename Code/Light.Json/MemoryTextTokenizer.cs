@@ -20,10 +20,6 @@ namespace Light.Json
             _currentPosition = 1;
         }
 
-        public int CurrentIndex => _currentIndex;
-
-        public int CurrentLine => _currentLine;
-
         public JsonTextToken GetNextToken()
         {
             var span = _json.Span;
@@ -32,7 +28,7 @@ namespace Light.Json
             switch (currentCharacter)
             {
                 case JsonTokenizerSymbols.StringDelimiter:
-                    return ReadString(span);
+                    return ReadString();
                 case JsonTokenizerSymbols.FalseStartCharacter:
                     return ReadConstant(span, JsonTokenType.False, JsonTokenizerSymbols.False);
                 case JsonTokenizerSymbols.TrueStartCharacter:
@@ -141,12 +137,12 @@ namespace Light.Json
         }
 
         private JsonTextToken ReadSingleCharacter(in ReadOnlySpan<char> json, JsonTokenType tokenType) =>
-            new JsonTextToken(tokenType, json.Slice(_currentIndex++, 1));
+            new JsonTextToken(tokenType, _json.Slice(_currentIndex++, 1));
 
         private JsonTextToken ReadNumber(in ReadOnlySpan<char> json)
         {
             int i;
-            for (i = _currentIndex + 1; i < _json.Length; ++i)
+            for (i = _currentIndex + 1; i < json.Length; ++i)
             {
                 var currentCharacter = json[i];
                 if (char.IsDigit(currentCharacter))
@@ -157,9 +153,10 @@ namespace Light.Json
                 break;
             }
 
-            var token = new JsonTextToken(JsonTokenType.IntegerNumber, json.Slice(_currentIndex, i - _currentIndex));
+            var slicedMemory = _json.Slice(_currentIndex, i - _currentIndex);
+            var token = new JsonTextToken(JsonTokenType.IntegerNumber, slicedMemory);
             _currentIndex = i;
-            _currentPosition += token.Text.Length;
+            _currentPosition += slicedMemory.Length;
             return token;
         }
 
@@ -172,13 +169,13 @@ namespace Light.Json
                     break;
             }
 
-            var textSpan = json.Slice(_currentIndex, i - _currentIndex);
+            var slicedMemory = _json.Slice(_currentIndex, i - _currentIndex);
             if (i == decimalSymbolIndex + 1)
-                Throw($"Expected digit after decimal symbol in token \"{textSpan.ToString()}\" at line {_currentLine} position {_currentPosition}.");
+                Throw($"Expected digit after decimal symbol in token \"{slicedMemory.ToString()}\" at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonTextToken(JsonTokenType.FloatingPointNumber, textSpan);
+            var token = new JsonTextToken(JsonTokenType.FloatingPointNumber, slicedMemory);
             _currentIndex = i;
-            _currentPosition += token.Text.Length;
+            _currentPosition += slicedMemory.Length;
             return token;
         }
 
@@ -199,9 +196,10 @@ namespace Light.Json
             if (i == _currentIndex + 1)
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonTextToken(JsonTokenType.IntegerNumber, json.Slice(_currentIndex, i - _currentIndex));
+            var slicedMemory = _json.Slice(_currentIndex, i - _currentIndex);
+            var token = new JsonTextToken(JsonTokenType.IntegerNumber, slicedMemory);
             _currentIndex = i;
-            _currentPosition += token.Text.Length;
+            _currentPosition += slicedMemory.Length;
             return token;
         }
 
@@ -209,30 +207,31 @@ namespace Light.Json
         {
             if (_currentIndex + expectedTokenText.Length > json.Length)
                 ThrowInvalidConstant(expectedTokenText, json.Slice(_currentIndex));
-            var constantTokenText = json.Slice(_currentIndex, expectedTokenText.Length);
-            if (!constantTokenText.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
-                ThrowInvalidConstant(expectedTokenText, constantTokenText);
+            var slicedText = _json.Slice(_currentIndex, expectedTokenText.Length);
+            if (!slicedText.Span.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
+                ThrowInvalidConstant(expectedTokenText, slicedText.Span);
             _currentIndex += expectedTokenText.Length;
-            return new JsonTextToken(type, constantTokenText);
+            return new JsonTextToken(type, slicedText);
         }
 
-        private JsonTextToken ReadString(in ReadOnlySpan<char> json)
+        private JsonTextToken ReadString()
         {
-            var leftBoundedJson = json.Slice(_currentIndex);
+            var leftBoundedJson = _json.Slice(_currentIndex);
+            var leftBoundedJsonSpan = leftBoundedJson.Span;
 
             for (var i = 1; i < leftBoundedJson.Length; ++i)
             {
-                if (leftBoundedJson[i] != JsonTokenizerSymbols.StringDelimiter)
+                if (leftBoundedJsonSpan[i] != JsonTokenizerSymbols.StringDelimiter)
                     continue;
 
                 var previousIndex = i - 1;
-                if (previousIndex > 0 && leftBoundedJson[previousIndex] == JsonTokenizerSymbols.EscapeCharacter)
+                if (previousIndex > 0 && leftBoundedJsonSpan[previousIndex] == JsonTokenizerSymbols.EscapeCharacter)
                     continue;
 
-                var targetSpan = leftBoundedJson.Slice(0, i + 1);
-                _currentIndex += targetSpan.Length;
-                _currentPosition += targetSpan.Length;
-                return new JsonTextToken(JsonTokenType.String, targetSpan);
+                var slicedMemory = leftBoundedJson.Slice(1, i - 1);
+                _currentIndex += slicedMemory.Length + 2;
+                _currentPosition += slicedMemory.Length + 2;
+                return new JsonTextToken(JsonTokenType.String, slicedMemory);
             }
 
             Throw($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
@@ -250,6 +249,5 @@ namespace Light.Json
 
         public override int GetHashCode() =>
             throw new NotSupportedException("ref structs do not support object.GetHashCode as they cannot live on the heap.");
-
     }
 }

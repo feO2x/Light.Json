@@ -1,22 +1,24 @@
 ﻿using System;
+using System.Buffers;
 using FluentAssertions;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Light.Json.Tests
 {
     public static class MemoryTextTokenizerTests
     {
         [Theory]
-        [InlineData("\"Foo\"")]
-        [InlineData("\"Bar\"")]
-        [InlineData("\"Baz\"")]
-        [InlineData("  \"Qux\"")]
-        [InlineData("\"Qux\" ")]
-        [InlineData("\t\"Gorge\"")]
-        [InlineData("\"\\\"Boom\\\"\"")]
-        [InlineData("\"Boom\"")]
-        public static void TokenizeJsonString(string json) =>
-            TestTokenizer(json, json.Trim(), JsonTokenType.String);
+        [InlineData("\"Foo\"", "Foo")]
+        [InlineData("\"Bar\"", "Bar")]
+        [InlineData("\"Baz\"", "Baz")]
+        [InlineData("  \"Qux\"", "Qux")]
+        [InlineData("\"Qux\" ", "Qux")]
+        [InlineData("\t\"Gorge\"", "Gorge")]
+        [InlineData("\"\\\"Boom\\\"\"", "\\\"Boom\\\"")]
+        [InlineData("\"Boom\"", "Boom")]
+        public static void TokenizeJsonString(string json, string expected) =>
+            TestTokenizer(json, expected, JsonTokenType.String);
 
         [Theory]
         [InlineData("false")]
@@ -149,15 +151,15 @@ namespace Light.Json.Tests
             var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("\"firstName\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("\"John\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("John", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
-            tokenizer.GetNextToken().ShouldEqual("\"lastName\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("lastName", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("\"Doe\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("Doe", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
-            tokenizer.GetNextToken().ShouldEqual("\"age\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("age", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
             tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
             tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
@@ -182,7 +184,7 @@ namespace Light.Json.Tests
             var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
-            tokenizer.GetNextToken().ShouldEqual("\"This is a JSON string\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("true", JsonTokenType.True);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
@@ -191,9 +193,9 @@ namespace Light.Json.Tests
             tokenizer.GetNextToken().ShouldEqual("null", JsonTokenType.Null);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("\"this is\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("this is", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("\"a complex object\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("a complex object", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("78", JsonTokenType.IntegerNumber);
@@ -217,7 +219,7 @@ namespace Light.Json.Tests
             var tokenizer = new MemoryTextTokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("\"someCollection\"", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
@@ -233,7 +235,7 @@ namespace Light.Json.Tests
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json, expectedTokenType);
 
-        private static void TestTokenizer(string json, string expectedToken, JsonTokenType expectedTokenType) =>
+        private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
 
         private static JsonTextToken GetSingleToken(string json)
@@ -248,10 +250,38 @@ namespace Light.Json.Tests
             return token;
         }
 
-        private static void ShouldEqual(this JsonTextToken token, string expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonTextToken token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Text.ToString().Should().Be(expected);
+            token.Text.MustEqualSpan(expected);
         }
+    }
+
+    public static class ReadOnlySequenceExtensions
+    {
+        public static void MustEqualSpan(in this ReadOnlySequence<char> sequence, ReadOnlySpan<char> span)
+        {
+            if (sequence.IsSingleSegment)
+            {
+                if (!sequence.First.Span.Equals(span, StringComparison.Ordinal))
+                    ThrowSequenceNotEqualToSpanException(sequence, span);
+
+                return;
+            }
+            
+            var enumerator = new ReadOnlySequenceItemEnumerator<char>(sequence);
+            char character;
+            for (var i = 0; i < span.Length; ++i)
+            {
+                if (!enumerator.TryGetNext(out character) || character != span[i])
+                    ThrowSequenceNotEqualToSpanException(sequence, span);
+            }
+
+            if (enumerator.TryGetNext(out character))
+                ThrowSequenceNotEqualToSpanException(sequence, span);
+        }
+
+        private static void ThrowSequenceNotEqualToSpanException(in this ReadOnlySequence<char> sequence, ReadOnlySpan<char> span) =>
+            throw new XunitException($"Expected \"{sequence.ToString()}\" to be equal to \"{span.ToString()}\", but it is not.");
     }
 }

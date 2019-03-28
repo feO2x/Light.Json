@@ -31,23 +31,27 @@ namespace Light.Json.Performance
             {
                 currentToken = tokenizer.GetNextToken();
                 currentToken.Type.MustBe(JsonTokenType.String);
-                var dependencyName = currentToken.Text.Slice(1, currentToken.Text.Length - 2);
+                var dependencyName = currentToken.Text;
                 tokenizer.GetNextToken().Type.MustBe(JsonTokenType.NameValueSeparator);
                 currentToken = tokenizer.GetNextToken();
-                if (dependencyName.Equals(nameof(firstName).AsSpan(), StringComparison.Ordinal))
+                if (dependencyName.EqualsSpan(nameof(firstName)))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
-                    firstName = currentToken.Text.Slice(1, currentToken.Text.Length - 2).ToString();
+                    firstName = currentToken.Text.ToString();
                 }
-                else if (dependencyName.Equals(nameof(lastName).AsSpan(), StringComparison.Ordinal))
+                else if (dependencyName.EqualsSpan(nameof(lastName)))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
-                    lastName = currentToken.Text.Slice(1, currentToken.Text.Length - 2).ToString();
+                    lastName = currentToken.Text.ToString();
+                }
+                else if (dependencyName.EqualsSpan(nameof(age)))
+                {
+                    currentToken.Type.MustBe(JsonTokenType.IntegerNumber);
+                    age = int.Parse(currentToken.Text.First.Span);
                 }
                 else
                 {
-                    currentToken.Type.MustBe(JsonTokenType.IntegerNumber);
-                    age = int.Parse(currentToken.Text);
+                    throw new DeserializationException($"Found unexpected token \"{dependencyName.ToString()}\".");
                 }
 
                 currentToken = tokenizer.GetNextToken();

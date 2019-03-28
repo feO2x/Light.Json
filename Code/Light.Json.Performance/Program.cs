@@ -10,8 +10,7 @@ namespace Light.Json.Performance
         public static IConfig CreateDefaultConfig() =>
             DefaultConfig.Instance
                          .With(Job.Core)
-                         .With(MemoryDiagnoser.Default)
-                         .With(DisassemblyDiagnoser.Create(DisassemblyDiagnoserConfig.Asm));
+                         .With(MemoryDiagnoser.Default);
 
         public static void Main(string[] args) =>
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly)
