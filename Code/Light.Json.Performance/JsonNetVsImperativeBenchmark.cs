@@ -20,13 +20,13 @@ namespace Light.Json.Performance
         [Benchmark]
         public Contact Imperative()
         {
-            var tokenizer = new MemoryTextTokenizer(Json.AsMemory());
+            var tokenizer = new TextSpanTokenizer(Json);
             string firstName = null;
             string lastName = null;
             var age = 0;
 
             tokenizer.GetNextToken().Type.MustBe(JsonTokenType.BeginOfObject);
-            JsonTextToken currentToken;
+            JsonSpanToken currentToken;
             do
             {
                 currentToken = tokenizer.GetNextToken();
@@ -34,20 +34,20 @@ namespace Light.Json.Performance
                 var dependencyName = currentToken.Text;
                 tokenizer.GetNextToken().Type.MustBe(JsonTokenType.NameValueSeparator);
                 currentToken = tokenizer.GetNextToken();
-                if (dependencyName.EqualsSpan(nameof(firstName)))
+                if (dependencyName.Equals(nameof(firstName), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
                     firstName = currentToken.Text.ToString();
                 }
-                else if (dependencyName.EqualsSpan(nameof(lastName)))
+                else if (dependencyName.Equals(nameof(lastName), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
                     lastName = currentToken.Text.ToString();
                 }
-                else if (dependencyName.EqualsSpan(nameof(age)))
+                else if (dependencyName.Equals(nameof(age), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.IntegerNumber);
-                    age = int.Parse(currentToken.Text.First.Span);
+                    age = int.Parse(currentToken.Text);
                 }
                 else
                 {

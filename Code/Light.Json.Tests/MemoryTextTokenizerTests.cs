@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Buffers;
 using FluentAssertions;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Light.Json.Tests
 {
@@ -148,7 +146,7 @@ namespace Light.Json.Tests
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
+            var tokenizer = new TextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
@@ -181,7 +179,7 @@ namespace Light.Json.Tests
     78
 ]
 ";
-            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
+            var tokenizer = new TextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
@@ -216,7 +214,7 @@ namespace Light.Json.Tests
         30
     ]
 }";
-            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
+            var tokenizer = new TextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
@@ -238,9 +236,9 @@ namespace Light.Json.Tests
         private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
 
-        private static JsonTextToken GetSingleToken(string json)
+        private static JsonSpanToken GetSingleToken(string json)
         {
-            var tokenizer = new MemoryTextTokenizer(json.AsMemory());
+            var tokenizer = new TextSpanTokenizer(json);
 
             var token = tokenizer.GetNextToken();
 
@@ -250,38 +248,10 @@ namespace Light.Json.Tests
             return token;
         }
 
-        private static void ShouldEqual(this JsonTextToken token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonSpanToken token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Text.MustEqualSpan(expected);
+            token.Text.MustEqual(expected);
         }
-    }
-
-    public static class ReadOnlySequenceExtensions
-    {
-        public static void MustEqualSpan(in this ReadOnlySequence<char> sequence, ReadOnlySpan<char> span)
-        {
-            if (sequence.IsSingleSegment)
-            {
-                if (!sequence.First.Span.Equals(span, StringComparison.Ordinal))
-                    ThrowSequenceNotEqualToSpanException(sequence, span);
-
-                return;
-            }
-            
-            var enumerator = new ReadOnlySequenceItemEnumerator<char>(sequence);
-            char character;
-            for (var i = 0; i < span.Length; ++i)
-            {
-                if (!enumerator.TryGetNext(out character) || character != span[i])
-                    ThrowSequenceNotEqualToSpanException(sequence, span);
-            }
-
-            if (enumerator.TryGetNext(out character))
-                ThrowSequenceNotEqualToSpanException(sequence, span);
-        }
-
-        private static void ThrowSequenceNotEqualToSpanException(in this ReadOnlySequence<char> sequence, ReadOnlySpan<char> span) =>
-            throw new XunitException($"Expected \"{sequence.ToString()}\" to be equal to \"{span.ToString()}\", but it is not.");
     }
 }
