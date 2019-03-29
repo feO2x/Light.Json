@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Light.Json.Tests
 {
-    public static class MemoryTextTokenizerTests
+    public static class JsonTextSpanTokenizerTests
     {
         [Theory]
         [InlineData("\"Foo\"", "Foo")]
@@ -146,7 +146,7 @@ namespace Light.Json.Tests
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var tokenizer = new TextSpanTokenizer(json);
+            var tokenizer = new Json.JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
@@ -179,7 +179,7 @@ namespace Light.Json.Tests
     78
 ]
 ";
-            var tokenizer = new TextSpanTokenizer(json);
+            var tokenizer = new Json.JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
@@ -214,7 +214,7 @@ namespace Light.Json.Tests
         30
     ]
 }";
-            var tokenizer = new TextSpanTokenizer(json);
+            var tokenizer = new Json.JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
@@ -236,9 +236,9 @@ namespace Light.Json.Tests
         private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
 
-        private static JsonSpanToken GetSingleToken(string json)
+        private static JsonTextSpanToken GetSingleToken(string json)
         {
-            var tokenizer = new TextSpanTokenizer(json);
+            var tokenizer = new Json.JsonTextSpanTokenizer(json);
 
             var token = tokenizer.GetNextToken();
 
@@ -248,7 +248,7 @@ namespace Light.Json.Tests
             return token;
         }
 
-        private static void ShouldEqual(this JsonSpanToken token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonTextSpanToken token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
             token.Text.MustEqual(expected);

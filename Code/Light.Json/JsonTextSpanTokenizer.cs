@@ -3,7 +3,7 @@ using Light.GuardClauses;
 
 namespace Light.Json
 {
-    public ref struct TextSpanTokenizer
+    public ref struct JsonTextSpanTokenizer
     {
         private static readonly string NewLineCharacters = Environment.NewLine;
         private static readonly char NewLineFirstCharacter = NewLineCharacters[0];
@@ -12,7 +12,7 @@ namespace Light.Json
         private int _currentLine;
         private int _currentPosition;
 
-        public TextSpanTokenizer(ReadOnlySpan<char> json)
+        public JsonTextSpanTokenizer(ReadOnlySpan<char> json)
         {
             _json = json;
             _currentIndex = 0;
@@ -20,10 +20,10 @@ namespace Light.Json
             _currentPosition = 1;
         }
 
-        public JsonSpanToken GetNextToken()
+        public JsonTextSpanToken GetNextToken()
         {
             if (!TryReadNextCharacter(out var currentCharacter))
-                return new JsonSpanToken(JsonTokenType.EndOfDocument);
+                return new JsonTextSpanToken(JsonTokenType.EndOfDocument);
             switch (currentCharacter)
             {
                 case JsonTokenizerSymbols.StringDelimiter:
@@ -135,10 +135,10 @@ namespace Light.Json
             return false;
         }
 
-        private JsonSpanToken ReadSingleCharacter(JsonTokenType tokenType) =>
-            new JsonSpanToken(tokenType, _json.Slice(_currentIndex++, 1));
+        private JsonTextSpanToken ReadSingleCharacter(JsonTokenType tokenType) =>
+            new JsonTextSpanToken(tokenType, _json.Slice(_currentIndex++, 1));
 
-        private JsonSpanToken ReadNumber()
+        private JsonTextSpanToken ReadNumber()
         {
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
@@ -152,13 +152,13 @@ namespace Light.Json
                 break;
             }
 
-            var token = new JsonSpanToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            var token = new JsonTextSpanToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
             _currentPosition += token.Text.Length;
             return token;
         }
 
-        private JsonSpanToken ReadFloatingPointNumber(int decimalSymbolIndex)
+        private JsonTextSpanToken ReadFloatingPointNumber(int decimalSymbolIndex)
         {
             int i;
             for (i = decimalSymbolIndex + 1; i < _json.Length; i++)
@@ -171,13 +171,13 @@ namespace Light.Json
             if (i == decimalSymbolIndex + 1)
                 Throw($"Expected digit after decimal symbol in token \"{slicedSpan.ToString()}\" at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonSpanToken(JsonTokenType.FloatingPointNumber, slicedSpan);
+            var token = new JsonTextSpanToken(JsonTokenType.FloatingPointNumber, slicedSpan);
             _currentIndex = i;
             _currentPosition += slicedSpan.Length;
             return token;
         }
 
-        private JsonSpanToken ReadNegativeNumber()
+        private JsonTextSpanToken ReadNegativeNumber()
         {
             int i;
             for (i = _currentIndex + 1; i < _json.Length; ++i)
@@ -194,13 +194,13 @@ namespace Light.Json
             if (i == _currentIndex + 1)
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
-            var token = new JsonSpanToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
+            var token = new JsonTextSpanToken(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
             _currentPosition += token.Text.Length;
             return token;
         }
 
-        private JsonSpanToken ReadConstant(JsonTokenType type, string expectedTokenText)
+        private JsonTextSpanToken ReadConstant(JsonTokenType type, string expectedTokenText)
         {
             if (_currentIndex + expectedTokenText.Length > _json.Length)
                 ThrowInvalidConstant(expectedTokenText, _json.Slice(_currentIndex));
@@ -208,10 +208,10 @@ namespace Light.Json
             if (!slicedText.Equals(expectedTokenText.AsSpan(), StringComparison.Ordinal))
                 ThrowInvalidConstant(expectedTokenText, slicedText);
             _currentIndex += expectedTokenText.Length;
-            return new JsonSpanToken(type, slicedText);
+            return new JsonTextSpanToken(type, slicedText);
         }
 
-        private JsonSpanToken ReadString()
+        private JsonTextSpanToken ReadString()
         {
             var leftBoundedJson = _json.Slice(_currentIndex);
 
@@ -227,7 +227,7 @@ namespace Light.Json
                 var slicedSpan = leftBoundedJson.Slice(1, i - 1);
                 _currentIndex += slicedSpan.Length + 2;
                 _currentPosition += slicedSpan.Length + 2;
-                return new JsonSpanToken(JsonTokenType.String, slicedSpan);
+                return new JsonTextSpanToken(JsonTokenType.String, slicedSpan);
             }
 
             Throw($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
