@@ -4,24 +4,24 @@ using System.Runtime.CompilerServices;
 
 namespace Light.Json
 {
-    public readonly ref struct JsonSequenceToken
+    public readonly ref struct JsonTextSequenceToken
     {
         public readonly JsonTokenType Type;
         public readonly ReadOnlySequence<char> Text;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JsonSequenceToken(JsonTokenType type, ReadOnlyMemory<char> text) 
+        public JsonTextSequenceToken(JsonTokenType type, ReadOnlyMemory<char> text) 
             : this(type, text.ToSequence()) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JsonSequenceToken(JsonTokenType type, ReadOnlySequence<char> text = default)
+        public JsonTextSequenceToken(JsonTokenType type, ReadOnlySequence<char> text = default)
         {
             Type = type;
             Text = text;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(in JsonSequenceToken other)
+        public bool Equals(in JsonTextSequenceToken other)
         {
             if (Type != other.Type)
                 return false;
@@ -37,7 +37,7 @@ namespace Light.Json
             return EqualsOtherTokenSlow(other);
         }
 
-        private bool EqualsOtherTokenSlow(in JsonSequenceToken other)
+        private bool EqualsOtherTokenSlow(in JsonTextSequenceToken other)
         {
             var enumeratorForMe = new ReadOnlySequenceItemEnumerator<char>(Text);
             var enumeratorForOther = new ReadOnlySequenceItemEnumerator<char>(other.Text);
@@ -61,7 +61,7 @@ namespace Light.Json
         public override int GetHashCode() =>
             throw new NotSupportedException("ref structs do not support object.GetHashCode as they cannot live on the heap.");
 
-        public static bool operator ==(JsonSequenceToken x, JsonSequenceToken y) => x.Equals(y);
-        public static bool operator !=(JsonSequenceToken x, JsonSequenceToken y) => !x.Equals(y);
+        public static bool operator ==(JsonTextSequenceToken x, JsonTextSequenceToken y) => x.Equals(y);
+        public static bool operator !=(JsonTextSequenceToken x, JsonTextSequenceToken y) => !x.Equals(y);
     }
 }
