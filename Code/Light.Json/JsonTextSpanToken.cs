@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Light.Json.FrameworkExtensions;
 
 namespace Light.Json
 {
@@ -20,10 +21,11 @@ namespace Light.Json
             Type == other.Type && (Text == other.Text || Text.Equals(other.Text, StringComparison.Ordinal));
 
         public override bool Equals(object obj) =>
-            throw new NotSupportedException("Ref structs cannot be boxed on the heap.");
+            throw BoxingNotSupported.CreateException();
+
 
         public override int GetHashCode() =>
-            throw new NotSupportedException("Ref structs cannot be boxed on the heap.");
+            throw BoxingNotSupported.CreateException();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(JsonTextSpanToken x, JsonTextSpanToken y) => x.Equals(y);

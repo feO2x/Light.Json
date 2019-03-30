@@ -1,59 +1,24 @@
 ﻿using System;
-using System.Buffers;
 using System.Runtime.CompilerServices;
+using Light.Json.Streaming;
 
 namespace Light.Json
 {
     public readonly ref struct JsonTextSequenceToken
     {
         public readonly JsonTokenType Type;
-        public readonly ReadOnlySequence<char> Text;
+        public readonly TextBufferSequence TextBufferSequence;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JsonTextSequenceToken(JsonTokenType type, ReadOnlyMemory<char> text) 
-            : this(type, text.ToSequence()) { }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JsonTextSequenceToken(JsonTokenType type, ReadOnlySequence<char> text = default)
+        public JsonTextSequenceToken(JsonTokenType type, TextBufferSequence sequence)
         {
             Type = type;
-            Text = text;
+            TextBufferSequence = sequence;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(in JsonTextSequenceToken other)
-        {
-            if (Type != other.Type)
-                return false;
-
-            if (Text.IsSingleSegment && other.Text.IsSingleSegment)
-            {
-                var span1 = Text.First.Span;
-                var span2 = other.Text.First.Span;
-                return span1 == span2 ||
-                       span1.Equals(span2, StringComparison.Ordinal);
-            }
-
-            return EqualsOtherTokenSlow(other);
-        }
-
-        private bool EqualsOtherTokenSlow(in JsonTextSequenceToken other)
-        {
-            var enumeratorForMe = new ReadOnlySequenceItemEnumerator<char>(Text);
-            var enumeratorForOther = new ReadOnlySequenceItemEnumerator<char>(other.Text);
-
-            bool hasFoundMyCharacter;
-            bool hasFoundOtherCharacter;
-
-            while ((hasFoundMyCharacter = enumeratorForMe.TryGetNext(out var myCharacter)) & 
-                   (hasFoundOtherCharacter = enumeratorForOther.TryGetNext(out var otherCharacter)))
-            {
-                if (myCharacter != otherCharacter)
-                    return false;
-            }
-
-            return hasFoundMyCharacter == hasFoundOtherCharacter;
-        }
+        public bool Equals(in JsonTextSequenceToken other) =>
+            Type == other.Type && TextBufferSequence == other.TextBufferSequence;
 
         public override bool Equals(object obj) =>
             throw new NotSupportedException("ref structs do not support object.Equals as they cannot live on the heap.");
