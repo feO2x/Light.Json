@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Light.Json.Streaming;
 
-namespace Light.Json
+namespace Light.Json.Tokenization
 {
     public readonly ref struct JsonTextSequenceToken
     {

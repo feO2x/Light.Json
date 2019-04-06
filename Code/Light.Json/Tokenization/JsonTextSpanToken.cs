@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json
+namespace Light.Json.Tokenization
 {
     public readonly ref struct JsonTextSpanToken
     {

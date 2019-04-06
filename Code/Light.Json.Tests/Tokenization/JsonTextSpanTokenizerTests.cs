@@ -1,8 +1,9 @@
 ﻿using System;
 using FluentAssertions;
+using Light.Json.Tokenization;
 using Xunit;
 
-namespace Light.Json.Tests
+namespace Light.Json.Tests.Tokenization
 {
     public static class JsonTextSpanTokenizerTests
     {
@@ -146,7 +147,7 @@ namespace Light.Json.Tests
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var tokenizer = new Json.JsonTextSpanTokenizer(json);
+            var tokenizer = new JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
@@ -179,7 +180,7 @@ namespace Light.Json.Tests
     78
 ]
 ";
-            var tokenizer = new Json.JsonTextSpanTokenizer(json);
+            var tokenizer = new JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
@@ -214,7 +215,7 @@ namespace Light.Json.Tests
         30
     ]
 }";
-            var tokenizer = new Json.JsonTextSpanTokenizer(json);
+            var tokenizer = new JsonTextSpanTokenizer(json);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
@@ -238,7 +239,7 @@ namespace Light.Json.Tests
 
         private static JsonTextSpanToken GetSingleToken(string json)
         {
-            var tokenizer = new Json.JsonTextSpanTokenizer(json);
+            var tokenizer = new JsonTextSpanTokenizer(json);
 
             var token = tokenizer.GetNextToken();
 

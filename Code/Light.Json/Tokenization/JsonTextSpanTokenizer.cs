@@ -1,7 +1,7 @@
 ﻿using System;
 using Light.GuardClauses;
 
-namespace Light.Json
+namespace Light.Json.Tokenization
 {
     public ref struct JsonTextSpanTokenizer
     {

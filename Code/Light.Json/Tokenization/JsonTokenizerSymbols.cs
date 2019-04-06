@@ -1,4 +1,4 @@
-﻿namespace Light.Json
+﻿namespace Light.Json.Tokenization
 {
     public static class JsonTokenizerSymbols
     {

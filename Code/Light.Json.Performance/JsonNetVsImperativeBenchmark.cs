@@ -1,6 +1,7 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
 using Light.GuardClauses;
+using Light.Json.Tokenization;
 using Newtonsoft.Json;
 
 namespace Light.Json.Performance
