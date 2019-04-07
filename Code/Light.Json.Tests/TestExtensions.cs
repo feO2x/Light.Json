@@ -10,10 +10,20 @@ namespace Light.Json.Tests
         public static void MustEqual(in this ReadOnlySpan<char> span, in ReadOnlySpan<char> other)
         {
             if (!span.Equals(other, StringComparison.Ordinal))
-                ThrowSpanNotEqualToSpanException(span, other);
+                ThrowTextSpansNotEqualException(span, other);
         }
 
-        private static void ThrowSpanNotEqualToSpanException(in this ReadOnlySpan<char> span, ReadOnlySpan<char> other) =>
+        private static void ThrowTextSpansNotEqualException(in this ReadOnlySpan<char> span, in ReadOnlySpan<char> other) =>
             throw new XunitException($"Expected \"{span.ToString()}\" to be equal to \"{other.ToString()}\", but it is not.");
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MustEqual(in this ReadOnlySpan<byte> span, in ReadOnlySpan<byte> other)
+        {
+            if (!span.SequenceEqual(other))
+                ThrowByteSpansNotEqualException(span, other);
+        }
+
+        private static void ThrowByteSpansNotEqualException(in ReadOnlySpan<byte> span, in ReadOnlySpan<byte> other) =>
+            throw new XunitException($"Expected byte sequence \"{span.ToString()}\" to be equal to \"{other.ToString()}\", but it is not.");
     }
 }
