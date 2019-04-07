@@ -170,5 +170,19 @@ namespace Light.Json.Tests.Tokenization
             act.Should().Throw<ArgumentOutOfRangeException>()
                .And.ParamName.Should().Be("startIndex");
         }
+
+        [Theory]
+        [InlineData('a')]
+        [InlineData('A')]
+        [InlineData('1')]
+        [InlineData('\t')]
+        [InlineData(char.MaxValue)]
+        public static void EqualsUtf16Character(char utf16Character)
+        {
+            var bytes = Encoding.UTF8.GetBytes(new string(utf16Character, 1));
+            Utf8Char.TryParseNext(bytes, out var utf8Character);
+
+            utf8Character.Equals(utf16Character).Should().BeTrue();
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace Light.Json.Tests
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void MustBeDefault(this in Utf8Char character)
         {
-            if (!character.Equals(default))
+            if (!character.Equals(default(Utf8Char)))
                 ThrowValueNotDefault(character);
         }
 
