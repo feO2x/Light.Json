@@ -148,5 +148,27 @@ namespace Light.Json.Tests.Tokenization
             result.Should().Be(Utf8ParseResult.InsufficientBytes);
             character.MustBeDefault();
         }
+
+        [Fact]
+        public static void StartIndexTooLow()
+        {
+            var bytes = Encoding.UTF8.GetBytes("foo");
+
+            Action act = () => Utf8Char.TryParseNext(bytes, out _, -1);
+
+            act.Should().Throw<ArgumentOutOfRangeException>()
+               .And.ParamName.Should().Be("startIndex");
+        }
+
+        [Fact]
+        public static void StartIndexTooHigh()
+        {
+            var bytes = Encoding.UTF8.GetBytes("bar");
+
+            Action act = () => Utf8Char.TryParseNext(bytes, out _, bytes.Length);
+
+            act.Should().Throw<ArgumentOutOfRangeException>()
+               .And.ParamName.Should().Be("startIndex");
+        }
     }
 }

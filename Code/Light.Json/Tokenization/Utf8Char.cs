@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization
@@ -25,6 +26,9 @@ namespace Light.Json.Tokenization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Utf8ParseResult TryParseNext(in ReadOnlySpan<byte> source, out Utf8Char character, int startIndex = 0)
         {
+            startIndex.MustNotBeLessThan(0, nameof(startIndex))
+                      .MustNotBeGreaterThanOrEqualTo(source.Length, nameof(startIndex));
+
             // Most of the time, we expect single-byte UTF-8 characters.
             // Thus, we only perform a single check in this method and
             // inline it at the call site.
