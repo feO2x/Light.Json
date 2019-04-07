@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using FluentAssertions;
 using Light.Json.Tokenization;
 using Xunit;
@@ -108,7 +109,44 @@ namespace Light.Json.Tests.Tokenization
 
             bytes.Length.Should().Be(expectedLength);
             utf8Char.Span.MustEqual(bytes);
-            result.Should().BeTrue();
+            result.Should().Be(Utf8ParseResult.CharacterParsedSuccessfully);
+        }
+
+        [Fact]
+        public static void FollowUpByte()
+        {
+            // This byte cannot be the first byte of a UTF-8 character because 
+            // it starts with 10
+            var bytes = new byte[] { 0b1001_1101 };
+
+            var result = Utf8Char.TryParseNext(bytes, out var character);
+
+            result.Should().Be(Utf8ParseResult.InvalidStartIndex);
+            character.MustBeDefault();
+        }
+
+        [Fact]
+        public static void InvalidFirstByte()
+        {
+            // This byte has too many true bits at the beginning
+            var bytes = new byte[] { 0b1111_1110 };
+
+            var result = Utf8Char.TryParseNext(bytes, out var character);
+
+            result.Should().Be(Utf8ParseResult.InvalidFirstByte);
+            character.MustBeDefault();
+        }
+
+        [Fact]
+        public static void InsufficientBytes()
+        {
+            var fourByteCharacter = char.ConvertFromUtf32(1_114_111);
+            var bytes = Encoding.UTF8.GetBytes(fourByteCharacter);
+
+            var result = Utf8Char.TryParseNext(bytes.AsSpan().Slice(0, 3), out var character);
+
+            result.Should().Be(Utf8ParseResult.InsufficientBytes);
+            character.MustBeDefault();
         }
     }
 }

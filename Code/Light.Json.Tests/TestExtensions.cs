@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Light.GuardClauses.Exceptions;
+using Light.Json.Tokenization;
 using Xunit.Sdk;
 
 namespace Light.Json.Tests
@@ -25,5 +27,15 @@ namespace Light.Json.Tests
 
         private static void ThrowByteSpansNotEqualException(in ReadOnlySpan<byte> span, in ReadOnlySpan<byte> other) =>
             throw new XunitException($"Expected byte sequence \"{span.ToString()}\" to be equal to \"{other.ToString()}\", but it is not.");
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MustBeDefault(this in Utf8Char character)
+        {
+            if (!character.Equals(default))
+                ThrowValueNotDefault(character);
+        }
+
+        private static void ThrowValueNotDefault(in Utf8Char character) =>
+            throw new XunitException($"Expected  \"{character.ToString()}\" to be the default value, but it is not.");
     }
 }
