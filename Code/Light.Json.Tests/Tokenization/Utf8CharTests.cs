@@ -182,5 +182,21 @@ namespace Light.Json.Tests.Tokenization
 
             utf8Character.Equals(utf16Character).Should().BeTrue();
         }
+
+        [Theory]
+        [InlineData('a', 'b', false)]
+        [InlineData('C', 'C', true)]
+        [InlineData('d', 'D', false)]
+        [InlineData('x', 'x', true)]
+        public static void EqualsOperator(char x, char y, bool expectedResult)
+        {
+            var xBytes = Encoding.UTF8.GetBytes(new string(x, 1));
+            var yBytes = Encoding.UTF8.GetBytes(new string(y, 1));
+            Utf8Char.TryParseNext(xBytes, out var xUtf8Char);
+            Utf8Char.TryParseNext(yBytes, out var yUtf8Char);
+
+            (xUtf8Char == yUtf8Char).Should().Be(expectedResult);
+            (xUtf8Char != yUtf8Char).Should().Be(!expectedResult);
+        }
     }
 }

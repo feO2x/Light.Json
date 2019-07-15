@@ -130,5 +130,11 @@ namespace Light.Json.Tokenization
             Span.CopyTo(bytes.AsSpan());
             return Encoding.UTF8.GetString(bytes);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Utf8Char x, in Utf8Char y) => x.Equals(y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Utf8Char x, in Utf8Char y) => !x.Equals(y);
     }
 }
