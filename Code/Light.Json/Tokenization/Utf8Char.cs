@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization
@@ -10,7 +9,7 @@ namespace Light.Json.Tokenization
     {
         public readonly ReadOnlySpan<byte> Span;
 
-        private Utf8Char(ReadOnlySpan<byte> span) =>
+        private Utf8Char(in ReadOnlySpan<byte> span) =>
             Span = span;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,8 +59,11 @@ namespace Light.Json.Tokenization
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Utf8ParseResult TryParseNext(in ReadOnlySpan<byte> source, out Utf8Char character, int startIndex = 0)
         {
-            startIndex.MustNotBeLessThan(0, nameof(startIndex))
-                      .MustNotBeGreaterThanOrEqualTo(source.Length, nameof(startIndex));
+            if (startIndex < 0 || startIndex >= source.Length)
+            {
+                character = default;
+                return Utf8ParseResult.InvalidStartIndex;
+            }
 
             // Most of the time, we expect single-byte UTF-8 characters.
             // Thus, we only perform a single check in this method and
