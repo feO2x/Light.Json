@@ -12,6 +12,12 @@ namespace Light.Json.Tokenization
         private Utf8Char(in ReadOnlySpan<byte> span) =>
             Span = span;
 
+        public int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Span.Length;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(in Utf8Char other) =>
             Span.SequenceEqual(other.Span);
@@ -34,20 +40,40 @@ namespace Light.Json.Tokenization
             if (Span.Length == 0 || Span.Length == 4)
                 return false;
 
-            // If it's a three-byte or four-byte UTF-8 char, then we will convert the 
+            // If it's a two-byte or three-byte UTF-8 char, then we will convert the 
             // unicode bits to an int value and compare it to the character.
-            int value;
-            if (Span.Length == 2)
-            {
-                value = (Span[0] & 0b0001_1111) << 6; // Last 5 bits of first byte, moved to the left by 6 bits
-                value |= Span[1] & 0b0011_1111; // Last 6 bits of the second byte
+            if (TryConvertTwoByteCharacter(out var value) || TryConvertThreeByteCharacter(out value))
                 return value == other;
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryConvertTwoByteCharacter(out int utf16Result)
+        {
+            if (Span.Length != 2)
+            {
+                utf16Result = default;
+                return false;
             }
 
-            value = (Span[0] & 0b0000_1111) << 12; // Last 4 bits of the first byte, moved to the left by 12 bits
-            value |= (Span[1] & 0b0011_1111) << 6; // Last 6 bits of the second byte, moved to the left by 6 bits
-            value |= Span[2] & 0b0011_1111; // Last 6 bits of the third byte
-            return value == other;
+            utf16Result = (Span[0] & 0b0001_1111) << 6; // Last 5 bits of first byte, moved to the left by 6 bits
+            utf16Result |= Span[1] & 0b0011_1111; // Last 6 bits of the second byte
+            return true;
+        }
+
+        public bool TryConvertThreeByteCharacter(out int utf16Result)
+        {
+            if (Span.Length != 3)
+            {
+                utf16Result = default;
+                return false;
+            }
+
+            utf16Result = (Span[0] & 0b0000_1111) << 12; // Last 4 bits of the first byte, moved to the left by 12 bits
+            utf16Result |= (Span[1] & 0b0011_1111) << 6; // Last 6 bits of the second byte, moved to the left by 6 bits
+            utf16Result |= Span[2] & 0b0011_1111; // Last 6 bits of the third byte
+            return true;
         }
 
         public override bool Equals(object obj) =>
