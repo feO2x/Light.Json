@@ -35,6 +35,13 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void TokenizeTrue(string json) =>
             TestTokenizer(json, JsonSymbols.True, JsonTokenType.True);
 
+        [Theory]
+        [InlineData("null")]
+        [InlineData(" null")]
+        [InlineData("\tnull")]
+        public static void TokenizeNull(string json) =>
+            TestTokenizer(json, JsonSymbols.Null, JsonTokenType.Null);
+
         private static void TestTokenizer(string json, string expected, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expected.ToUtf8(), expectedTokenType);
 

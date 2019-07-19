@@ -41,6 +41,9 @@ namespace Light.Json.Tokenization.Utf8
             if (currentCharacter == JsonSymbols.TrueFirstCharacter)
                 return ReadConstant(JsonTokenType.True, Utf8Symbols.True.Span);
 
+            if (currentCharacter == JsonSymbols.NullFirstCharacter)
+                return ReadConstant(JsonTokenType.Null, Utf8Symbols.Null.Span);
+
             throw new NotImplementedException();
         }
 

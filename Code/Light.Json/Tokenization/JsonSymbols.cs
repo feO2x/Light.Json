@@ -30,7 +30,7 @@
         public const string False = "false";
         public const char TrueFirstCharacter = 't';
         public const string True = "true";
-        public const char NullStartCharacter = 'n';
+        public const char NullFirstCharacter = 'n';
         public const string Null = "null";
         public const char MinusSign = '-';
         public const char DecimalSymbol = '.';
