@@ -27,35 +27,35 @@ namespace Light.Json.Tests.Tokenization.Utf8
                 var theoryData = new TheoryData<char>();
 
                 // Single byte white space
-                theoryData.Add(UnicodeConstants.Space);
-                for (var character = UnicodeConstants.HorizontalTab; character <= UnicodeConstants.CarriageReturn; ++character)
+                theoryData.Add(JsonSymbols.Space);
+                for (var character = JsonSymbols.HorizontalTab; character <= JsonSymbols.CarriageReturn; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(UnicodeConstants.NoBreakSpace);
-                theoryData.Add(UnicodeConstants.NextLine);
+                theoryData.Add(JsonSymbols.NoBreakSpace);
+                theoryData.Add(JsonSymbols.NextLine);
 
                 // Two byte white spaces
-                theoryData.Add(UnicodeConstants.OghamSpaceMark);
-                for (var character = UnicodeConstants.EnQuad; character <= UnicodeConstants.HairSpace; ++character)
+                theoryData.Add(JsonSymbols.OghamSpaceMark);
+                for (var character = JsonSymbols.EnQuad; character <= JsonSymbols.HairSpace; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(UnicodeConstants.LineSeparator);
-                theoryData.Add(UnicodeConstants.ParagraphSeparator);
-                theoryData.Add(UnicodeConstants.NarrowNoBreakSpace);
-                theoryData.Add(UnicodeConstants.MediumMathematicalSpace);
-                theoryData.Add(UnicodeConstants.IdeographicSpace);
-                theoryData.Add(UnicodeConstants.MongolianVowelSeparator);
-                for (var character = UnicodeConstants.ZeroWidthSpace; character <= UnicodeConstants.ZeroWidthJoiner; ++character)
+                theoryData.Add(JsonSymbols.LineSeparator);
+                theoryData.Add(JsonSymbols.ParagraphSeparator);
+                theoryData.Add(JsonSymbols.NarrowNoBreakSpace);
+                theoryData.Add(JsonSymbols.MediumMathematicalSpace);
+                theoryData.Add(JsonSymbols.IdeographicSpace);
+                theoryData.Add(JsonSymbols.MongolianVowelSeparator);
+                for (var character = JsonSymbols.ZeroWidthSpace; character <= JsonSymbols.ZeroWidthJoiner; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(UnicodeConstants.WordJoiner);
-                theoryData.Add(UnicodeConstants.ZeroWidthNonBreakingSpace);
+                theoryData.Add(JsonSymbols.WordJoiner);
+                theoryData.Add(JsonSymbols.ZeroWidthNonBreakingSpace);
 
                 return theoryData;
             }

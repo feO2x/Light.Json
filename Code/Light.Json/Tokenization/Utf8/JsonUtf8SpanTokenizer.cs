@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Light.GuardClauses;
 
 namespace Light.Json.Tokenization.Utf8
@@ -31,8 +32,11 @@ namespace Light.Json.Tokenization.Utf8
             if (!TryReadNextCharacter(out var currentCharacter))
                 return new JsonUtf8SpanToken(JsonTokenType.EndOfDocument);
 
-            if (currentCharacter == UnicodeConstants.StringDelimiter)
+            if (currentCharacter == JsonSymbols.StringDelimiter)
                 return ReadString(currentCharacter);
+
+            if (currentCharacter == JsonSymbols.FalseFirstCharacter)
+                return ReadConstant(JsonTokenType.False, Utf8Symbols.False.Span);
 
             throw new NotImplementedException();
         }
@@ -45,8 +49,8 @@ namespace Light.Json.Tokenization.Utf8
 
             while (Utf8Char.TryParseNext(leftBoundJson, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
-                if (currentCharacter != UnicodeConstants.StringDelimiter ||
-                    previousCharacter == UnicodeConstants.EscapeCharacter)
+                if (currentCharacter != JsonSymbols.StringDelimiter ||
+                    previousCharacter == JsonSymbols.EscapeCharacter)
                 {
                     currentIndex += currentCharacter.Length;
                     previousCharacter = currentCharacter;
@@ -61,6 +65,18 @@ namespace Light.Json.Tokenization.Utf8
 
             Throw($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
             return default;
+        }
+        private JsonUtf8SpanToken ReadConstant(JsonTokenType type, in ReadOnlySpan<byte> expectedSymbol)
+        {
+            if (_currentIndex + expectedSymbol.Length > _json.Length)
+                ThrowInvalidConstant(expectedSymbol);
+            var slicedBytes = _json.Slice(_currentIndex, expectedSymbol.Length);
+            if (!slicedBytes.SequenceEqual(expectedSymbol))
+                ThrowInvalidConstant(expectedSymbol);
+
+            _currentIndex += expectedSymbol.Length;
+            _currentPosition += expectedSymbol.Length;
+            return new JsonUtf8SpanToken(type, slicedBytes);
         }
 
         private bool TryReadNextCharacter(out Utf8Char currentCharacter)
@@ -79,7 +95,7 @@ namespace Light.Json.Tokenization.Utf8
                 {
                     // Check if the character is the beginning of a single line comment.
                     // If not, it can be returned and processed.
-                    if (currentCharacter != UnicodeConstants.SingleLineCommentCharacter)
+                    if (currentCharacter != JsonSymbols.SingleLineCommentCharacter)
                         return true;
 
                     // If it is, then check if there is enough space for another slash.
@@ -92,7 +108,7 @@ namespace Light.Json.Tokenization.Utf8
                     // Else check if the next character is actually the second slash of a comment.
                     // If it is not, then return the slash as this will result in an exception
                     // reporting an unexpected character (as above).
-                    if (lookupCharacter != UnicodeConstants.SingleLineCommentCharacter)
+                    if (lookupCharacter != JsonSymbols.SingleLineCommentCharacter)
                         return true;
 
                     // Else we are in a single line comment until we find a new line
@@ -142,5 +158,8 @@ namespace Light.Json.Tokenization.Utf8
 
         private static void Throw(string message) =>
             throw new DeserializationException(message);
+
+        private void ThrowInvalidConstant(in ReadOnlySpan<byte> expectedSymbol) =>
+            throw new DeserializationException($"Expected symbol \"{Encoding.UTF8.GetString(expectedSymbol.ToArray())}\" at line {_currentLine} position {_currentPosition}.");
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Light.Json.Tokenization.Utf8
@@ -19,8 +20,8 @@ namespace Light.Json.Tokenization.Utf8
                 return utf8Char.IsWhiteSpaceSlow();
 
             var @byte = utf8Char.Span[0];
-            return @byte == UnicodeConstants.Space ||
-                   @byte >= UnicodeConstants.HorizontalTab && @byte <= UnicodeConstants.CarriageReturn;
+            return @byte == JsonSymbols.Space ||
+                   @byte >= JsonSymbols.HorizontalTab && @byte <= JsonSymbols.CarriageReturn;
         }
 
         private static bool IsWhiteSpaceSlow(this in Utf8Char utf8Char)
@@ -31,19 +32,19 @@ namespace Light.Json.Tokenization.Utf8
                 return false;
             }
 
-            return utf16Value == UnicodeConstants.NextLine ||
-                   utf16Value == UnicodeConstants.NoBreakSpace ||
-                   utf16Value == UnicodeConstants.OghamSpaceMark ||
-                   utf16Value >= UnicodeConstants.EnQuad && utf16Value <= UnicodeConstants.HairSpace ||
-                   utf16Value == UnicodeConstants.LineSeparator ||
-                   utf16Value == UnicodeConstants.ParagraphSeparator ||
-                   utf16Value == UnicodeConstants.NarrowNoBreakSpace ||
-                   utf16Value == UnicodeConstants.MediumMathematicalSpace ||
-                   utf16Value == UnicodeConstants.IdeographicSpace ||
-                   utf16Value == UnicodeConstants.MongolianVowelSeparator ||
-                   utf16Value >= UnicodeConstants.ZeroWidthSpace && utf16Value <= UnicodeConstants.ZeroWidthJoiner ||
-                   utf16Value == UnicodeConstants.WordJoiner ||
-                   utf16Value == UnicodeConstants.ZeroWidthNonBreakingSpace;
+            return utf16Value == JsonSymbols.NextLine ||
+                   utf16Value == JsonSymbols.NoBreakSpace ||
+                   utf16Value == JsonSymbols.OghamSpaceMark ||
+                   utf16Value >= JsonSymbols.EnQuad && utf16Value <= JsonSymbols.HairSpace ||
+                   utf16Value == JsonSymbols.LineSeparator ||
+                   utf16Value == JsonSymbols.ParagraphSeparator ||
+                   utf16Value == JsonSymbols.NarrowNoBreakSpace ||
+                   utf16Value == JsonSymbols.MediumMathematicalSpace ||
+                   utf16Value == JsonSymbols.IdeographicSpace ||
+                   utf16Value == JsonSymbols.MongolianVowelSeparator ||
+                   utf16Value >= JsonSymbols.ZeroWidthSpace && utf16Value <= JsonSymbols.ZeroWidthJoiner ||
+                   utf16Value == JsonSymbols.WordJoiner ||
+                   utf16Value == JsonSymbols.ZeroWidthNonBreakingSpace;
         }
     }
 }

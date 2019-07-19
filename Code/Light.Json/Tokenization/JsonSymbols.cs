@@ -1,6 +1,6 @@
 ﻿namespace Light.Json.Tokenization
 {
-    public static class UnicodeConstants
+    public static class JsonSymbols
     {
         // White Space
         public const char Space = '\x0020';
@@ -26,7 +26,7 @@
         // JSON symbols
         public const char StringDelimiter = '"';
         public const char EscapeCharacter = '\\';
-        public const char FalseStartCharacter = 'f';
+        public const char FalseFirstCharacter = 'f';
         public const string False = "false";
         public const char TrueStartCharacter = 't';
         public const string True = "true";

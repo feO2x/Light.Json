@@ -20,6 +20,14 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void TokenizeJsonString(string json, string expected) =>
             TestTokenizer(json, expected, JsonTokenType.String);
 
+        [Theory]
+        [InlineData("false")]
+        [InlineData(" false")]
+        [InlineData("false ")]
+        [InlineData("\tfalse")]
+        public static void TokenizeFalse(string json) =>
+            TestTokenizer(json, JsonSymbols.False, JsonTokenType.False);
+
         private static void TestTokenizer(string json, string expected, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expected.ToUtf8(), expectedTokenType);
 

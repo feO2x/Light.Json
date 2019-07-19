@@ -26,21 +26,21 @@ namespace Light.Json.Tests.Tokenization.Utf16
         [InlineData("false ")]
         [InlineData("\tfalse")]
         public static void TokenizeFalse(string json) =>
-            TestTokenizer(json, UnicodeConstants.False, JsonTokenType.False);
+            TestTokenizer(json, JsonSymbols.False, JsonTokenType.False);
 
         [Theory]
         [InlineData("true")]
         [InlineData("\ttrue")]
         [InlineData(" true")]
         public static void TokenizeTrue(string json) =>
-            TestTokenizer(json, UnicodeConstants.True, JsonTokenType.True);
+            TestTokenizer(json, JsonSymbols.True, JsonTokenType.True);
 
         [Theory]
         [InlineData("null")]
         [InlineData(" null")]
         [InlineData("\tnull")]
         public static void TokenizeNull(string json) =>
-            TestTokenizer(json, UnicodeConstants.Null, JsonTokenType.Null);
+            TestTokenizer(json, JsonSymbols.Null, JsonTokenType.Null);
 
         [Theory]
         [InlineData("42")]
