@@ -95,7 +95,7 @@ namespace Light.Json.Tokenization
                     continue;
                 }
 
-                // If the current Character is not a new line charter, advance position and index
+                // If the current Character is not a new line character, advance position and index
                 if (currentCharacter != NewLineFirstCharacter)
                 {
                     ++_currentIndex;

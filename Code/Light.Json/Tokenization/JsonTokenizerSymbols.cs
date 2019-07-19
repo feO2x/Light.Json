@@ -18,7 +18,6 @@
         public const char EndOfArray = ']';
         public const char EntrySeparator = ',';
         public const char NameValueSeparator = ':';
-        public const string SingleLineComment = "//";
         public const char SingleLineCommentCharacter = '/';
     }
 }

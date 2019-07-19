@@ -27,6 +27,9 @@ namespace Light.Json.Tokenization
             Span.SequenceEqual(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(byte other) => Span.Length == 1 && Span[0] == other;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(char other)
         {
             if (Span.Length == 1)
@@ -159,8 +162,28 @@ namespace Light.Json.Tokenization
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(in Utf8Char x, in Utf8Char y) => x.Equals(y);
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(in Utf8Char x, in Utf8Char y) => !x.Equals(y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Utf8Char x, char y) => x.Equals(y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Utf8Char x, char y) => !x.Equals(y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(char x, in Utf8Char y) => y.Equals(x);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(char x, in Utf8Char y) => !y.Equals(x);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in Utf8Char x, byte y) => x.Equals(y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in Utf8Char x, byte y) => !x.Equals(y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(byte x, in Utf8Char y) => y.Equals(x);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(byte x, in Utf8Char y) => !y.Equals(x);
     }
 }
