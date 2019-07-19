@@ -1,8 +1,9 @@
 ﻿using FluentAssertions;
 using Light.Json.Tokenization;
+using Light.Json.Tokenization.Utf8;
 using Xunit;
 
-namespace Light.Json.Tests.Tokenization
+namespace Light.Json.Tests.Tokenization.Utf8
 {
     public static class Utf8CharIsWhiteSpaceTests
     {
@@ -26,35 +27,35 @@ namespace Light.Json.Tests.Tokenization
                 var theoryData = new TheoryData<char>();
 
                 // Single byte white space
-                theoryData.Add(ImportantUnicode.Space);
-                for (var character = ImportantUnicode.HorizontalTab; character <= ImportantUnicode.CarriageReturn; ++character)
+                theoryData.Add(UnicodeConstants.Space);
+                for (var character = UnicodeConstants.HorizontalTab; character <= UnicodeConstants.CarriageReturn; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(ImportantUnicode.NoBreakSpace);
-                theoryData.Add(ImportantUnicode.NextLine);
+                theoryData.Add(UnicodeConstants.NoBreakSpace);
+                theoryData.Add(UnicodeConstants.NextLine);
 
                 // Two byte white spaces
-                theoryData.Add(ImportantUnicode.OghamSpaceMark);
-                for (var character = ImportantUnicode.EnQuad; character <= ImportantUnicode.HairSpace; ++character)
+                theoryData.Add(UnicodeConstants.OghamSpaceMark);
+                for (var character = UnicodeConstants.EnQuad; character <= UnicodeConstants.HairSpace; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(ImportantUnicode.LineSeparator);
-                theoryData.Add(ImportantUnicode.ParagraphSeparator);
-                theoryData.Add(ImportantUnicode.NarrowNoBreakSpace);
-                theoryData.Add(ImportantUnicode.MediumMathematicalSpace);
-                theoryData.Add(ImportantUnicode.IdeographicSpace);
-                theoryData.Add(ImportantUnicode.MongolianVowelSeparator);
-                for (var character = ImportantUnicode.ZeroWidthSpace; character <= ImportantUnicode.ZeroWidthJoiner; ++character)
+                theoryData.Add(UnicodeConstants.LineSeparator);
+                theoryData.Add(UnicodeConstants.ParagraphSeparator);
+                theoryData.Add(UnicodeConstants.NarrowNoBreakSpace);
+                theoryData.Add(UnicodeConstants.MediumMathematicalSpace);
+                theoryData.Add(UnicodeConstants.IdeographicSpace);
+                theoryData.Add(UnicodeConstants.MongolianVowelSeparator);
+                for (var character = UnicodeConstants.ZeroWidthSpace; character <= UnicodeConstants.ZeroWidthJoiner; ++character)
                 {
                     theoryData.Add(character);
                 }
 
-                theoryData.Add(ImportantUnicode.WordJoiner);
-                theoryData.Add(ImportantUnicode.ZeroWidthNonBreakingSpace);
+                theoryData.Add(UnicodeConstants.WordJoiner);
+                theoryData.Add(UnicodeConstants.ZeroWidthNonBreakingSpace);
 
                 return theoryData;
             }

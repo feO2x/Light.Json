@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Tokenization
+namespace Light.Json.Tokenization.Utf8
 {
     public readonly ref struct JsonUtf8SpanToken
     {

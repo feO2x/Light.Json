@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Tokenization
+namespace Light.Json.Tokenization.Utf8
 {
     public readonly ref struct Utf8Char
     {

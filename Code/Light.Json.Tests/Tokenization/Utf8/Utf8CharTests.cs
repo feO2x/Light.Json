@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text;
 using FluentAssertions;
-using Light.Json.Tokenization;
+using Light.Json.Tokenization.Utf8;
 using Xunit;
 
-namespace Light.Json.Tests.Tokenization
+namespace Light.Json.Tests.Tokenization.Utf8
 {
     public static class Utf8CharTests
     {

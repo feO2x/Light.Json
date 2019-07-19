@@ -1,7 +1,7 @@
 ﻿using System;
 using Light.GuardClauses;
 
-namespace Light.Json.Tokenization
+namespace Light.Json.Tokenization.Utf8
 {
     public ref struct JsonUtf8SpanTokenizer
     {
@@ -31,7 +31,7 @@ namespace Light.Json.Tokenization
             if (!TryReadNextCharacter(out var currentCharacter))
                 return new JsonUtf8SpanToken(JsonTokenType.EndOfDocument);
 
-            if (currentCharacter == ImportantUnicode.StringDelimiter)
+            if (currentCharacter == UnicodeConstants.StringDelimiter)
                 return ReadString(currentCharacter);
 
             throw new NotImplementedException();
@@ -45,8 +45,8 @@ namespace Light.Json.Tokenization
 
             while (Utf8Char.TryParseNext(leftBoundJson, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
-                if (currentCharacter != ImportantUnicode.StringDelimiter ||
-                    previousCharacter == ImportantUnicode.EscapeCharacter)
+                if (currentCharacter != UnicodeConstants.StringDelimiter ||
+                    previousCharacter == UnicodeConstants.EscapeCharacter)
                 {
                     currentIndex += currentCharacter.Length;
                     previousCharacter = currentCharacter;
@@ -79,7 +79,7 @@ namespace Light.Json.Tokenization
                 {
                     // Check if the character is the beginning of a single line comment.
                     // If not, it can be returned and processed.
-                    if (currentCharacter != ImportantUnicode.SingleLineCommentCharacter)
+                    if (currentCharacter != UnicodeConstants.SingleLineCommentCharacter)
                         return true;
 
                     // If it is, then check if there is enough space for another slash.
@@ -92,7 +92,7 @@ namespace Light.Json.Tokenization
                     // Else check if the next character is actually the second slash of a comment.
                     // If it is not, then return the slash as this will result in an exception
                     // reporting an unexpected character (as above).
-                    if (lookupCharacter != ImportantUnicode.SingleLineCommentCharacter)
+                    if (lookupCharacter != UnicodeConstants.SingleLineCommentCharacter)
                         return true;
 
                     // Else we are in a single line comment until we find a new line

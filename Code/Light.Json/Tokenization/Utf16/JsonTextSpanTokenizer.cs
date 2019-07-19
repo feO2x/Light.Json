@@ -1,7 +1,7 @@
 ﻿using System;
 using Light.GuardClauses;
 
-namespace Light.Json.Tokenization
+namespace Light.Json.Tokenization.Utf16
 {
     public ref struct JsonTextSpanTokenizer
     {
@@ -26,27 +26,27 @@ namespace Light.Json.Tokenization
                 return new JsonTextSpanToken(JsonTokenType.EndOfDocument);
             switch (currentCharacter)
             {
-                case JsonTokenizerSymbols.StringDelimiter:
+                case UnicodeConstants.StringDelimiter:
                     return ReadString();
-                case JsonTokenizerSymbols.FalseStartCharacter:
-                    return ReadConstant(JsonTokenType.False, JsonTokenizerSymbols.False);
-                case JsonTokenizerSymbols.TrueStartCharacter:
-                    return ReadConstant(JsonTokenType.True, JsonTokenizerSymbols.True);
-                case JsonTokenizerSymbols.NullStartCharacter:
-                    return ReadConstant(JsonTokenType.Null, JsonTokenizerSymbols.Null);
-                case JsonTokenizerSymbols.MinusSign:
+                case UnicodeConstants.FalseStartCharacter:
+                    return ReadConstant(JsonTokenType.False, UnicodeConstants.False);
+                case UnicodeConstants.TrueStartCharacter:
+                    return ReadConstant(JsonTokenType.True, UnicodeConstants.True);
+                case UnicodeConstants.NullStartCharacter:
+                    return ReadConstant(JsonTokenType.Null, UnicodeConstants.Null);
+                case UnicodeConstants.MinusSign:
                     return ReadNegativeNumber();
-                case JsonTokenizerSymbols.BeginOfObject:
+                case UnicodeConstants.BeginOfObject:
                     return ReadSingleCharacter(JsonTokenType.BeginOfObject);
-                case JsonTokenizerSymbols.EndOfObject:
+                case UnicodeConstants.EndOfObject:
                     return ReadSingleCharacter(JsonTokenType.EndOfObject);
-                case JsonTokenizerSymbols.BeginOfArray:
+                case UnicodeConstants.BeginOfArray:
                     return ReadSingleCharacter(JsonTokenType.BeginOfArray);
-                case JsonTokenizerSymbols.EndOfArray:
+                case UnicodeConstants.EndOfArray:
                     return ReadSingleCharacter(JsonTokenType.EndOfArray);
-                case JsonTokenizerSymbols.EntrySeparator:
+                case UnicodeConstants.EntrySeparator:
                     return ReadSingleCharacter(JsonTokenType.EntrySeparator);
-                case JsonTokenizerSymbols.NameValueSeparator:
+                case UnicodeConstants.NameValueSeparator:
                     return ReadSingleCharacter(JsonTokenType.NameValueSeparator);
             }
 
@@ -69,7 +69,7 @@ namespace Light.Json.Tokenization
                 {
                     // Check if the character is the beginning of a single line comment.
                     // If not, it can be returned and processed.
-                    if (currentCharacter != JsonTokenizerSymbols.SingleLineCommentCharacter)
+                    if (currentCharacter != UnicodeConstants.SingleLineCommentCharacter)
                         return true;
 
                     // If it is, then check if there is enough space for another slash.
@@ -82,7 +82,7 @@ namespace Light.Json.Tokenization
                     // If it is not, then return the slash as this will result in an exception
                     // reporting an unexpected character (as above).
                     currentCharacter = _json[_currentIndex + 1];
-                    if (currentCharacter != JsonTokenizerSymbols.SingleLineCommentCharacter)
+                    if (currentCharacter != UnicodeConstants.SingleLineCommentCharacter)
                     {
                         currentCharacter = '/';
                         return true;
@@ -147,7 +147,7 @@ namespace Light.Json.Tokenization
                 if (char.IsDigit(currentCharacter))
                     continue;
 
-                if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
+                if (currentCharacter == UnicodeConstants.DecimalSymbol)
                     return ReadFloatingPointNumber(i);
                 break;
             }
@@ -186,7 +186,7 @@ namespace Light.Json.Tokenization
                 if (char.IsDigit(currentCharacter))
                     continue;
 
-                if (currentCharacter == JsonTokenizerSymbols.DecimalSymbol)
+                if (currentCharacter == UnicodeConstants.DecimalSymbol)
                     return ReadFloatingPointNumber(i);
                 break;
             }
@@ -217,11 +217,11 @@ namespace Light.Json.Tokenization
 
             for (var i = 1; i < leftBoundedJson.Length; ++i)
             {
-                if (leftBoundedJson[i] != JsonTokenizerSymbols.StringDelimiter)
+                if (leftBoundedJson[i] != UnicodeConstants.StringDelimiter)
                     continue;
 
                 var previousIndex = i - 1;
-                if (previousIndex > 0 && leftBoundedJson[previousIndex] == JsonTokenizerSymbols.EscapeCharacter)
+                if (previousIndex > 0 && leftBoundedJson[previousIndex] == UnicodeConstants.EscapeCharacter)
                     continue;
 
                 var slicedSpan = leftBoundedJson.Slice(1, i - 1);

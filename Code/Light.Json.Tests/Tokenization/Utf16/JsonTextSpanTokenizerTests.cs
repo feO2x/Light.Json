@@ -1,9 +1,10 @@
 ﻿using System;
 using FluentAssertions;
 using Light.Json.Tokenization;
+using Light.Json.Tokenization.Utf16;
 using Xunit;
 
-namespace Light.Json.Tests.Tokenization
+namespace Light.Json.Tests.Tokenization.Utf16
 {
     public static class JsonTextSpanTokenizerTests
     {
@@ -25,21 +26,21 @@ namespace Light.Json.Tests.Tokenization
         [InlineData("false ")]
         [InlineData("\tfalse")]
         public static void TokenizeFalse(string json) =>
-            TestTokenizer(json, JsonTokenizerSymbols.False, JsonTokenType.False);
+            TestTokenizer(json, UnicodeConstants.False, JsonTokenType.False);
 
         [Theory]
         [InlineData("true")]
         [InlineData("\ttrue")]
         [InlineData(" true")]
         public static void TokenizeTrue(string json) =>
-            TestTokenizer(json, JsonTokenizerSymbols.True, JsonTokenType.True);
+            TestTokenizer(json, UnicodeConstants.True, JsonTokenType.True);
 
         [Theory]
         [InlineData("null")]
         [InlineData(" null")]
         [InlineData("\tnull")]
         public static void TokenizeNull(string json) =>
-            TestTokenizer(json, JsonTokenizerSymbols.Null, JsonTokenType.Null);
+            TestTokenizer(json, UnicodeConstants.Null, JsonTokenType.Null);
 
         [Theory]
         [InlineData("42")]

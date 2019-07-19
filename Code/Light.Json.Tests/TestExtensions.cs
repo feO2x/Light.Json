@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Light.GuardClauses.Exceptions;
 using Light.Json.Tokenization;
+using Light.Json.Tokenization.Utf8;
 using Xunit.Sdk;
 
 namespace Light.Json.Tests
