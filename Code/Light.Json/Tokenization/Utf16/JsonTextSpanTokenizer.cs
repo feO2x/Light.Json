@@ -30,7 +30,7 @@ namespace Light.Json.Tokenization.Utf16
                     return ReadString();
                 case JsonSymbols.FalseFirstCharacter:
                     return ReadConstant(JsonTokenType.False, JsonSymbols.False);
-                case JsonSymbols.TrueStartCharacter:
+                case JsonSymbols.TrueFirstCharacter:
                     return ReadConstant(JsonTokenType.True, JsonSymbols.True);
                 case JsonSymbols.NullStartCharacter:
                     return ReadConstant(JsonTokenType.Null, JsonSymbols.Null);
