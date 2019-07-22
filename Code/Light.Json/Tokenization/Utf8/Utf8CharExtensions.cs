@@ -46,5 +46,14 @@ namespace Light.Json.Tokenization.Utf8
                    utf16Value == JsonSymbols.WordJoiner ||
                    utf16Value == JsonSymbols.ZeroWidthNonBreakingSpace;
         }
+
+        public static bool IsDigit(this in Utf8Char utf8Char)
+        {
+            if (utf8Char.Length != 1)
+                return false;
+
+            var @byte = utf8Char.Span[0];
+            return @byte >= '0' && @byte <= '9';
+        }
     }
 }

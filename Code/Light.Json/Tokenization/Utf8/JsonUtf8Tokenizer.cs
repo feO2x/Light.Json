@@ -4,7 +4,7 @@ using Light.GuardClauses;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public ref struct JsonUtf8SpanTokenizer
+    public ref struct JsonUtf8Tokenizer
     {
         private static readonly byte[] NewLineCharacters = Environment.NewLine.ToUtf8();
         private static readonly byte NewLineFirstCharacter;
@@ -13,13 +13,13 @@ namespace Light.Json.Tokenization.Utf8
         private int _currentLine;
         private int _currentPosition;
 
-        static JsonUtf8SpanTokenizer()
+        static JsonUtf8Tokenizer()
         {
             Check.InvalidState(NewLineCharacters.Length < 1 || NewLineCharacters.Length > 2, @"The newline characters must be either 1 byte (\n) or 2 bytes long (\r\n).");
             NewLineFirstCharacter = NewLineCharacters[0];
         }
 
-        public JsonUtf8SpanTokenizer(in ReadOnlySpan<byte> json)
+        public JsonUtf8Tokenizer(in ReadOnlySpan<byte> json)
         {
             _json = json;
             _currentIndex = 0;
@@ -27,13 +27,19 @@ namespace Light.Json.Tokenization.Utf8
             _currentPosition = 0;
         }
 
-        public JsonUtf8SpanToken GetNextToken()
+        public JsonUtf8Token GetNextToken()
         {
             if (!TryReadNextCharacter(out var currentCharacter))
-                return new JsonUtf8SpanToken(JsonTokenType.EndOfDocument);
+                return new JsonUtf8Token(JsonTokenType.EndOfDocument);
 
             if (currentCharacter == JsonSymbols.StringDelimiter)
                 return ReadString(currentCharacter);
+
+            if (currentCharacter.IsDigit())
+                return ReadNumber();
+
+            if (currentCharacter == JsonSymbols.MinusSign)
+                return ReadNegativeNumber();
 
             if (currentCharacter == JsonSymbols.FalseFirstCharacter)
                 return ReadConstant(JsonTokenType.False, Utf8Symbols.False.Span);
@@ -47,7 +53,72 @@ namespace Light.Json.Tokenization.Utf8
             throw new NotImplementedException();
         }
 
-        private JsonUtf8SpanToken ReadString(Utf8Char previousCharacter)
+        private JsonUtf8Token ReadNegativeNumber()
+        {
+            var currentIndex = _currentIndex + 1;
+            while (Utf8Char.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            {
+                if (currentCharacter.IsDigit())
+                {
+                    ++currentIndex;
+                    continue;
+                }
+
+                if (currentCharacter == JsonSymbols.DecimalSymbol)
+                    return ReadFloatingPointNumber(currentIndex);
+                break;
+            }
+
+            if (currentIndex == _currentIndex + 1)
+                Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
+
+            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, currentIndex - _currentIndex));
+            _currentIndex += token.Text.Length;
+            _currentPosition += token.Text.Length;
+            return token;
+        }
+
+        private JsonUtf8Token ReadNumber()
+        {
+            var currentIndex = _currentIndex + 1;
+            while (Utf8Char.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            {
+                if (currentCharacter.IsDigit())
+                {
+                    ++currentIndex;
+                    continue;
+                }
+
+                if (currentCharacter == JsonSymbols.DecimalSymbol)
+                    return ReadFloatingPointNumber(currentIndex);
+                break;
+            }
+            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, currentIndex - _currentIndex));
+            _currentIndex += token.Text.Length;
+            _currentLine += token.Text.Length;
+            return token;
+        }
+
+        private JsonUtf8Token ReadFloatingPointNumber(int decimalSymbolIndex)
+        {
+            var currentIndex = decimalSymbolIndex + 1;
+            while (Utf8Char.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            {
+                if (!currentCharacter.IsDigit())
+                    break;
+            }
+
+            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
+            if (currentIndex == decimalSymbolIndex)
+                Throw($"Expected digit after decimal symbol at line {_currentLine} position {_currentPosition}.");
+
+            var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan);
+            _currentIndex += token.Text.Length;
+            _currentPosition += token.Text.Length;
+            return token;
+        }
+
+        private JsonUtf8Token ReadString(Utf8Char previousCharacter)
         {
             var leftBoundJson = _json.Slice(_currentIndex);
 
@@ -66,13 +137,13 @@ namespace Light.Json.Tokenization.Utf8
                 var slicedSpan = leftBoundJson.Slice(1, currentIndex - 1);
                 _currentIndex += slicedSpan.Length + 2;
                 _currentPosition += slicedSpan.Length + 2;
-                return new JsonUtf8SpanToken(JsonTokenType.String, slicedSpan);
+                return new JsonUtf8Token(JsonTokenType.String, slicedSpan);
             }
 
             Throw($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
             return default;
         }
-        private JsonUtf8SpanToken ReadConstant(JsonTokenType type, in ReadOnlySpan<byte> expectedSymbol)
+        private JsonUtf8Token ReadConstant(JsonTokenType type, in ReadOnlySpan<byte> expectedSymbol)
         {
             if (_currentIndex + expectedSymbol.Length > _json.Length)
                 ThrowInvalidConstant(expectedSymbol);
@@ -82,7 +153,7 @@ namespace Light.Json.Tokenization.Utf8
 
             _currentIndex += expectedSymbol.Length;
             _currentPosition += expectedSymbol.Length;
-            return new JsonUtf8SpanToken(type, slicedBytes);
+            return new JsonUtf8Token(type, slicedBytes);
         }
 
         private bool TryReadNextCharacter(out Utf8Char currentCharacter)

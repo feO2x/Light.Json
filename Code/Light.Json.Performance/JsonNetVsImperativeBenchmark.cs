@@ -22,13 +22,13 @@ namespace Light.Json.Performance
         [Benchmark]
         public Contact Imperative()
         {
-            var tokenizer = new JsonTextSpanTokenizer(Json);
+            var tokenizer = new JsonUtf16Tokenizer(Json);
             string firstName = null;
             string lastName = null;
             var age = 0;
 
             tokenizer.GetNextToken().Type.MustBe(JsonTokenType.BeginOfObject);
-            JsonTextSpanToken currentToken;
+            JsonUtf16Token currentToken;
             do
             {
                 currentToken = tokenizer.GetNextToken();

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf8
 {
-    public static class JsonUtf8SpanTokenizerTests
+    public static class JsonUtf8TokenizerTests
     {
         [Theory]
         [InlineData("\"Foo\"", "Foo")]
@@ -42,13 +42,29 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void TokenizeNull(string json) =>
             TestTokenizer(json, JsonSymbols.Null, JsonTokenType.Null);
 
+        [Theory]
+        [InlineData("42")]
+        [InlineData("8")]
+        [InlineData(" 1006")]
+        [InlineData("17853 ")]
+        [InlineData("\t-35")]
+        [InlineData("-108 ")]
+        [InlineData("0")]
+        [InlineData("-2147483648")]
+        [InlineData("2147483647")]
+        public static void TokenizeIntegerNumber(string json) =>
+            TestTokenizer(json, JsonTokenType.IntegerNumber);
+
+        private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
+            GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
+
         private static void TestTokenizer(string json, string expected, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(expected.ToUtf8(), expectedTokenType);
 
-        private static JsonUtf8SpanToken GetSingleToken(string json)
+        private static JsonUtf8Token GetSingleToken(string json)
         {
             var utf8Json = json.ToUtf8();
-            var tokenizer = new JsonUtf8SpanTokenizer(utf8Json);
+            var tokenizer = new JsonUtf8Tokenizer(utf8Json);
 
             var token = tokenizer.GetNextToken();
 
@@ -58,7 +74,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
             return token;
         }
 
-        private static void ShouldEqual(this JsonUtf8SpanToken token, ReadOnlySpan<byte> expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonUtf8Token token, ReadOnlySpan<byte> expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
             token.Text.MustEqual(expected);
