@@ -64,6 +64,21 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void TokenizeFloatingPointNumber(string numberAsJson) =>
             TestTokenizer(numberAsJson, JsonTokenType.FloatingPointNumber);
 
+        [Fact]
+        public static void TokenizeBeginOfObject() => TestTokenizer("{", JsonTokenType.BeginOfObject);
+
+        [Fact]
+        public static void TokenizeEndOfObject() => TestTokenizer("}", JsonTokenType.EndOfObject);
+
+        [Fact]
+        public static void TokenizeBeginOfArray() => TestTokenizer("[", JsonTokenType.BeginOfArray);
+
+        [Fact]
+        public static void TokenizeEndOfArray() => TestTokenizer("]", JsonTokenType.EndOfArray);
+
+        [Fact]
+        public static void TokenizeEntrySeparator() => TestTokenizer(",", JsonTokenType.EntrySeparator);
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
 

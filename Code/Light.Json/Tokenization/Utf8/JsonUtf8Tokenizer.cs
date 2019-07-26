@@ -50,7 +50,44 @@ namespace Light.Json.Tokenization.Utf8
             if (currentCharacter == JsonSymbols.NullFirstCharacter)
                 return ReadConstant(JsonTokenType.Null, Utf8Symbols.Null.Span);
 
+            if (currentCharacter == JsonSymbols.EntrySeparator)
+                return ReadSingleCharacter(JsonTokenType.EntrySeparator, currentCharacter);
+
+            if (currentCharacter == JsonSymbols.BeginOfObject)
+                return ReadSingleCharacter(JsonTokenType.BeginOfObject, currentCharacter);
+
+            if (currentCharacter == JsonSymbols.BeginOfArray)
+                return ReadSingleCharacter(JsonTokenType.BeginOfArray, currentCharacter);
+
+            if (currentCharacter == JsonSymbols.EndOfObject)
+                return ReadSingleCharacter(JsonTokenType.EndOfObject, currentCharacter);
+
+            if (currentCharacter == JsonSymbols.EndOfArray)
+                return ReadSingleCharacter(JsonTokenType.EndOfArray, currentCharacter);
+
             throw new NotImplementedException();
+        }
+
+        private JsonUtf8Token ReadNumber()
+        {
+            var currentIndex = _currentIndex + 1;
+            while (Utf8Char.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            {
+                if (currentCharacter.IsDigit())
+                {
+                    ++currentIndex;
+                    continue;
+                }
+
+                if (currentCharacter == JsonSymbols.DecimalSymbol)
+                    return ReadFloatingPointNumber(currentIndex);
+                break;
+            }
+
+            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, currentIndex - _currentIndex));
+            _currentIndex += token.Text.Length;
+            _currentLine += token.Text.Length;
+            return token;
         }
 
         private JsonUtf8Token ReadNegativeNumber()
@@ -75,27 +112,6 @@ namespace Light.Json.Tokenization.Utf8
             var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, currentIndex - _currentIndex));
             _currentIndex += token.Text.Length;
             _currentPosition += token.Text.Length;
-            return token;
-        }
-
-        private JsonUtf8Token ReadNumber()
-        {
-            var currentIndex = _currentIndex + 1;
-            while (Utf8Char.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
-            {
-                if (currentCharacter.IsDigit())
-                {
-                    ++currentIndex;
-                    continue;
-                }
-
-                if (currentCharacter == JsonSymbols.DecimalSymbol)
-                    return ReadFloatingPointNumber(currentIndex);
-                break;
-            }
-            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, currentIndex - _currentIndex));
-            _currentIndex += token.Text.Length;
-            _currentLine += token.Text.Length;
             return token;
         }
 
@@ -145,6 +161,7 @@ namespace Light.Json.Tokenization.Utf8
             Throw($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
             return default;
         }
+
         private JsonUtf8Token ReadConstant(JsonTokenType type, in ReadOnlySpan<byte> expectedSymbol)
         {
             if (_currentIndex + expectedSymbol.Length > _json.Length)
@@ -156,6 +173,13 @@ namespace Light.Json.Tokenization.Utf8
             _currentIndex += expectedSymbol.Length;
             _currentPosition += expectedSymbol.Length;
             return new JsonUtf8Token(type, slicedBytes);
+        }
+
+        private JsonUtf8Token ReadSingleCharacter(JsonTokenType tokenType, Utf8Char character)
+        {
+            _currentIndex += character.Length;
+            _currentPosition += character.Length;
+            return new JsonUtf8Token(tokenType, character.Span);
         }
 
         private bool TryReadNextCharacter(out Utf8Char currentCharacter)
