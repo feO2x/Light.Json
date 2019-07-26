@@ -55,6 +55,15 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void TokenizeIntegerNumber(string json) =>
             TestTokenizer(json, JsonTokenType.IntegerNumber);
 
+        [Theory]
+        [InlineData("42.75")]
+        [InlineData("  745237823932.472392")]
+        [InlineData("\t-150.2299")]
+        [InlineData("-0.2")]
+        [InlineData("0.7375 ")]
+        public static void TokenizeFloatingPointNumber(string numberAsJson) =>
+            TestTokenizer(numberAsJson, JsonTokenType.FloatingPointNumber);
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
 

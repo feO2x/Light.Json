@@ -106,12 +106,14 @@ namespace Light.Json.Tokenization.Utf8
             {
                 if (!currentCharacter.IsDigit())
                     break;
+
+                ++currentIndex;
             }
 
-            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
             if (currentIndex == decimalSymbolIndex)
                 Throw($"Expected digit after decimal symbol at line {_currentLine} position {_currentPosition}.");
 
+            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan);
             _currentIndex += token.Text.Length;
             _currentPosition += token.Text.Length;
