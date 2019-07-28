@@ -28,13 +28,13 @@ namespace Light.Json.Tests
             throw new XunitException($"Expected byte sequence \"{span.ToString()}\" to be equal to \"{other.ToString()}\", but it is not.");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MustBeDefault(this in Utf8Char character)
+        public static void MustBeDefault(this in Utf8Character character)
         {
-            if (!character.Equals(default(Utf8Char)))
+            if (!character.Equals(default(Utf8Character)))
                 ThrowValueNotDefault(character);
         }
 
-        private static void ThrowValueNotDefault(in Utf8Char character) =>
+        private static void ThrowValueNotDefault(in Utf8Character character) =>
             throw new XunitException($"Expected  \"{character.ToString()}\" to be the default value, but it is not.");
     }
 }

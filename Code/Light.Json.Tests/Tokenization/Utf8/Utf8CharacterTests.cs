@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf8
 {
-    public static class Utf8CharTests
+    public static class Utf8CharacterTests
     {
         [Theory]
         [MemberData(nameof(SingleByteCharacters))]
@@ -105,7 +105,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var bytes = Encoding.UTF8.GetBytes(character);
 
-            var result = Utf8Char.TryParseNext(bytes, out var utf8Char);
+            var result = Utf8Character.TryParseNext(bytes, out var utf8Char);
 
             bytes.Length.Should().Be(expectedLength);
             utf8Char.Span.MustEqual(bytes);
@@ -119,7 +119,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
             // it starts with 10
             var bytes = new byte[] { 0b1001_1101 };
 
-            var result = Utf8Char.TryParseNext(bytes, out var character);
+            var result = Utf8Character.TryParseNext(bytes, out var character);
 
             result.Should().Be(Utf8ParseResult.InvalidStartIndex);
             character.MustBeDefault();
@@ -131,9 +131,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
             // This byte has too many true bits at the beginning
             var bytes = new byte[] { 0b1111_1110 };
 
-            var result = Utf8Char.TryParseNext(bytes, out var character);
+            var result = Utf8Character.TryParseNext(bytes, out var character);
 
-            result.Should().Be(Utf8ParseResult.InvalidFirstByte);
+            result.Should().Be(Utf8ParseResult.ByteSequenceIsNotUtf8Compliant);
             character.MustBeDefault();
         }
 
@@ -143,7 +143,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
             var fourByteCharacter = char.ConvertFromUtf32(1_114_111);
             var bytes = Encoding.UTF8.GetBytes(fourByteCharacter);
 
-            var result = Utf8Char.TryParseNext(bytes.AsSpan().Slice(0, 3), out var character);
+            var result = Utf8Character.TryParseNext(bytes.AsSpan().Slice(0, 3), out var character);
 
             result.Should().Be(Utf8ParseResult.InsufficientBytes);
             character.MustBeDefault();
@@ -154,9 +154,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var bytes = Encoding.UTF8.GetBytes("foo");
 
-            var result = Utf8Char.TryParseNext(bytes, out _, -1);
+            var result = Utf8Character.TryParseNext(bytes, out _, -1);
 
-            result.Should().Be(Utf8ParseResult.InvalidStartIndex);
+            result.Should().Be(Utf8ParseResult.StartIndexOutOfBounds);
         }
 
         [Fact]
@@ -164,9 +164,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var bytes = Encoding.UTF8.GetBytes("bar");
 
-            var result = Utf8Char.TryParseNext(bytes, out _, bytes.Length);
+            var result = Utf8Character.TryParseNext(bytes, out _, bytes.Length);
 
-            result.Should().Be(Utf8ParseResult.InvalidStartIndex);
+            result.Should().Be(Utf8ParseResult.StartIndexOutOfBounds);
         }
 
         [Theory]
@@ -178,7 +178,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void EqualsUtf16Character(char utf16Character)
         {
             var bytes = Encoding.UTF8.GetBytes(new string(utf16Character, 1));
-            Utf8Char.TryParseNext(bytes, out var utf8Character);
+            Utf8Character.TryParseNext(bytes, out var utf8Character);
 
             utf8Character.Equals(utf16Character).Should().BeTrue();
         }
@@ -192,8 +192,8 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var xBytes = Encoding.UTF8.GetBytes(new string(x, 1));
             var yBytes = Encoding.UTF8.GetBytes(new string(y, 1));
-            Utf8Char.TryParseNext(xBytes, out var xUtf8Char);
-            Utf8Char.TryParseNext(yBytes, out var yUtf8Char);
+            Utf8Character.TryParseNext(xBytes, out var xUtf8Char);
+            Utf8Character.TryParseNext(yBytes, out var yUtf8Char);
 
             (xUtf8Char == yUtf8Char).Should().Be(expectedResult);
             (xUtf8Char != yUtf8Char).Should().Be(!expectedResult);

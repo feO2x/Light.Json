@@ -4,13 +4,13 @@ using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf8
 {
-    public static class Utf8CharIsDigitTests
+    public static class Utf8CharacterIsDigitTests
     {
         [Theory]
         [MemberData(nameof(IsDigitData))]
         public static void IsDigit(char character, bool expected)
         {
-            Utf8Char.TryParseNext(character.ToUtf8(), out var utf8Char);
+            Utf8Character.TryParseNext(character.ToUtf8(), out var utf8Char);
 
             utf8Char.IsDigit().Should().Be(expected);
         }

@@ -5,21 +5,21 @@ using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public readonly ref struct Utf8Char
+    public readonly ref struct Utf8Character
     {
         public readonly ReadOnlySpan<byte> Span;
 
-        private Utf8Char(in ReadOnlySpan<byte> span) =>
+        private Utf8Character(in ReadOnlySpan<byte> span) =>
             Span = span;
 
-        public int Length
+        public int ByteLength
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Span.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(in Utf8Char other) =>
+        public bool Equals(in Utf8Character other) =>
             Span.SequenceEqual(other.Span);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -45,14 +45,28 @@ namespace Light.Json.Tokenization.Utf8
 
             // If it's a two-byte or three-byte UTF-8 char, then we will convert the 
             // unicode bits to an int value and compare it to the character.
-            if (TryConvertTwoByteCharacter(out var value) || TryConvertThreeByteCharacter(out value))
+            if (TryConvertTwoByteCharacterToUtf16(out var value) || TryConvertThreeByteCharacterToUtf16(out value))
                 return value == other;
 
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryConvertTwoByteCharacter(out int utf16Result)
+        public bool TryConvertToUtf16Code(out int utf16Code)
+        {
+            if (Span.Length != 1)
+                return TryConvertToUtf16Slow(out utf16Code);
+
+            utf16Code = Span[0];
+            return true;
+        }
+
+        private bool TryConvertToUtf16Slow(out int utf16Code) =>
+            TryConvertTwoByteCharacterToUtf16(out utf16Code) || 
+            TryConvertThreeByteCharacterToUtf16(out utf16Code) ||
+            TryConvertFourByteCharacterToUtf16(out utf16Code);
+
+        public bool TryConvertTwoByteCharacterToUtf16(out int utf16Result)
         {
             if (Span.Length != 2)
             {
@@ -65,7 +79,7 @@ namespace Light.Json.Tokenization.Utf8
             return true;
         }
 
-        public bool TryConvertThreeByteCharacter(out int utf16Result)
+        public bool TryConvertThreeByteCharacterToUtf16(out int utf16Result)
         {
             if (Span.Length != 3)
             {
@@ -79,6 +93,47 @@ namespace Light.Json.Tokenization.Utf8
             return true;
         }
 
+        public bool TryConvertFourByteCharacterToUtf16(out int utf16Result)
+        {
+            if (Span.Length != 4)
+            {
+                utf16Result = default;
+                return false;
+            }
+
+            utf16Result  = (Span[0] & 0b0000_0111) << 18; // Last 3 bits of the first byte, moved to the left by 18 bits
+            utf16Result |= (Span[1] & 0b0011_1111) << 12; // Last 6 bits of the seconds byte, moved to the left by 12 bits
+            utf16Result |= (Span[2] & 0b0011_1111) << 6;  // Last 6 bits of the third byte, moved to the left by 6 bits
+            utf16Result |= (Span[3] & 0b0011_1111); // Last 6 bits of the fourth byte
+            return true;
+        }
+
+        public int CopyUtf16To(in Span<char> target, int startIndex)
+        {
+            if (startIndex < 0)
+                return 0;
+
+            if (!TryConvertToUtf16Code(out var utf16Code))
+                return 0;
+
+
+            if (utf16Code <= char.MaxValue)
+            {
+                if (startIndex >= target.Length)
+                    return 0;
+
+                target[startIndex] = (char) utf16Code;
+                return 1;
+            }
+
+            if (startIndex >= target.Length - 1)
+                return 0;
+
+            target[startIndex]     = (char) (utf16Code >> 16);
+            target[startIndex + 1] = (char) (utf16Code & 0xFFFF);
+            return 2;
+        }
+
         public override bool Equals(object obj) =>
             throw BoxingNotSupported.CreateException();
 
@@ -86,12 +141,12 @@ namespace Light.Json.Tokenization.Utf8
             throw BoxingNotSupported.CreateException();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Utf8ParseResult TryParseNext(in ReadOnlySpan<byte> source, out Utf8Char character, int startIndex = 0)
+        public static Utf8ParseResult TryParseNext(in ReadOnlySpan<byte> source, out Utf8Character character, int startIndex = 0)
         {
             if (startIndex < 0 || startIndex >= source.Length)
             {
                 character = default;
-                return Utf8ParseResult.InvalidStartIndex;
+                return Utf8ParseResult.StartIndexOutOfBounds;
             }
 
             // Most of the time, we expect single-byte UTF-8 characters.
@@ -99,7 +154,7 @@ namespace Light.Json.Tokenization.Utf8
             // inline it at the call site.
             if ((source[startIndex] & 0b1000_0000) == 0)
             {
-                character = new Utf8Char(source.Slice(startIndex, 1));
+                character = new Utf8Character(source.Slice(startIndex, 1));
                 return Utf8ParseResult.CharacterParsedSuccessfully;
             }
 
@@ -108,7 +163,7 @@ namespace Light.Json.Tokenization.Utf8
             return TryParseMultiByteCharacter(source, out character, startIndex);
         }
 
-        private static Utf8ParseResult TryParseMultiByteCharacter(in ReadOnlySpan<byte> source, out Utf8Char character, int startIndex)
+        private static Utf8ParseResult TryParseMultiByteCharacter(in ReadOnlySpan<byte> source, out Utf8Character character, int startIndex)
         {
             var firstByte = source[startIndex];
 
@@ -132,11 +187,11 @@ namespace Light.Json.Tokenization.Utf8
                 return Utf8ParseResult.InvalidStartIndex;
 
             // Else the first byte is not compliant to the UTF-8 standard
-            return Utf8ParseResult.InvalidFirstByte;
+            return Utf8ParseResult.ByteSequenceIsNotUtf8Compliant;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Utf8ParseResult TrySlice(in ReadOnlySpan<byte> source, out Utf8Char character, int startIndex, int length)
+        private static Utf8ParseResult TrySlice(in ReadOnlySpan<byte> source, out Utf8Character character, int startIndex, int length)
         {
             if (source.Length < startIndex + length)
             {
@@ -144,7 +199,7 @@ namespace Light.Json.Tokenization.Utf8
                 return Utf8ParseResult.InsufficientBytes;
             }
 
-            character = new Utf8Char(source.Slice(startIndex, length));
+            character = new Utf8Character(source.Slice(startIndex, length));
             return Utf8ParseResult.CharacterParsedSuccessfully;
         }
 
@@ -161,29 +216,29 @@ namespace Light.Json.Tokenization.Utf8
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(in Utf8Char x, in Utf8Char y) => x.Equals(y);
+        public static bool operator ==(in Utf8Character x, in Utf8Character y) => x.Equals(y);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(in Utf8Char x, in Utf8Char y) => !x.Equals(y);
+        public static bool operator !=(in Utf8Character x, in Utf8Character y) => !x.Equals(y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(in Utf8Char x, char y) => x.Equals(y);
+        public static bool operator ==(in Utf8Character x, char y) => x.Equals(y);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(in Utf8Char x, char y) => !x.Equals(y);
+        public static bool operator !=(in Utf8Character x, char y) => !x.Equals(y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(char x, in Utf8Char y) => y.Equals(x);
+        public static bool operator ==(char x, in Utf8Character y) => y.Equals(x);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(char x, in Utf8Char y) => !y.Equals(x);
+        public static bool operator !=(char x, in Utf8Character y) => !y.Equals(x);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(in Utf8Char x, byte y) => x.Equals(y);
+        public static bool operator ==(in Utf8Character x, byte y) => x.Equals(y);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(in Utf8Char x, byte y) => !x.Equals(y);
+        public static bool operator !=(in Utf8Character x, byte y) => !x.Equals(y);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(byte x, in Utf8Char y) => y.Equals(x);
+        public static bool operator ==(byte x, in Utf8Character y) => y.Equals(x);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(byte x, in Utf8Char y) => !y.Equals(x);
+        public static bool operator !=(byte x, in Utf8Character y) => !y.Equals(x);
     }
 }

@@ -5,6 +5,7 @@
         CharacterParsedSuccessfully,
         InvalidStartIndex,
         InsufficientBytes,
-        InvalidFirstByte
+        ByteSequenceIsNotUtf8Compliant,
+        StartIndexOutOfBounds
     }
 }

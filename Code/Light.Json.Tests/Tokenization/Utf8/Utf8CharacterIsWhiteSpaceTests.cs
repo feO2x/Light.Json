@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf8
 {
-    public static class Utf8CharIsWhiteSpaceTests
+    public static class Utf8CharacterIsWhiteSpaceTests
     {
         [Theory]
         [MemberData(nameof(UnicodeWhiteSpace))]
         public static void IsWhiteSpace(char whiteSpaceCharacter)
         {
             var utf8Bytes = whiteSpaceCharacter.ToUtf8();
-            Utf8Char.TryParseNext(utf8Bytes, out var utf8Char);
+            Utf8Character.TryParseNext(utf8Bytes, out var utf8Char);
 
             var result = utf8Char.IsWhiteSpace();
 
@@ -66,7 +66,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
         public static void IsNotWhiteSpace(char nonWhiteSpaceCharacter)
         {
             var utf8Bytes = nonWhiteSpaceCharacter.ToUtf8();
-            Utf8Char.TryParseNext(utf8Bytes, out var utf8Char);
+            Utf8Character.TryParseNext(utf8Bytes, out var utf8Char);
 
             var result = utf8Char.IsWhiteSpace();
 

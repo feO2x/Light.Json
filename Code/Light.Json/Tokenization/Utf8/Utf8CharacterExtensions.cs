@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public static class Utf8CharExtensions
+    public static class Utf8CharacterExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ToUtf8(this char character) => Encoding.UTF8.GetBytes(character.ToString());
@@ -13,20 +13,20 @@ namespace Light.Json.Tokenization.Utf8
 
         // White space characters were retrieved here: https://en.wikipedia.org/wiki/Whitespace_character
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWhiteSpace(this in Utf8Char utf8Char)
+        public static bool IsWhiteSpace(this in Utf8Character utf8Character)
         {
-            if (utf8Char.Length != 1)
-                return utf8Char.IsWhiteSpaceSlow();
+            if (utf8Character.ByteLength != 1)
+                return utf8Character.IsWhiteSpaceSlow();
 
-            var @byte = utf8Char.Span[0];
+            var @byte = utf8Character.Span[0];
             return @byte == JsonSymbols.Space ||
                    @byte >= JsonSymbols.HorizontalTab && @byte <= JsonSymbols.CarriageReturn;
         }
 
-        private static bool IsWhiteSpaceSlow(this in Utf8Char utf8Char)
+        private static bool IsWhiteSpaceSlow(this in Utf8Character utf8Character)
         {
-            if (!utf8Char.TryConvertTwoByteCharacter(out var utf16Value) &&
-                !utf8Char.TryConvertThreeByteCharacter(out utf16Value))
+            if (!utf8Character.TryConvertTwoByteCharacterToUtf16(out var utf16Value) &&
+                !utf8Character.TryConvertThreeByteCharacterToUtf16(out utf16Value))
             {
                 return false;
             }
@@ -46,12 +46,12 @@ namespace Light.Json.Tokenization.Utf8
                    utf16Value == JsonSymbols.ZeroWidthNonBreakingSpace;
         }
 
-        public static bool IsDigit(this in Utf8Char utf8Char)
+        public static bool IsDigit(this in Utf8Character utf8Character)
         {
-            if (utf8Char.Length != 1)
+            if (utf8Character.ByteLength != 1)
                 return false;
 
-            var @byte = utf8Char.Span[0];
+            var @byte = utf8Character.Span[0];
             return @byte >= '0' && @byte <= '9';
         }
     }

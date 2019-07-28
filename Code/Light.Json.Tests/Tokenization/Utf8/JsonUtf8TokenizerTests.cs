@@ -79,6 +79,25 @@ namespace Light.Json.Tests.Tokenization.Utf8
         [Fact]
         public static void TokenizeEntrySeparator() => TestTokenizer(",", JsonTokenType.EntrySeparator);
 
+        [Theory]
+        [InlineData("fals", "false", "fals", 1)]
+        [InlineData("\tfal", "false", "fal", 2)]
+        [InlineData("  fa", "false", "fa", 3)]
+        [InlineData("f", "false", "f", 1)]
+        [InlineData("tru", "true", "tru", 1)]
+        [InlineData("\ttr", "true", "tr", 2)]
+        [InlineData("    t", "true", "t", 5)]
+        [InlineData("nul", "null", "nul", 1)]
+        [InlineData("\tnu", "null", "nu", 2)]
+        [InlineData("   n", "null", "n", 4)]
+        public static void InvalidConstants(string invalidJson, string expectedToken, string invalidToken, int position)
+        {
+            Action act = () => GetSingleToken(invalidJson);
+
+            act.Should().ThrowExactly<DeserializationException>()
+               .And.Message.Should().Contain($"Expected token \"{expectedToken}\" but actually found \"{invalidToken}\" at line 1 position {position}.");
+        }
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
 
