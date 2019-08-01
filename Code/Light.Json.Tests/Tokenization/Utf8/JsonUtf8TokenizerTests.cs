@@ -98,6 +98,18 @@ namespace Light.Json.Tests.Tokenization.Utf8
                .And.Message.Should().Contain($"Expected token \"{expectedToken}\" but actually found \"{invalidToken}\" at line 1 position {position}.");
         }
 
+        [Theory]
+        [InlineData("-", 1)]
+        [InlineData("\t-f", 2)]
+        [InlineData("  -$", 3)]
+        public static void InvalidNegativeNumber(string invalidJson, int position)
+        {
+            Action act = () => GetSingleToken(invalidJson);
+
+            act.Should().ThrowExactly<DeserializationException>()
+               .And.Message.Should().Contain($"Expected digit after minus sign at line 1 position {position}.");
+        }
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
 
