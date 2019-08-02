@@ -126,7 +126,7 @@ namespace Light.Json.Tokenization.Utf8
                 ++currentIndex;
             }
 
-            if (currentIndex == decimalSymbolIndex)
+            if (currentIndex == decimalSymbolIndex + 1)
                 Throw($"Expected digit after decimal symbol at line {_currentLine} position {_currentPosition}.");
 
             var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
