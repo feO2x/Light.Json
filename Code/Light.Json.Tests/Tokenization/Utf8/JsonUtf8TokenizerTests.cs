@@ -125,10 +125,10 @@ namespace Light.Json.Tests.Tokenization.Utf8
         }
 
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(json.Trim().ToUtf8(), expectedTokenType);
+            GetSingleToken(json).ShouldEqual(json.Trim(), expectedTokenType);
 
         private static void TestTokenizer(string json, string expected, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(expected.ToUtf8(), expectedTokenType);
+            GetSingleToken(json).ShouldEqual(expected, expectedTokenType);
 
         private static JsonUtf8Token GetSingleToken(string json)
         {
@@ -139,14 +139,15 @@ namespace Light.Json.Tests.Tokenization.Utf8
 
             var secondToken = tokenizer.GetNextToken();
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
-            secondToken.Text.Length.Should().Be(0);
+            secondToken.ByteSequence.Length.Should().Be(0);
             return token;
         }
 
-        private static void ShouldEqual(this JsonUtf8Token token, ReadOnlySpan<byte> expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonUtf8Token token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Text.MustEqual(expected);
+            token.NumberOfCharacters.Should().Be(expected.Length);
+            token.ByteSequence.MustEqual(expected.ToUtf8());
         }
     }
 }
