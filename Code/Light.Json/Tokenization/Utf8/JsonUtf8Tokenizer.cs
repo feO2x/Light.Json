@@ -68,7 +68,7 @@ namespace Light.Json.Tokenization.Utf8
             if (currentCharacter == JsonSymbols.EndOfArray)
                 return ReadSingleCharacter(JsonTokenType.EndOfArray, currentCharacter);
 
-            throw new NotImplementedException();
+            throw new DeserializationException($"Unexpected character \"{currentCharacter.ToString()}\" at line {_currentLine} position {_currentPosition}.");
         }
 
         private JsonUtf8Token ReadNumber()
