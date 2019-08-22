@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using Light.GuardClauses;
+using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf8
 {
@@ -120,6 +120,7 @@ namespace Light.Json.Tokenization.Utf8
         private JsonUtf8Token ReadFloatingPointNumber(int decimalSymbolIndex)
         {
             var currentIndex = decimalSymbolIndex + 1;
+
             while (Utf8Character.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
                 if (!currentCharacter.IsDigit())
@@ -130,9 +131,8 @@ namespace Light.Json.Tokenization.Utf8
 
             if (currentIndex == decimalSymbolIndex + 1)
             {
-                var erroneousNumberInUtf8 = _json.Slice(_currentIndex, currentIndex - _currentIndex);
-                var erroneousNumber = Encoding.UTF8.GetString(erroneousNumberInUtf8.ToArray());
-                Throw($"Expected digit after decimal symbol in token \"{erroneousNumber}\" at line {_currentLine} position {_currentPosition}.");
+                var erroneousToken = GetErroneousTokenInUtf16();
+                Throw($"Expected digit after decimal symbol in \"{erroneousToken}\" at line {_currentLine} position {_currentPosition}.");
             }
 
             var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
@@ -303,5 +303,11 @@ namespace Light.Json.Tokenization.Utf8
 
             return currentUtf16Index == 0 ? null : new string(characterArray, 0, currentUtf16Index);
         }
+
+        public override bool Equals(object obj) =>
+            throw BoxingNotSupported.CreateException();
+
+        public override int GetHashCode() =>
+            throw BoxingNotSupported.CreateException();
     }
 }

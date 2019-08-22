@@ -111,17 +111,18 @@ namespace Light.Json.Tests.Tokenization.Utf8
         }
 
         [Theory]
-        [InlineData("15.z", "15.", 1)]
-        [InlineData("184583.", "184583.", 1)]
-        [InlineData("-42.§", "-42.", 1)]
-        [InlineData("  89.", "89.", 3)]
-        [InlineData("\t-321.p", "-321.", 2)]
-        public static void InvalidFloatingPointNumber(string invalidJson, string invalidToken, int position)
+        [InlineData("15.z", 1)]
+        [InlineData("184583.", 1)]
+        [InlineData("-42.§", 1)]
+        [InlineData("  89.", 3)]
+        [InlineData("\t-321.p", 2)]
+        [InlineData("-321.\t", 1)]
+        public static void InvalidFloatingPointNumber(string invalidJson, int position)
         {
             Action act = () => GetSingleToken(invalidJson);
 
             act.Should().ThrowExactly<DeserializationException>()
-               .And.Message.Should().Contain($"Expected digit after decimal symbol in token \"{invalidToken}\" at line 1 position {position}.");
+               .And.Message.Should().Contain($"Expected digit after decimal symbol in \"{invalidJson.TrimStart()}\" at line 1 position {position}.");
         }
 
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>

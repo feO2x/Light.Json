@@ -1,5 +1,6 @@
 ﻿using System;
 using Light.GuardClauses;
+using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf16
 {
@@ -167,14 +168,24 @@ namespace Light.Json.Tokenization.Utf16
                     break;
             }
 
-            var slicedSpan = _json.Slice(_currentIndex, i - _currentIndex);
             if (i == decimalSymbolIndex + 1)
-                Throw($"Expected digit after decimal symbol in token \"{slicedSpan.ToString()}\" at line {_currentLine} position {_currentPosition}.");
+            {
+                var erroneousToken = GetErroneousToken();
+                Throw($"Expected digit after decimal symbol in \"{erroneousToken}\" at line {_currentLine} position {_currentPosition}.");
+            }
 
+            var slicedSpan = _json.Slice(_currentIndex, i - _currentIndex);
             var token = new JsonUtf16Token(JsonTokenType.FloatingPointNumber, slicedSpan);
             _currentIndex = i;
             _currentPosition += slicedSpan.Length;
             return token;
+        }
+
+        private string GetErroneousToken()
+        {
+            var leftBoundJson = _json.Slice(_currentIndex);
+            var erroneousToken = leftBoundJson.Slice(0, Math.Min(40, leftBoundJson.Length));
+            return erroneousToken.ToString();
         }
 
         private JsonUtf16Token ReadNegativeNumber()
@@ -242,9 +253,9 @@ namespace Light.Json.Tokenization.Utf16
             throw new DeserializationException(message);
 
         public override bool Equals(object obj) =>
-            throw new NotSupportedException("ref structs do not support object.Equals as they cannot live on the heap.");
+            throw BoxingNotSupported.CreateException();
 
         public override int GetHashCode() =>
-            throw new NotSupportedException("ref structs do not support object.GetHashCode as they cannot live on the heap.");
+            throw BoxingNotSupported.CreateException();
     }
 }
