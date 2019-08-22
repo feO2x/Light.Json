@@ -8,7 +8,7 @@ namespace Light.Json.Tokenization.Utf8
     {
         private static readonly byte[] NewLineCharacters = Environment.NewLine.ToUtf8();
         private static readonly byte NewLineFirstCharacter;
-        private readonly ReadOnlySpan<byte> _json;
+        private readonly ReadOnlySpan<byte> _jsonInUtf8;
         private int _currentIndex;
         private int _currentLine;
         private int _currentPosition;
@@ -19,9 +19,9 @@ namespace Light.Json.Tokenization.Utf8
             NewLineFirstCharacter = NewLineCharacters[0];
         }
 
-        public JsonUtf8Tokenizer(in ReadOnlySpan<byte> json)
+        public JsonUtf8Tokenizer(in ReadOnlySpan<byte> jsonInUtf8)
         {
-            _json = json;
+            _jsonInUtf8 = jsonInUtf8;
             _currentIndex = 0;
             _currentLine = 1;
             _currentPosition = 1;
@@ -74,7 +74,7 @@ namespace Light.Json.Tokenization.Utf8
         private JsonUtf8Token ReadNumber()
         {
             var currentIndex = _currentIndex + 1;
-            while (Utf8Character.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            while (Utf8Character.TryParseNext(_jsonInUtf8, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
                 if (currentCharacter.IsDigit())
                 {
@@ -87,7 +87,7 @@ namespace Light.Json.Tokenization.Utf8
                 break;
             }
 
-            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length);
             _currentIndex += token.ByteSequence.Length;
             _currentLine += token.ByteSequence.Length;
@@ -97,7 +97,7 @@ namespace Light.Json.Tokenization.Utf8
         private JsonUtf8Token ReadNegativeNumber()
         {
             var currentIndex = _currentIndex + 1;
-            while (Utf8Character.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            while (Utf8Character.TryParseNext(_jsonInUtf8, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
                 if (currentCharacter.IsDigit())
                 {
@@ -113,7 +113,7 @@ namespace Light.Json.Tokenization.Utf8
             if (currentIndex == _currentIndex + 1)
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
-            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length);
             _currentIndex += token.ByteSequence.Length;
             _currentPosition += token.ByteSequence.Length;
@@ -124,7 +124,7 @@ namespace Light.Json.Tokenization.Utf8
         {
             var currentIndex = decimalSymbolIndex + 1;
 
-            while (Utf8Character.TryParseNext(_json, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            while (Utf8Character.TryParseNext(_jsonInUtf8, out var currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
             {
                 if (!currentCharacter.IsDigit())
                     break;
@@ -138,7 +138,7 @@ namespace Light.Json.Tokenization.Utf8
                 Throw($"Expected digit after decimal symbol in \"{erroneousToken}\" at line {_currentLine} position {_currentPosition}.");
             }
 
-            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan, slicedSpan.Length);
             _currentIndex += token.ByteSequence.Length;
             _currentPosition += token.ByteSequence.Length;
@@ -147,7 +147,7 @@ namespace Light.Json.Tokenization.Utf8
 
         private JsonUtf8Token ReadString(Utf8Character previousCharacter)
         {
-            var leftBoundJson = _json.Slice(_currentIndex);
+            var leftBoundJson = _jsonInUtf8.Slice(_currentIndex);
 
             var currentIndex = 1;
             var numberOfCharacters = 1;
@@ -175,9 +175,9 @@ namespace Light.Json.Tokenization.Utf8
 
         private JsonUtf8Token ReadConstant(JsonTokenType type, Utf8Constant expectedSymbol)
         {
-            if (_currentIndex + expectedSymbol.ByteLength > _json.Length)
+            if (_currentIndex + expectedSymbol.ByteLength > _jsonInUtf8.Length)
                 ThrowInvalidConstant(expectedSymbol);
-            var slicedBytes = _json.Slice(_currentIndex, expectedSymbol.ByteLength);
+            var slicedBytes = _jsonInUtf8.Slice(_currentIndex, expectedSymbol.ByteLength);
             if (!slicedBytes.SequenceEqual(expectedSymbol.ByteSequence.Span))
                 ThrowInvalidConstant(expectedSymbol);
 
@@ -197,9 +197,9 @@ namespace Light.Json.Tokenization.Utf8
         {
             // In this method, we search for the first character of the next token.
             var isInSingleLineComment = false;
-            while (_currentIndex < _json.Length)
+            while (_currentIndex < _jsonInUtf8.Length)
             {
-                var parseResult = Utf8Character.TryParseNext(_json, out currentCharacter, _currentIndex);
+                var parseResult = Utf8Character.TryParseNext(_jsonInUtf8, out currentCharacter, _currentIndex);
                 if (parseResult != Utf8ParseResult.CharacterParsedSuccessfully)
                     throw new DeserializationException($"The UTF8 JSON document could not be decoded because at index {_currentIndex} the UTF8 character is invalid.");
 
@@ -215,7 +215,7 @@ namespace Light.Json.Tokenization.Utf8
                     // If it is, then check if there is enough space for another slash.
                     // If not, then return the current character, as this will result
                     // in an exception reporting an unexpected character.
-                    parseResult = Utf8Character.TryParseNext(_json, out lookupCharacter, _currentIndex + currentCharacter.ByteLength);
+                    parseResult = Utf8Character.TryParseNext(_jsonInUtf8, out lookupCharacter, _currentIndex + currentCharacter.ByteLength);
                     if (parseResult != Utf8ParseResult.CharacterParsedSuccessfully)
                         return true;
 
@@ -250,7 +250,7 @@ namespace Light.Json.Tokenization.Utf8
                 }
 
                 // Handle \r\n new line characters
-                parseResult = Utf8Character.TryParseNext(_json, out lookupCharacter, _currentIndex + 1);
+                parseResult = Utf8Character.TryParseNext(_jsonInUtf8, out lookupCharacter, _currentIndex + 1);
                 if (parseResult != Utf8ParseResult.CharacterParsedSuccessfully)
                 {
                     currentCharacter = default;
@@ -290,9 +290,9 @@ namespace Light.Json.Tokenization.Utf8
 
             var currentUtf8Index = _currentIndex;
 
-            while (currentUtf8Index < _json.Length)
+            while (currentUtf8Index < _jsonInUtf8.Length)
             {
-                var parseResult = Utf8Character.TryParseNext(_json, out var utf8Character, currentUtf8Index);
+                var parseResult = Utf8Character.TryParseNext(_jsonInUtf8, out var utf8Character, currentUtf8Index);
                 if (parseResult != Utf8ParseResult.CharacterParsedSuccessfully)
                     break;
 
