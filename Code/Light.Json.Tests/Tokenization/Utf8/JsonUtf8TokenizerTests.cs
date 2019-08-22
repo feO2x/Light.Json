@@ -125,6 +125,10 @@ namespace Light.Json.Tests.Tokenization.Utf8
                .And.Message.Should().Contain($"Expected digit after decimal symbol in \"{invalidJson.TrimStart()}\" at line 1 position {position}.");
         }
 
+        [Fact]
+        public static void TokenizeNameValueSeparator() =>
+            TestTokenizer(":", JsonTokenType.NameValueSeparator);
+
         private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
             GetSingleToken(json).ShouldEqual(json.Trim(), expectedTokenType);
 

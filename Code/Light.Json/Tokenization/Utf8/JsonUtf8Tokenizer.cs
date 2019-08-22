@@ -53,6 +53,9 @@ namespace Light.Json.Tokenization.Utf8
             if (currentCharacter == JsonSymbols.EntrySeparator)
                 return ReadSingleCharacter(JsonTokenType.EntrySeparator, currentCharacter);
 
+            if (currentCharacter == JsonSymbols.NameValueSeparator)
+                return ReadSingleCharacter(JsonTokenType.NameValueSeparator, currentCharacter);
+
             if (currentCharacter == JsonSymbols.BeginOfObject)
                 return ReadSingleCharacter(JsonTokenType.BeginOfObject, currentCharacter);
 
