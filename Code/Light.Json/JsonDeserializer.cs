@@ -26,4 +26,20 @@ namespace Light.Json
             return genericParser.ParseGeneric(context);
         }
     }
+
+    public sealed class RuntimeJsonSerializerBuilder
+    {
+        private readonly List<Type> _typesToSerialize = new List<Type>();
+
+        public RuntimeJsonSerializerBuilder RegisterType(Type typeToSerialize)
+        {
+            _typesToSerialize.Add(typeToSerialize.MustNotBeNull(nameof(typeToSerialize)));
+            return this;
+        }
+
+        public JsonDeserializer Build()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
