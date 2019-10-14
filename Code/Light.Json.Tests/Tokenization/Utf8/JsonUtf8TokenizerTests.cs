@@ -251,15 +251,15 @@ namespace Light.Json.Tests.Tokenization.Utf8
 
             var secondToken = tokenizer.GetNextToken();
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
-            secondToken.ByteSequence.Length.Should().Be(0);
+            secondToken.Memory.Length.Should().Be(0);
             return token;
         }
 
         private static void ShouldEqual(this JsonUtf8Token token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.NumberOfCharacters.Should().Be(expected.Length);
-            token.ByteSequence.MustEqual(expected.ToUtf8());
+            token.Length.Should().Be(expected.Length);
+            token.Memory.Span.MustEqual(expected.ToUtf8());
         }
     }
 }

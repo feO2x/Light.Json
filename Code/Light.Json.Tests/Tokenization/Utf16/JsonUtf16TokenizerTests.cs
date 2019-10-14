@@ -149,7 +149,7 @@ namespace Light.Json.Tests.Tokenization.Utf16
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var tokenizer = new JsonUtf16Tokenizer(json);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
@@ -182,7 +182,7 @@ namespace Light.Json.Tests.Tokenization.Utf16
     78
 ]
 ";
-            var tokenizer = new JsonUtf16Tokenizer(json);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
@@ -217,7 +217,7 @@ namespace Light.Json.Tests.Tokenization.Utf16
         30
     ]
 }";
-            var tokenizer = new JsonUtf16Tokenizer(json);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
@@ -241,20 +241,20 @@ namespace Light.Json.Tests.Tokenization.Utf16
 
         private static JsonUtf16Token GetSingleToken(string json)
         {
-            var tokenizer = new JsonUtf16Tokenizer(json);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             var token = tokenizer.GetNextToken();
 
             var secondToken = tokenizer.GetNextToken();
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
-            secondToken.Text.Length.Should().Be(0);
+            secondToken.Memory.Length.Should().Be(0);
             return token;
         }
 
         private static void ShouldEqual(this JsonUtf16Token token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Text.MustEqual(expected);
+            token.Memory.Span.MustEqual(expected);
         }
     }
 }

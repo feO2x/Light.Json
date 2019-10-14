@@ -4,16 +4,16 @@ using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf16
 {
-    public ref struct JsonUtf16Tokenizer
+    public struct JsonUtf16Tokenizer
     {
         private static readonly string NewLineCharacters = Environment.NewLine;
         private static readonly char NewLineFirstCharacter = NewLineCharacters[0];
-        private readonly ReadOnlySpan<char> _json;
+        private readonly ReadOnlyMemory<char> _json;
         private int _currentIndex;
         private int _currentLine;
         private int _currentPosition;
 
-        public JsonUtf16Tokenizer(ReadOnlySpan<char> json)
+        public JsonUtf16Tokenizer(ReadOnlyMemory<char> json)
         {
             _json = json;
             _currentIndex = 0;
@@ -23,20 +23,21 @@ namespace Light.Json.Tokenization.Utf16
 
         public JsonUtf16Token GetNextToken()
         {
-            if (!TryReadNextCharacter(out var currentCharacter))
+            var json = _json.Span;
+            if (!TryReadNextCharacter(json, out var currentCharacter))
                 return new JsonUtf16Token(JsonTokenType.EndOfDocument);
             switch (currentCharacter)
             {
                 case JsonSymbols.StringDelimiter:
                     return ReadString();
                 case JsonSymbols.FalseFirstCharacter:
-                    return ReadConstant(JsonTokenType.False, JsonSymbols.False);
+                    return ReadConstant(json, JsonTokenType.False, JsonSymbols.False);
                 case JsonSymbols.TrueFirstCharacter:
-                    return ReadConstant(JsonTokenType.True, JsonSymbols.True);
+                    return ReadConstant(json, JsonTokenType.True, JsonSymbols.True);
                 case JsonSymbols.NullFirstCharacter:
-                    return ReadConstant(JsonTokenType.Null, JsonSymbols.Null);
+                    return ReadConstant(json, JsonTokenType.Null, JsonSymbols.Null);
                 case JsonSymbols.MinusSign:
-                    return ReadNegativeNumber();
+                    return ReadNegativeNumber(json);
                 case JsonSymbols.BeginOfObject:
                     return ReadSingleCharacter(JsonTokenType.BeginOfObject);
                 case JsonSymbols.EndOfObject:
@@ -52,18 +53,18 @@ namespace Light.Json.Tokenization.Utf16
             }
 
             if (char.IsDigit(currentCharacter))
-                return ReadNumber();
+                return ReadNumber(json);
 
             throw new DeserializationException($"Unexpected character \"{currentCharacter}\" at line {_currentLine} position {_currentPosition}.");
         }
 
-        private bool TryReadNextCharacter(out char currentCharacter)
+        private bool TryReadNextCharacter(ReadOnlySpan<char> json, out char currentCharacter)
         {
             // In this method, we search for the first character of the next token.
             var isInSingleLineComment = false;
-            while (_currentIndex < _json.Length)
+            while (_currentIndex < json.Length)
             {
-                currentCharacter = _json[_currentIndex];
+                currentCharacter = json[_currentIndex];
 
                 // If the current character is not white space and we are not in a single line comment, then return it
                 if (!currentCharacter.IsWhiteSpace() && !isInSingleLineComment)
@@ -82,7 +83,7 @@ namespace Light.Json.Tokenization.Utf16
                     // Else check if the next character is actually the second slash of a comment.
                     // If it is not, then return the slash as this will result in an exception
                     // reporting an unexpected character (as above).
-                    currentCharacter = _json[_currentIndex + 1];
+                    currentCharacter = json[_currentIndex + 1];
                     if (currentCharacter != JsonSymbols.SingleLineCommentCharacter)
                     {
                         currentCharacter = '/';
@@ -121,7 +122,7 @@ namespace Light.Json.Tokenization.Utf16
                     return false;
                 }
 
-                currentCharacter = _json[++_currentIndex];
+                currentCharacter = json[++_currentIndex];
                 ++_currentPosition;
                 if (currentCharacter == NewLineCharacters[1])
                 {
@@ -139,32 +140,32 @@ namespace Light.Json.Tokenization.Utf16
         private JsonUtf16Token ReadSingleCharacter(JsonTokenType tokenType) =>
             new JsonUtf16Token(tokenType, _json.Slice(_currentIndex++, 1));
 
-        private JsonUtf16Token ReadNumber()
+        private JsonUtf16Token ReadNumber(ReadOnlySpan<char> json)
         {
             int i;
-            for (i = _currentIndex + 1; i < _json.Length; ++i)
+            for (i = _currentIndex + 1; i < json.Length; ++i)
             {
-                var currentCharacter = _json[i];
+                var currentCharacter = json[i];
                 if (char.IsDigit(currentCharacter))
                     continue;
 
                 if (currentCharacter == JsonSymbols.DecimalSymbol)
-                    return ReadFloatingPointNumber(i);
+                    return ReadFloatingPointNumber(json, i);
                 break;
             }
 
             var token = new JsonUtf16Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
-            _currentPosition += token.Text.Length;
+            _currentPosition += token.Length;
             return token;
         }
 
-        private JsonUtf16Token ReadFloatingPointNumber(int decimalSymbolIndex)
+        private JsonUtf16Token ReadFloatingPointNumber(ReadOnlySpan<char> json, int decimalSymbolIndex)
         {
             int i;
-            for (i = decimalSymbolIndex + 1; i < _json.Length; ++i)
+            for (i = decimalSymbolIndex + 1; i < json.Length; ++i)
             {
-                if (!char.IsDigit(_json[i]))
+                if (!char.IsDigit(json[i]))
                     break;
             }
 
@@ -188,17 +189,17 @@ namespace Light.Json.Tokenization.Utf16
             return erroneousToken.ToString();
         }
 
-        private JsonUtf16Token ReadNegativeNumber()
+        private JsonUtf16Token ReadNegativeNumber(ReadOnlySpan<char> json)
         {
             int i;
-            for (i = _currentIndex + 1; i < _json.Length; ++i)
+            for (i = _currentIndex + 1; i < json.Length; ++i)
             {
-                var currentCharacter = _json[i];
+                var currentCharacter = json[i];
                 if (char.IsDigit(currentCharacter))
                     continue;
 
                 if (currentCharacter == JsonSymbols.DecimalSymbol)
-                    return ReadFloatingPointNumber(i);
+                    return ReadFloatingPointNumber(json, i);
                 break;
             }
 
@@ -207,17 +208,17 @@ namespace Light.Json.Tokenization.Utf16
 
             var token = new JsonUtf16Token(JsonTokenType.IntegerNumber, _json.Slice(_currentIndex, i - _currentIndex));
             _currentIndex = i;
-            _currentPosition += token.Text.Length;
+            _currentPosition += token.Length;
             return token;
         }
 
-        private JsonUtf16Token ReadConstant(JsonTokenType type, string expectedSymbol)
+        private JsonUtf16Token ReadConstant(ReadOnlySpan<char> json, JsonTokenType type, string expectedSymbol)
         {
             if (_currentIndex + expectedSymbol.Length > _json.Length)
-                ThrowInvalidConstant(expectedSymbol, _json.Slice(_currentIndex));
+                ThrowInvalidConstant(expectedSymbol, json.Slice(_currentIndex));
             var slicedText = _json.Slice(_currentIndex, expectedSymbol.Length);
-            if (!slicedText.Equals(expectedSymbol.AsSpan(), StringComparison.Ordinal))
-                ThrowInvalidConstant(expectedSymbol, slicedText);
+            if (!slicedText.Span.Equals(expectedSymbol.AsSpan(), StringComparison.Ordinal))
+                ThrowInvalidConstant(expectedSymbol, slicedText.Span);
             _currentIndex += expectedSymbol.Length;
             _currentPosition += expectedSymbol.Length;
             return new JsonUtf16Token(type, slicedText);
@@ -226,14 +227,14 @@ namespace Light.Json.Tokenization.Utf16
         private JsonUtf16Token ReadString()
         {
             var leftBoundedJson = _json.Slice(_currentIndex);
-
-            for (var i = 1; i < leftBoundedJson.Length; ++i)
+            var leftBoundedJsonSpan = leftBoundedJson.Span;
+            for (var i = 1; i < leftBoundedJsonSpan.Length; ++i)
             {
-                if (leftBoundedJson[i] != JsonSymbols.StringDelimiter)
+                if (leftBoundedJsonSpan[i] != JsonSymbols.StringDelimiter)
                     continue;
 
                 var previousIndex = i - 1;
-                if (previousIndex > 0 && leftBoundedJson[previousIndex] == JsonSymbols.EscapeCharacter)
+                if (previousIndex > 0 && leftBoundedJsonSpan[previousIndex] == JsonSymbols.EscapeCharacter)
                     continue;
 
                 var slicedSpan = leftBoundedJson.Slice(1, i - 1);

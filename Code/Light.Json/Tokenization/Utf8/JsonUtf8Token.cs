@@ -1,34 +1,59 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using Light.GuardClauses.Exceptions;
 using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public readonly ref struct JsonUtf8Token
+    public readonly struct JsonUtf8Token : IJsonToken
     {
-        public readonly JsonTokenType Type;
-        public readonly ReadOnlySpan<byte> ByteSequence;
-        public readonly int NumberOfCharacters;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JsonUtf8Token(JsonTokenType type, ReadOnlySpan<byte> byteSequence, int numberOfCharacters)
+        public JsonUtf8Token(JsonTokenType type,
+                             ReadOnlyMemory<byte> memory,
+                             int length,
+                             int charLength)
         {
             Type = type;
-            ByteSequence = byteSequence;
-            NumberOfCharacters = numberOfCharacters;
+            Memory = memory;
+            Length = length;
+            CharLength = charLength;
         }
 
-        public int ByteLength
+        public JsonTokenType Type { get; }
+
+        public ReadOnlyMemory<byte> Memory { get; }
+
+        public int Length { get; }
+
+        public int CharLength { get; }
+
+        public TokenCharacterInfo GetCharacterAt(int startIndex = 0)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ByteSequence.Length;
+            var result = Utf8Character.TryParseNext(Memory.Span, out var character, startIndex);
+            if (result != Utf8ParseResult.CharacterParsedSuccessfully) 
+                throw new InvalidStateException($"The UTF8 character at index {startIndex} is invalid. This should not happen - the tokenizer created an invalid token.");
+
+            startIndex += character.ByteLength;
+            if (startIndex == Memory.Length)
+                startIndex = -1;
+
+            return new TokenCharacterInfo(character.Utf16Code, startIndex);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(JsonUtf8Token other) =>
-            Type == other.Type && 
-            NumberOfCharacters == other.NumberOfCharacters && 
-            (ByteSequence == other.ByteSequence || ByteSequence.SequenceEqual(other.ByteSequence));
+            Type == other.Type && Memory.Equals(other.Memory);
+
+        public override string ToString()
+        {
+            Span<char> target = stackalloc char[CharLength];
+            var currentIndex = 0;
+            var span = Memory.Span;
+            for (var i = 0; i < Length; ++i)
+            {
+                Utf8Character.TryParseNext(span, out var utf8Character, currentIndex);
+                currentIndex += utf8Character.CopyUtf16To(target, currentIndex);
+            }
+
+            return target.ToString();
+        }
 
         public override bool Equals(object obj) =>
             throw BoxingNotSupported.CreateException();
@@ -36,10 +61,8 @@ namespace Light.Json.Tokenization.Utf8
         public override int GetHashCode() =>
             throw BoxingNotSupported.CreateException();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(JsonUtf8Token x, JsonUtf8Token y) => x.Equals(y);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(JsonUtf8Token x, JsonUtf8Token y) => !x.Equals(y);
     }
 }

@@ -3,9 +3,7 @@
     public enum Utf8ParseResult
     {
         CharacterParsedSuccessfully,
-        InvalidStartIndex,
         InsufficientBytes,
-        ByteSequenceIsNotUtf8Compliant,
-        StartIndexOutOfBounds
+        ByteSequenceIsNotUtf8Compliant
     }
 }

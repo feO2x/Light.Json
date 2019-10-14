@@ -22,7 +22,7 @@ namespace Light.Json.Performance
         [Benchmark]
         public Contact Imperative()
         {
-            var tokenizer = new JsonUtf16Tokenizer(Json);
+            var tokenizer = new JsonUtf16Tokenizer(Json.AsMemory());
             string firstName = null;
             string lastName = null;
             var age = 0;
@@ -33,23 +33,23 @@ namespace Light.Json.Performance
             {
                 currentToken = tokenizer.GetNextToken();
                 currentToken.Type.MustBe(JsonTokenType.String);
-                var dependencyName = currentToken.Text;
+                var dependencyName = currentToken.Memory.Span;
                 tokenizer.GetNextToken().Type.MustBe(JsonTokenType.NameValueSeparator);
                 currentToken = tokenizer.GetNextToken();
                 if (dependencyName.Equals(nameof(firstName), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
-                    firstName = currentToken.Text.ToString();
+                    firstName = currentToken.Memory.ToString();
                 }
                 else if (dependencyName.Equals(nameof(lastName), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.String);
-                    lastName = currentToken.Text.ToString();
+                    lastName = currentToken.Memory.ToString();
                 }
                 else if (dependencyName.Equals(nameof(age), StringComparison.Ordinal))
                 {
                     currentToken.Type.MustBe(JsonTokenType.IntegerNumber);
-                    age = int.Parse(currentToken.Text);
+                    age = int.Parse(currentToken.Memory.Span);
                 }
                 else
                 {
