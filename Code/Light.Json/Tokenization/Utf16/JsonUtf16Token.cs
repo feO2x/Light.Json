@@ -5,15 +5,19 @@ namespace Light.Json.Tokenization.Utf16
 {
     public readonly struct JsonUtf16Token : IJsonToken
     {
-        public JsonUtf16Token(JsonTokenType type, ReadOnlyMemory<char> memory = default)
+        public JsonUtf16Token(JsonTokenType type, ReadOnlyMemory<char> memory, int line, int position)
         {
             Type = type;
             Memory = memory;
+            Line = line;
+            Position = position;
         }
 
         public JsonTokenType Type { get; }
         public ReadOnlyMemory<char> Memory { get; }
         public int Length => Memory.Length;
+        public int Line { get; }
+        public int Position { get; }
 
         public TokenCharacterInfo GetCharacterAt(int startIndex = 0)
         {

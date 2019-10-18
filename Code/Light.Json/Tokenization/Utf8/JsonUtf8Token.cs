@@ -9,12 +9,16 @@ namespace Light.Json.Tokenization.Utf8
         public JsonUtf8Token(JsonTokenType type,
                              ReadOnlyMemory<byte> memory,
                              int length,
-                             int charLength)
+                             int charLength,
+                             int line,
+                             int position)
         {
             Type = type;
             Memory = memory;
             Length = length;
             CharLength = charLength;
+            Line = line;
+            Position = position;
         }
 
         public JsonTokenType Type { get; }
@@ -25,10 +29,14 @@ namespace Light.Json.Tokenization.Utf8
 
         public int CharLength { get; }
 
+        public int Line { get; }
+
+        public int Position { get; }
+
         public TokenCharacterInfo GetCharacterAt(int startIndex = 0)
         {
             var result = Utf8Character.TryParseNext(Memory.Span, out var character, startIndex);
-            if (result != Utf8ParseResult.CharacterParsedSuccessfully) 
+            if (result != Utf8ParseResult.CharacterParsedSuccessfully)
                 throw new InvalidStateException($"The UTF8 character at index {startIndex} is invalid. This should not happen - the tokenizer created an invalid token.");
 
             startIndex += character.ByteLength;

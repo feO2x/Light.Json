@@ -31,7 +31,7 @@ namespace Light.Json.Tokenization.Utf8
         {
             var json = _jsonInUtf8.Span;
             if (!TryReadNextCharacter(json, out var currentCharacter))
-                return new JsonUtf8Token(JsonTokenType.EndOfDocument, default, 0, 0);
+                return new JsonUtf8Token(JsonTokenType.EndOfDocument, default, 0, 0, _currentLine, _currentPosition);
 
             if (currentCharacter == JsonSymbols.StringDelimiter)
                 return ReadString(currentCharacter);
@@ -89,9 +89,9 @@ namespace Light.Json.Tokenization.Utf8
             }
 
             var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
-            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length);
+            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
-            _currentLine += token.Memory.Length;
+            _currentPosition += token.Memory.Length;
             return token;
         }
 
@@ -115,7 +115,7 @@ namespace Light.Json.Tokenization.Utf8
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
             var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
-            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length);
+            var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
             _currentPosition += token.Memory.Length;
             return token;
@@ -140,7 +140,7 @@ namespace Light.Json.Tokenization.Utf8
             }
 
             var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
-            var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length);
+            var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
             _currentPosition += token.Memory.Length;
             return token;
@@ -167,9 +167,10 @@ namespace Light.Json.Tokenization.Utf8
                 }
 
                 var slicedSpan = leftBoundJson.Slice(1, currentIndex - 1);
+                var token = new JsonUtf8Token(JsonTokenType.String, slicedSpan, numberOfCharacters - 2, numberOfChars - 2, _currentLine, _currentPosition);
                 _currentIndex += slicedSpan.Length + 2;
                 _currentPosition += numberOfCharacters;
-                return new JsonUtf8Token(JsonTokenType.String, slicedSpan, numberOfCharacters - 2, numberOfChars - 2);
+                return token;
             }
 
             Throw($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
@@ -184,17 +185,19 @@ namespace Light.Json.Tokenization.Utf8
             if (!slicedBytes.Span.SequenceEqual(expectedSymbol.ByteSequence.Span))
                 ThrowInvalidConstant(expectedSymbol);
 
+            var token = new JsonUtf8Token(type, slicedBytes, expectedSymbol.NumberOfCharacters, expectedSymbol.NumberOfCharacters, _currentLine, _currentPosition);
             _currentIndex += expectedSymbol.ByteLength;
             _currentPosition += expectedSymbol.NumberOfCharacters;
-            return new JsonUtf8Token(type, slicedBytes, expectedSymbol.NumberOfCharacters, expectedSymbol.NumberOfCharacters);
+            return token;
         }
 
         private JsonUtf8Token ReadSingleCharacter(JsonTokenType tokenType, Utf8Character character)
         {
             var memory = _jsonInUtf8.Slice(_currentIndex, character.ByteLength);
+            var token = new JsonUtf8Token(tokenType, memory, 1, 1, _currentLine, _currentPosition);
             _currentIndex += character.ByteLength;
             ++_currentPosition;
-            return new JsonUtf8Token(tokenType, memory, 1, 1);
+            return token;
         }
 
         private bool TryReadNextCharacter(ReadOnlySpan<byte> json, out Utf8Character currentCharacter)
@@ -281,9 +284,9 @@ namespace Light.Json.Tokenization.Utf8
         {
             var invalidToken = GetErroneousTokenInUtf16();
             if (invalidToken == null)
-                throw new DeserializationException($"Expected token \"{ expectedToken.Utf16Text}\" at line {_currentLine} position {_currentPosition}.");
+                throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" at line {_currentLine} position {_currentPosition}.");
 
-            throw new DeserializationException($"Expected token \"{ expectedToken.Utf16Text}\" but actually found \"{invalidToken}\" at line {_currentLine} position {_currentPosition}.");
+            throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" but actually found \"{invalidToken}\" at line {_currentLine} position {_currentPosition}.");
         }
 
         private string GetErroneousTokenInUtf16()
