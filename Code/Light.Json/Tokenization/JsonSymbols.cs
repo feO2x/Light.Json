@@ -5,6 +5,7 @@
         // White Space
         public const char Space = '\x0020';
         public const char HorizontalTab = '\x0009';
+        public const char LineFeed = '\x000a';
         public const char CarriageReturn = '\x000d';
         public const char NoBreakSpace = '\x00a0';
         public const char NextLine = '\x0085';

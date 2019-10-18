@@ -9,6 +9,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
     {
         [Theory]
         [InlineData(JsonSymbols.SingleLineCommentCharacter, 1)]
+        [InlineData(JsonSymbols.LineFeed, 1)]
         [InlineData(JsonSymbols.CarriageReturn, 1)]
         [InlineData(JsonSymbols.NextLine, 2)]
         public static void ByteLengthOfCharacter(char character, int expectedLength) =>
