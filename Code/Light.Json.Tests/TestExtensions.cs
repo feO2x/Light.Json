@@ -1,4 +1,5 @@
 ﻿using System;
+using Light.GuardClauses;
 using Light.Json.Tokenization.Utf8;
 using Xunit.Sdk;
 
@@ -32,5 +33,18 @@ namespace Light.Json.Tests
 
         private static void ThrowValueNotDefault(in Utf8Character character) =>
             throw new XunitException($"Expected  \"{character.ToString()}\" to be the default value, but it is not.");
+
+        public static int GetNumberOfWhiteSpaceCharactersInFront(this string @string)
+        {
+            for (var i = 0; i < @string.Length; ++i)
+            {
+                if (@string[i].IsWhiteSpace())
+                    continue;
+
+                return i;
+            }
+
+            return @string.Length;
+        }
     }
 }

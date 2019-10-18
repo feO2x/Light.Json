@@ -21,6 +21,10 @@ namespace Light.Json.Tokenization.Utf16
             _currentPosition = 1;
         }
 
+        public int CurrentIndex => _currentIndex;
+        public int CurrentLine => _currentLine;
+        public int CurrentPosition => _currentPosition;
+
         public JsonUtf16Token GetNextToken()
         {
             var json = _json.Span;
@@ -137,8 +141,11 @@ namespace Light.Json.Tokenization.Utf16
             return false;
         }
 
-        private JsonUtf16Token ReadSingleCharacter(JsonTokenType tokenType) =>
-            new JsonUtf16Token(tokenType, _json.Slice(_currentIndex++, 1));
+        private JsonUtf16Token ReadSingleCharacter(JsonTokenType tokenType)
+        {
+            ++_currentPosition;
+            return new JsonUtf16Token(tokenType, _json.Slice(_currentIndex++, 1));
+        }
 
         private JsonUtf16Token ReadNumber(ReadOnlySpan<char> json)
         {

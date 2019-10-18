@@ -233,17 +233,32 @@ namespace Light.Json.Tests.Tokenization.Utf16
             tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
         }
 
-        private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(json.Trim(), expectedTokenType);
-
-        private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(expectedToken, expectedTokenType);
-
-        private static JsonUtf16Token GetSingleToken(string json)
+        private static void TestTokenizer(string json, JsonTokenType expectedTokenType)
         {
+            var trimmedJson = json.Trim();
+            var expectedTokenLength = trimmedJson.Length;
+            if (expectedTokenType == JsonTokenType.String)
+                expectedTokenLength += 2;
+            GetSingleToken(json, expectedTokenLength).ShouldEqual(trimmedJson, expectedTokenType);
+        }
+
+        private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType)
+        {
+            var expectedTokenLength = expectedToken.Length;
+            if (expectedTokenType == JsonTokenType.String)
+                expectedTokenLength += 2;
+            GetSingleToken(json, expectedTokenLength).ShouldEqual(expectedToken, expectedTokenType);
+        }
+
+        private static JsonUtf16Token GetSingleToken(string json, int expectedTokenLength = -1)
+        {
+            var numberOfWhiteSpaceCharactersInFront = json.GetNumberOfWhiteSpaceCharactersInFront();
             var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             var token = tokenizer.GetNextToken();
+
+            tokenizer.CurrentLine.Should().Be(1);
+            tokenizer.CurrentPosition.Should().Be(1 + numberOfWhiteSpaceCharactersInFront + expectedTokenLength);
 
             var secondToken = tokenizer.GetNextToken();
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
