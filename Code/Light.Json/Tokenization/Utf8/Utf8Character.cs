@@ -57,7 +57,10 @@ namespace Light.Json.Tokenization.Utf8
         public static Utf8ParseResult TryParseNext(in ReadOnlySpan<byte> source, out Utf8Character character, int startIndex = 0)
         {
             if (startIndex < 0 || startIndex >= source.Length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            {
+                character = default;
+                return Utf8ParseResult.StartIndexOutOfRange;
+            }
 
             // Most of the time, we expect single-byte UTF-8 characters.
             // Thus, we only perform a single check in this method and

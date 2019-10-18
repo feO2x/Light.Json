@@ -154,9 +154,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var bytes = Encoding.UTF8.GetBytes("foo");
 
-            Action act = () => Utf8Character.TryParseNext(bytes, out _, -1);
+            var result = Utf8Character.TryParseNext(bytes, out _, -1);
 
-            act.Should().Throw<ArgumentOutOfRangeException>();
+            result.Should().Be(Utf8ParseResult.StartIndexOutOfRange);
         }
 
         [Fact]
@@ -164,9 +164,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
         {
             var bytes = Encoding.UTF8.GetBytes("bar");
 
-            Action act = () => Utf8Character.TryParseNext(bytes, out _, bytes.Length);
+            var result = Utf8Character.TryParseNext(bytes, out _, bytes.Length);
 
-            act.Should().Throw<ArgumentOutOfRangeException>();
+            result.Should().Be(Utf8ParseResult.StartIndexOutOfRange);
         }
 
         [Theory]

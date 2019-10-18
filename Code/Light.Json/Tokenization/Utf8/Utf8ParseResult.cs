@@ -2,6 +2,7 @@
 {
     public enum Utf8ParseResult
     {
+        StartIndexOutOfRange,
         CharacterParsedSuccessfully,
         InsufficientBytes,
         ByteSequenceIsNotUtf8Compliant

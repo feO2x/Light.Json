@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Light.Json.Tokenization
+﻿namespace Light.Json.Tokenization
 {
     public interface IJsonToken
     {
