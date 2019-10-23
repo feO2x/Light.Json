@@ -9,16 +9,16 @@ namespace Light.Json.Tests.Tokenization.Utf8
     public static class JsonUtf8TokenizerTests
     {
         [Theory]
-        [InlineData("\"Foo\"", "Foo")]
-        [InlineData("\"Bar\"", "Bar")]
-        [InlineData("\"Baz\"", "Baz")]
-        [InlineData("  \"Qux\"", "Qux")]
-        [InlineData("\"Qux\" ", "Qux")]
-        [InlineData("\t\"Gorge\"", "Gorge")]
-        [InlineData("\"\\\"Boom\\\"\"", "\\\"Boom\\\"")]
-        [InlineData("\"Boom\"", "Boom")]
-        public static void TokenizeJsonString(string json, string expected) =>
-            TestTokenizer(json, expected, JsonTokenType.String);
+        [InlineData("\"Foo\"")]
+        [InlineData("\"Bar\"")]
+        [InlineData("\"Baz\"")]
+        [InlineData("  \"Qux\"")]
+        [InlineData("\"Qux\" ")]
+        [InlineData("\t\"Gorge\"")]
+        [InlineData("\"\\\"Boom\\\"\"")]
+        [InlineData("\"Boom\"")]
+        public static void TokenizeJsonString(string json) =>
+            TestTokenizer(json, JsonTokenType.String);
 
         [Theory]
         [InlineData("false")]
@@ -153,22 +153,22 @@ namespace Light.Json.Tests.Tokenization.Utf8
             var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("firstName", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"firstName\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("John", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"John\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
-            tokenizer.GetNextToken().ShouldEqual("lastName", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"lastName\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("Doe", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"Doe\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
-            tokenizer.GetNextToken().ShouldEqual("age", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"age\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
             tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
             tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
             tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
         }
 
-                [Fact]
+        [Fact]
         public static void TokenizeArray()
         {
             const string json = @"
@@ -187,7 +187,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
             var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
-            tokenizer.GetNextToken().ShouldEqual("This is a JSON string", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"This is a JSON string\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("true", JsonTokenType.True);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
@@ -196,9 +196,9 @@ namespace Light.Json.Tests.Tokenization.Utf8
             tokenizer.GetNextToken().ShouldEqual("null", JsonTokenType.Null);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("this is", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"this is\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
-            tokenizer.GetNextToken().ShouldEqual("a complex object", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"a complex object\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual("}", JsonTokenType.EndOfObject);
             tokenizer.GetNextToken().ShouldEqual(",", JsonTokenType.EntrySeparator);
             tokenizer.GetNextToken().ShouldEqual("78", JsonTokenType.IntegerNumber);
@@ -223,7 +223,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
             var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
-            tokenizer.GetNextToken().ShouldEqual("someCollection", JsonTokenType.String);
+            tokenizer.GetNextToken().ShouldEqual("\"someCollection\"", JsonTokenType.String);
             tokenizer.GetNextToken().ShouldEqual(":", JsonTokenType.NameValueSeparator);
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("42", JsonTokenType.IntegerNumber);
