@@ -243,10 +243,10 @@ namespace Light.Json.Tokenization.Utf16
                 if (previousIndex > 0 && leftBoundedJsonSpan[previousIndex] == JsonSymbols.EscapeCharacter)
                     continue;
 
-                var slicedSpan = leftBoundedJson.Slice(1, i - 1);
-                var token = new JsonUtf16Token(JsonTokenType.String, slicedSpan, _currentLine, _currentPosition);
-                _currentIndex += slicedSpan.Length + 2;
-                _currentPosition += slicedSpan.Length + 2;
+                var slicedMemory = leftBoundedJson.Slice(0, i + 1);
+                var token = new JsonUtf16Token(JsonTokenType.String, slicedMemory, _currentLine, _currentPosition);
+                _currentIndex += slicedMemory.Length;
+                _currentPosition += slicedMemory.Length;
                 return token;
             }
 

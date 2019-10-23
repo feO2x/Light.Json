@@ -166,9 +166,9 @@ namespace Light.Json.Tokenization.Utf8
                     continue;
                 }
 
-                var slicedSpan = leftBoundJson.Slice(0, numberOfCharacters);
-                var token = new JsonUtf8Token(JsonTokenType.String, slicedSpan, numberOfCharacters, numberOfChars, _currentLine, _currentPosition);
-                _currentIndex += slicedSpan.Length;
+                var slicedMemory = leftBoundJson.Slice(0, numberOfCharacters);
+                var token = new JsonUtf8Token(JsonTokenType.String, slicedMemory, numberOfCharacters, numberOfChars, _currentLine, _currentPosition);
+                _currentIndex += slicedMemory.Length;
                 _currentPosition += numberOfCharacters;
                 return token;
             }
