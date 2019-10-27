@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;net48</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.4" />
-    <PackageReference Include="Light.GuardClauses" Version="6.*" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.*" />
+    <PackageReference Include="Light.GuardClauses" Version="7.*" />
     <PackageReference Include="Newtonsoft.Json" Version="12.*" />
+    <PackageReference Include="Utf8Json" Version="1.*" />
     <ProjectReference Include="..\Light.Json\Light.Json.csproj" />
   </ItemGroup>
 
