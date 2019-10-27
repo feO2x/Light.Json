@@ -27,8 +27,11 @@ namespace Light.Json.Tokenization.Utf16
             return new TokenCharacterInfo(character, startIndex);
         }
 
-        // ReSharper disable once RedundantAssignment
-        public void GetCharacters(ref ReadOnlySpan<char> span) => span = Memory.Span;
+        public string ParseJsonStringToDotnetString()
+        {
+            this.MustBeOfType(JsonTokenType.String);
+            return Memory.Slice(1, Memory.Length - 2).ToString();
+        }
 
         public bool Equals(JsonUtf16Token other) => Type == other.Type && Memory.Equals(other.Memory);
 

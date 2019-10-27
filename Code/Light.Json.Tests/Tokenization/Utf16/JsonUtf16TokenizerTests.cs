@@ -240,7 +240,7 @@ namespace Light.Json.Tests.Tokenization.Utf16
             GetSingleToken(json, expectedTokenLength).ShouldEqual(trimmedJson, expectedTokenType);
         }
 
-        private static void TestTokenizer(string json, ReadOnlySpan<char> expectedToken, JsonTokenType expectedTokenType)
+        private static void TestTokenizer(string json, string expectedToken, JsonTokenType expectedTokenType)
         {
             var expectedTokenLength = expectedToken.Length;
             if (expectedTokenType == JsonTokenType.String)
@@ -264,10 +264,10 @@ namespace Light.Json.Tests.Tokenization.Utf16
             return token;
         }
 
-        private static void ShouldEqual(this JsonUtf16Token token, ReadOnlySpan<char> expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonUtf16Token token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Memory.Span.MustEqual(expected);
+            token.Memory.Span.MustEqual(expected.AsSpan());
         }
     }
 }

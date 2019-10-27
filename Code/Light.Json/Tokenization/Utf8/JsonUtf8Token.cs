@@ -46,6 +46,22 @@ namespace Light.Json.Tokenization.Utf8
             return new TokenCharacterInfo(character.Utf16Code, startIndex);
         }
 
+        public string ParseJsonStringToDotnetString()
+        {
+            this.MustBeOfType(JsonTokenType.String);
+            var innerLength = Length - 2;
+            var sourceSpan = Memory.Span;
+            Span<char> targetSpan = stackalloc char[CharLength - 2]; // we omit the outer quotation marks here
+            var currentTargetIndex = 0;
+            for (var i = 1; i <= innerLength; ++i)
+            {
+                Utf8Character.TryParseNext(sourceSpan, out var utf8Character, i);
+                currentTargetIndex += utf8Character.CopyUtf16To(targetSpan, currentTargetIndex);
+            }
+
+            return targetSpan.ToString();
+        }
+
         public bool Equals(JsonUtf8Token other) =>
             Type == other.Type && Memory.Equals(other.Memory);
 

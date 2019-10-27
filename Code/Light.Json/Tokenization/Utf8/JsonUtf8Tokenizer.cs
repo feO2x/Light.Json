@@ -4,7 +4,7 @@ using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public struct JsonUtf8Tokenizer
+    public struct JsonUtf8Tokenizer : IJsonTokenizer<JsonUtf8Token>
     {
         private static readonly byte[] NewLineCharacters = Environment.NewLine.ToUtf8();
         private static readonly byte NewLineFirstCharacter;
