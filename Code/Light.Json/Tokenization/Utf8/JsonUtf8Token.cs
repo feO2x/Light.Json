@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Light.GuardClauses.Exceptions;
 using Light.Json.FrameworkExtensions;
 
@@ -46,20 +47,18 @@ namespace Light.Json.Tokenization.Utf8
             return new TokenCharacterInfo(character.Utf16Code, startIndex);
         }
 
-        public string ParseJsonStringToDotnetString()
+        public unsafe string ParseJsonStringToDotnetString()
         {
             this.MustBeOfType(JsonTokenType.String);
-            var innerLength = Length - 2;
-            var sourceSpan = Memory.Span;
-            Span<char> targetSpan = stackalloc char[CharLength - 2]; // we omit the outer quotation marks here
-            var currentTargetIndex = 0;
-            for (var i = 1; i <= innerLength; ++i)
-            {
-                Utf8Character.TryParseNext(sourceSpan, out var utf8Character, i);
-                currentTargetIndex += utf8Character.CopyUtf16To(targetSpan, currentTargetIndex);
-            }
+            if (Memory.Length == 2)
+                return string.Empty;
 
-            return targetSpan.ToString();
+            var innerStringLength = Memory.Length - 2;
+            var stringWithoutQuotationMarks = Memory.Span.Slice(1, innerStringLength);
+            fixed (byte* bytePointer = stringWithoutQuotationMarks)
+            {
+                return Encoding.UTF8.GetString(bytePointer, innerStringLength);
+            }
         }
 
         public bool Equals(JsonUtf8Token other) =>

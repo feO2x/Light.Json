@@ -30,8 +30,7 @@ namespace Light.Json
         {
             if (typeof(TResult) == typeof(string))
             {
-                var token = context.Tokenizer.GetNextToken();
-                var dotnetString = token.ParseJsonStringToDotnetString();
+                var dotnetString = context.Tokenizer.ReadString();
                 return Unsafe.As<string, TResult>(ref dotnetString);
             }
 

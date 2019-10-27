@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
@@ -34,7 +35,7 @@ namespace Light.Json.Tokenization.Utf8
                 return new JsonUtf8Token(JsonTokenType.EndOfDocument, default, 0, 0, _currentLine, _currentPosition);
 
             if (currentCharacter == JsonSymbols.StringDelimiter)
-                return ReadString(currentCharacter);
+                return ReadStringToken(currentCharacter);
 
             if (currentCharacter.IsDigit())
                 return ReadNumber(json);
@@ -70,6 +71,34 @@ namespace Light.Json.Tokenization.Utf8
                 return ReadSingleCharacter(JsonTokenType.EndOfArray, currentCharacter);
 
             throw new DeserializationException($"Unexpected character \"{currentCharacter.ToString()}\" at line {_currentLine} position {_currentPosition}.");
+        }
+
+        public unsafe string ReadString()
+        {
+            var json = _jsonInUtf8.Span;
+            if (!TryReadNextCharacter(json, out var currentCharacter) || currentCharacter != JsonSymbols.StringDelimiter)
+                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
+
+            var currentIndex = _currentIndex + 1;
+            var previousCharacter = currentCharacter;
+            while (Utf8Character.TryParseNext(json, out currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            {
+                if (currentCharacter != JsonSymbols.StringDelimiter ||
+                    previousCharacter == JsonSymbols.EscapeCharacter)
+                {
+                    currentIndex += currentCharacter.ByteLength;
+                    previousCharacter = currentCharacter;
+                    continue;
+                }
+
+                var targetSpan = json.Slice(_currentIndex + 1, currentIndex -  _currentIndex - 1);
+                fixed (byte* bytePointer = targetSpan)
+                {
+                    return Encoding.UTF8.GetString(bytePointer, targetSpan.Length);
+                }
+            }
+
+            throw new DeserializationException($"Could not find end of JSON string at line {_currentLine} position {_currentPosition}.");
         }
 
         private JsonUtf8Token ReadNumber(ReadOnlySpan<byte> json)
@@ -146,7 +175,7 @@ namespace Light.Json.Tokenization.Utf8
             return token;
         }
 
-        private JsonUtf8Token ReadString(Utf8Character previousCharacter)
+        private JsonUtf8Token ReadStringToken(Utf8Character previousCharacter)
         {
             var leftBoundJson = _jsonInUtf8.Slice(_currentIndex);
 
@@ -173,8 +202,7 @@ namespace Light.Json.Tokenization.Utf8
                 return token;
             }
 
-            Throw($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
-            return default;
+            throw new DeserializationException($"Could not find end of JSON string starting in line {_currentLine} position {_currentPosition}.");
         }
 
         private JsonUtf8Token ReadConstant(JsonTokenType type, Utf8Constant expectedSymbol)

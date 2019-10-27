@@ -33,7 +33,7 @@ namespace Light.Json.Tokenization.Utf16
             switch (currentCharacter)
             {
                 case JsonSymbols.StringDelimiter:
-                    return ReadString();
+                    return ReadStringToken();
                 case JsonSymbols.FalseFirstCharacter:
                     return ReadConstant(json, JsonTokenType.False, JsonSymbols.False);
                 case JsonSymbols.TrueFirstCharacter:
@@ -60,6 +60,32 @@ namespace Light.Json.Tokenization.Utf16
                 return ReadNumber(json);
 
             throw new DeserializationException($"Unexpected character \"{currentCharacter}\" at line {_currentLine} position {_currentPosition}.");
+        }
+
+        public string ReadString()
+        {
+            var json = _json.Span;
+            if (!TryReadNextCharacter(json, out var currentCharacter) || currentCharacter != JsonSymbols.StringDelimiter)
+                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
+
+            var previousCharacter = '-';
+            for (var i = _currentIndex + 1; i < json.Length; ++i)
+            {
+                currentCharacter = json[i];
+                if (currentCharacter != JsonSymbols.StringDelimiter ||
+                    previousCharacter == JsonSymbols.EscapeCharacter)
+                {
+                    previousCharacter = currentCharacter;
+                    continue;
+                }
+
+                var slicedMemory = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
+                _currentIndex += slicedMemory.Length;
+                _currentPosition += slicedMemory.Length;
+                return slicedMemory.ToString();
+            }
+
+            throw new DeserializationException($"Could not find end of JSON string after line {_currentLine} position {_currentPosition}.");
         }
 
         private bool TryReadNextCharacter(ReadOnlySpan<char> json, out char currentCharacter)
@@ -230,7 +256,7 @@ namespace Light.Json.Tokenization.Utf16
             return token;
         }
 
-        private JsonUtf16Token ReadString()
+        private JsonUtf16Token ReadStringToken()
         {
             var leftBoundedJson = _json.Slice(_currentIndex);
             var leftBoundedJsonSpan = leftBoundedJson.Span;
@@ -250,8 +276,7 @@ namespace Light.Json.Tokenization.Utf16
                 return token;
             }
 
-            Throw($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
-            return default;
+            throw new DeserializationException($"Could not find end of JSON string {leftBoundedJson.ToString()}.");
         }
 
         private void ThrowInvalidConstant(string expectedTokenText, ReadOnlySpan<char> actualTokenText) =>
