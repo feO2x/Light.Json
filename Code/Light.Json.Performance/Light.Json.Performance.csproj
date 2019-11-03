@@ -5,10 +5,13 @@
     <TargetFrameworks>netcoreapp2.2;netcoreapp3.0;net48</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.*" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.12.*" />
     <PackageReference Include="Light.GuardClauses" Version="7.*" />
     <PackageReference Include="Newtonsoft.Json" Version="12.*" />
     <PackageReference Include="Utf8Json" Version="1.*" />

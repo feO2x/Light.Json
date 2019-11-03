@@ -42,6 +42,5 @@
         public const char EntrySeparator = ',';
         public const char NameValueSeparator = ':';
         public const char SingleLineCommentCharacter = '/';
-
     }
 }

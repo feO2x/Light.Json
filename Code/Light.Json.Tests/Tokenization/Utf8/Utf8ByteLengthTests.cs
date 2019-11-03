@@ -11,6 +11,8 @@ namespace Light.Json.Tests.Tokenization.Utf8
         [InlineData(JsonSymbols.SingleLineCommentCharacter, 1)]
         [InlineData(JsonSymbols.LineFeed, 1)]
         [InlineData(JsonSymbols.CarriageReturn, 1)]
+        [InlineData(JsonSymbols.Space, 1)]
+        [InlineData(JsonSymbols.HorizontalTab, 1)]
         [InlineData(JsonSymbols.NextLine, 2)]
         public static void ByteLengthOfCharacter(char character, int expectedLength) =>
             character.ToUtf8().Length.Should().Be(expectedLength);
