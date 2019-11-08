@@ -76,25 +76,25 @@ namespace Light.Json.Tokenization.Utf8
         public unsafe string ReadString()
         {
             var json = _jsonInUtf8.Span;
-            if (!TryReadNextCharacter(json, out var currentCharacter) || currentCharacter != JsonSymbols.StringDelimiter)
+            if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
 
-            var currentIndex = _currentIndex + 1;
-            var previousCharacter = currentCharacter;
-            while (Utf8Character.TryParseNext(json, out currentCharacter, currentIndex) == Utf8ParseResult.CharacterParsedSuccessfully)
+            for (var i = _currentIndex + 1; i < json.Length; ++i)
             {
-                if (currentCharacter != JsonSymbols.StringDelimiter ||
-                    previousCharacter == JsonSymbols.EscapeCharacter)
+                if (json[i] == JsonSymbols.StringDelimiter &&
+                    json[i - 1] != JsonSymbols.EscapeCharacter)
                 {
-                    currentIndex += currentCharacter.ByteLength;
-                    previousCharacter = currentCharacter;
-                    continue;
-                }
+                    var targetSpan = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
+                    _currentIndex += targetSpan.Length;
 
-                var targetSpan = json.Slice(_currentIndex + 1, currentIndex -  _currentIndex - 1);
-                fixed (byte* bytePointer = targetSpan)
-                {
-                    return Encoding.UTF8.GetString(bytePointer, targetSpan.Length);
+                    string targetString;
+                    fixed (byte* bytePointer = targetSpan)
+                    {
+                        targetString = Encoding.UTF8.GetString(bytePointer, targetSpan.Length);
+                    }
+
+                    _currentPosition += targetString.Length + 2;
+                    return targetString;
                 }
             }
 
@@ -226,6 +226,31 @@ namespace Light.Json.Tokenization.Utf8
             _currentIndex += character.ByteLength;
             ++_currentPosition;
             return token;
+        }
+
+        private bool TrySkipWhiteSpace(ReadOnlySpan<byte> json)
+        {
+            for (var i = _currentIndex; i < json.Length; ++i)
+            {
+                var currentByte = json[i];
+                switch (currentByte)
+                {
+                    case (byte) JsonSymbols.Space:
+                    case (byte) JsonSymbols.HorizontalTab:
+                    case (byte) JsonSymbols.CarriageReturn:
+                        ++_currentPosition;
+                        continue;
+                    case (byte) JsonSymbols.LineFeed:
+                        _currentPosition = 1;
+                        ++_currentLine;
+                        continue;
+                    default:
+                        _currentIndex += i;
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryReadNextCharacter(ReadOnlySpan<byte> json, out Utf8Character currentCharacter)
