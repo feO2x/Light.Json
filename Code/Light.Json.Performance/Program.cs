@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 
@@ -13,6 +14,7 @@ namespace Light.Json.Performance
                          .With(Job.Default.With(CoreRuntime.Core22))
                          .With(Job.Default.With(CoreRuntime.Core30))
                          .With(Job.Default.With(ClrRuntime.Net48))
+                         .With(MarkdownExporter.Default)
                          .With(MemoryDiagnoser.Default);
 
         public static void Main(string[] args) =>
