@@ -31,7 +31,8 @@ namespace Light.Json.Tests.Deserialization
                 { "\"Foo\"", "Foo" },
                 { "\"Bar\"", "Bar" },
                 { "  \"Baz\" ", "Baz" },
-                { "\t\"Qux\"", "Qux" }
+                { "\t\"Qux\"", "Qux" },
+                { "K\\u0065nny", "Kenny" }
             };
 
         private static T DeserializeUtf16<T>(string json)

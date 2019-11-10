@@ -78,23 +78,27 @@ namespace Light.Json.Tokenization.Utf8
             var json = _jsonInUtf8.Span;
             if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
+            if (json[_currentIndex] != JsonSymbols.StringDelimiter)
+                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousTokenInUtf16()}\").");
 
             for (var i = _currentIndex + 1; i < json.Length; ++i)
             {
-                if (json[i] == JsonSymbols.StringDelimiter &&
-                    json[i - 1] != JsonSymbols.EscapeCharacter)
+                switch (json[i])
                 {
-                    var targetSpan = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
-                    _currentIndex += targetSpan.Length;
+                    case (byte) JsonSymbols.StringDelimiter:
+                        var targetSpan = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
+                        _currentIndex += targetSpan.Length;
 
-                    string targetString;
-                    fixed (byte* bytePointer = targetSpan)
-                    {
-                        targetString = Encoding.UTF8.GetString(bytePointer, targetSpan.Length);
-                    }
+                        string targetString;
+                        fixed (byte* bytePointer = targetSpan)
+                        {
+                            targetString = Encoding.UTF8.GetString(bytePointer, targetSpan.Length);
+                        }
 
-                    _currentPosition += targetString.Length + 2;
-                    return targetString;
+                        _currentPosition += targetString.Length + 2;
+                        return targetString;
+                    case (byte) JsonSymbols.EscapeCharacter:
+                        throw new NotImplementedException();
                 }
             }
 
@@ -344,27 +348,23 @@ namespace Light.Json.Tokenization.Utf8
 
         private string GetErroneousTokenInUtf16()
         {
-            var characterArray = new char[40];
-            var span = characterArray.AsSpan();
-            var currentUtf16Index = 0;
-
-            var currentUtf8Index = _currentIndex;
-            var json = _jsonInUtf8.Span;
-            while (currentUtf8Index < json.Length)
+            var jsonSpan = _jsonInUtf8.Slice(_currentIndex).Span;
+            for (var i = 0; i < jsonSpan.Length; ++i)
             {
-                var parseResult = Utf8Character.TryParseNext(json, out var utf8Character, currentUtf8Index);
-                if (parseResult != Utf8ParseResult.CharacterParsedSuccessfully)
-                    break;
+                if (jsonSpan[i] != (byte) JsonSymbols.LineFeed) 
+                    continue;
+                
+                var length = i;
+                if (i - 1 > 0 && jsonSpan[i - 1] == JsonSymbols.CarriageReturn)
+                    --length;
 
-                var numberOfUtf16CharactersCopied = utf8Character.CopyUtf16To(span, currentUtf16Index);
-                if (numberOfUtf16CharactersCopied == 0)
-                    break;
-
-                currentUtf8Index += utf8Character.ByteLength;
-                currentUtf16Index += numberOfUtf16CharactersCopied;
+                return jsonSpan.ConvertFromUtf8ToString(length);
             }
 
-            return currentUtf16Index == 0 ? null : new string(characterArray, 0, currentUtf16Index);
+            if (jsonSpan.Length > 40)
+                jsonSpan = jsonSpan.Slice(0, 40);
+
+            return jsonSpan.ConvertFromUtf8ToString();
         }
 
         public override bool Equals(object obj) =>
