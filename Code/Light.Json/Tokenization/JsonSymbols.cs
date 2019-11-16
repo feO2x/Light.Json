@@ -6,8 +6,9 @@
         public const char HorizontalTab = '\t';
         public const char LineFeed = '\n';
         public const char CarriageReturn = '\r';
-        public const char StringDelimiter = '"';
-        public const char EscapeCharacter = '\\';
+        public const char QuotationMark = '"';
+        public const char Backslash = '\\';
+        public const char Slash = '/';
         public const char FalseFirstCharacter = 'f';
         public const string False = "false";
         public const char TrueFirstCharacter = 't';

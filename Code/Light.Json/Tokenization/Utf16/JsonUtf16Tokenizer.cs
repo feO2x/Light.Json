@@ -32,7 +32,7 @@ namespace Light.Json.Tokenization.Utf16
                 return new JsonUtf16Token(JsonTokenType.EndOfDocument, default, _currentLine, _currentPosition);
             switch (currentCharacter)
             {
-                case JsonSymbols.StringDelimiter:
+                case JsonSymbols.QuotationMark:
                     return ReadStringToken();
                 case JsonSymbols.FalseFirstCharacter:
                     return ReadConstant(json, JsonTokenType.False, JsonSymbols.False);
@@ -65,15 +65,15 @@ namespace Light.Json.Tokenization.Utf16
         public string ReadString()
         {
             var json = _json.Span;
-            if (!TryReadNextCharacter(json, out var currentCharacter) || currentCharacter != JsonSymbols.StringDelimiter)
+            if (!TryReadNextCharacter(json, out var currentCharacter) || currentCharacter != JsonSymbols.QuotationMark)
                 throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
 
             var previousCharacter = '-';
             for (var i = _currentIndex + 1; i < json.Length; ++i)
             {
                 currentCharacter = json[i];
-                if (currentCharacter != JsonSymbols.StringDelimiter ||
-                    previousCharacter == JsonSymbols.EscapeCharacter)
+                if (currentCharacter != JsonSymbols.QuotationMark ||
+                    previousCharacter == JsonSymbols.Backslash)
                 {
                     previousCharacter = currentCharacter;
                     continue;
@@ -262,11 +262,11 @@ namespace Light.Json.Tokenization.Utf16
             var leftBoundedJsonSpan = leftBoundedJson.Span;
             for (var i = 1; i < leftBoundedJsonSpan.Length; ++i)
             {
-                if (leftBoundedJsonSpan[i] != JsonSymbols.StringDelimiter)
+                if (leftBoundedJsonSpan[i] != JsonSymbols.QuotationMark)
                     continue;
 
                 var previousIndex = i - 1;
-                if (previousIndex > 0 && leftBoundedJsonSpan[previousIndex] == JsonSymbols.EscapeCharacter)
+                if (previousIndex > 0 && leftBoundedJsonSpan[previousIndex] == JsonSymbols.Backslash)
                     continue;
 
                 var slicedMemory = leftBoundedJson.Slice(0, i + 1);
