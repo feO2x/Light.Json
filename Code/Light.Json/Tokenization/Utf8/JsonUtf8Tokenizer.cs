@@ -191,6 +191,7 @@ namespace Light.Json.Tokenization.Utf8
                 }
             }
 
+            _currentIndex = json.Length;
             return false;
         }
 

@@ -9,7 +9,7 @@ namespace Light.Json.Tokenization.Utf8
         {
             var json = _jsonInUtf8.Span;
             if (!TrySkipWhiteSpace(json))
-                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition}.");
+                throw new DeserializationException("Expected JSON string but found end of document.");
             if (json[_currentIndex] != JsonSymbols.QuotationMark)
                 throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousTokenInUtf16()}\").");
 
