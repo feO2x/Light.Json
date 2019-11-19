@@ -4,5 +4,6 @@
     {
         TToken GetNextToken();
         string ReadString();
+        int ReadInt32();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Light.GuardClauses;
 using Light.Json.Tokenization.Utf8;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Light.Json.Tests
@@ -46,5 +47,8 @@ namespace Light.Json.Tests
 
             return @string.Length;
         }
+
+        public static void ShouldBeWrittenTo(this Exception exception, ITestOutputHelper output) =>
+            output.WriteLine(exception.ToString());
     }
 }

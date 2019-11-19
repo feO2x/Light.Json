@@ -30,8 +30,13 @@ namespace Light.Json
         {
             if (typeof(TResult) == typeof(string))
             {
-                var dotnetString = context.Tokenizer.ReadString();
-                return Unsafe.As<string, TResult>(ref dotnetString);
+                var @string = context.Tokenizer.ReadString();
+                return Unsafe.As<string, TResult>(ref @string);
+            }
+            if (typeof(TResult) == typeof(int))
+            {
+                var int32 = context.Tokenizer.ReadInt32();
+                return Unsafe.As<int, TResult>(ref int32);
             }
 
             throw new NotImplementedException();
