@@ -27,20 +27,11 @@ namespace Light.Json.Tokenization.Utf8
                 currentCharacter = json[i];
             }
 
-            if (currentCharacter == '0')
-            {
-                _currentPosition += ++i - _currentIndex;
-                _currentIndex = i;
-                return 0;
-            }
-
-            if (!currentCharacter.IsJsonDigitButNotZero())
+            if (!currentCharacter.IsJsonDigit())
                 throw CreateInvalidNumberException();
 
             ++i;
-            var parsedNumber = isNumberPositive ? 
-                                  ReadPositiveInteger(json, currentCharacter, ref i, maximumValue, maximumNumberOfDigits) : 
-                                  ReadNegativeInteger(json, currentCharacter, ref i, minimumValue, maximumNumberOfDigits);
+            var parsedNumber = isNumberPositive ? ReadPositiveInteger(json, currentCharacter, ref i, maximumValue, maximumNumberOfDigits) : ReadNegativeInteger(json, currentCharacter, ref i, minimumValue, maximumNumberOfDigits);
 
             _currentPosition += i - _currentIndex;
             _currentIndex = i;
@@ -50,28 +41,24 @@ namespace Light.Json.Tokenization.Utf8
 
         private long ReadPositiveInteger(in ReadOnlySpan<byte> json, byte currentCharacter, ref int currentIndex, long maximumValue, int maximumNumberOfDigits)
         {
-            var parsedNumber = (long) (currentCharacter - 48);
+            var parsedNumber = (long) (currentCharacter - '0');
             var numberOfDigits = 1;
 
             for (; currentIndex < json.Length; ++currentIndex)
             {
                 currentCharacter = json[currentIndex];
-                if (currentCharacter.IsJsonDigit())
-                {
-                    parsedNumber = parsedNumber * 10 + (currentCharacter - 48);
-                    if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber > maximumValue)
-                        throw new DeserializationException($"The JSON number {GetErroneousToken()} is too big.");
-                }
-                else if (currentCharacter == '.')
-                {
-                    ++currentIndex;
-                    CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
+                if (!currentCharacter.IsJsonDigit())
                     break;
-                }
-                else
-                {
-                    break;
-                }
+
+                parsedNumber = parsedNumber * 10 + (currentCharacter - '0');
+                if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber > maximumValue)
+                    throw new DeserializationException($"The JSON number {GetErroneousToken()} is too big.");
+            }
+
+            if (currentCharacter == '.')
+            {
+                ++currentIndex;
+                CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
             }
 
             return parsedNumber;
@@ -79,28 +66,24 @@ namespace Light.Json.Tokenization.Utf8
 
         private long ReadNegativeInteger(in ReadOnlySpan<byte> json, byte currentCharacter, ref int currentIndex, long minimumValue, int maximumNumberOfDigits)
         {
-            var parsedNumber = -(long) (currentCharacter - 48);
+            var parsedNumber = -(long) (currentCharacter - '0');
             var numberOfDigits = 1;
 
             for (; currentIndex < json.Length; ++currentIndex)
             {
                 currentCharacter = json[currentIndex];
-                if (currentCharacter.IsJsonDigit())
-                {
-                    parsedNumber = parsedNumber * 10 - (currentCharacter - 48);
-                    if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber < minimumValue)
-                        throw new DeserializationException($"The JSON number {GetErroneousToken()} is too small.");
-                }
-                else if (currentCharacter == '.')
-                {
-                    ++currentIndex;
-                    CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
+                if (!currentCharacter.IsJsonDigit())
                     break;
-                }
-                else
-                {
-                    break;
-                }
+
+                parsedNumber = parsedNumber * 10 - (currentCharacter - '0');
+                if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber < minimumValue)
+                    throw new DeserializationException($"The JSON number {GetErroneousToken()} is too small.");
+            }
+
+            if (currentCharacter == '.')
+            {
+                ++currentIndex;
+                CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
             }
 
             return parsedNumber;
@@ -131,6 +114,6 @@ namespace Light.Json.Tokenization.Utf8
             new DeserializationException($"Found invalid JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition}.");
 
         private DeserializationException CreateInvalidDecimalInIntegerNumberException() =>
-            new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number");
+            new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number.");
     }
 }
