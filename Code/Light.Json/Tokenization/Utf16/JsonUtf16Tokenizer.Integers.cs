@@ -68,6 +68,10 @@ namespace Light.Json.Tokenization.Utf16
                     CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
                     break;
                 }
+                else
+                {
+                    break;
+                }
             }
 
             return parsedNumber;
@@ -91,6 +95,10 @@ namespace Light.Json.Tokenization.Utf16
                 {
                     ++currentIndex;
                     CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
+                    break;
+                }
+                else
+                {
                     break;
                 }
             }

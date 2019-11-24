@@ -8,7 +8,7 @@ namespace Light.Json.Tokenization.Utf8
     {
         private static readonly byte[] NewLineCharacters = Environment.NewLine.ToUtf8();
         private static readonly byte NewLineFirstCharacter;
-        private readonly ReadOnlyMemory<byte> _jsonInUtf8;
+        private readonly ReadOnlyMemory<byte> _json;
         private int _currentIndex;
         private int _currentLine;
         private int _currentPosition;
@@ -19,9 +19,9 @@ namespace Light.Json.Tokenization.Utf8
             NewLineFirstCharacter = NewLineCharacters[0];
         }
 
-        public JsonUtf8Tokenizer(ReadOnlyMemory<byte> jsonInUtf8)
+        public JsonUtf8Tokenizer(ReadOnlyMemory<byte> json)
         {
-            _jsonInUtf8 = jsonInUtf8;
+            _json = json;
             _currentIndex = 0;
             _currentLine = 1;
             _currentPosition = 1;
@@ -29,7 +29,7 @@ namespace Light.Json.Tokenization.Utf8
 
         public JsonUtf8Token GetNextToken()
         {
-            var json = _jsonInUtf8.Span;
+            var json = _json.Span;
             if (!TryReadNextCharacter(json, out var currentCharacter))
                 return new JsonUtf8Token(JsonTokenType.EndOfDocument, default, 0, 0, _currentLine, _currentPosition);
 
@@ -88,7 +88,7 @@ namespace Light.Json.Tokenization.Utf8
                 break;
             }
 
-            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
             _currentPosition += token.Memory.Length;
@@ -114,7 +114,7 @@ namespace Light.Json.Tokenization.Utf8
             if (currentIndex == _currentIndex + 1)
                 Throw($"Expected digit after minus sign at line {_currentLine} position {_currentPosition}.");
 
-            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.IntegerNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
             _currentPosition += token.Memory.Length;
@@ -135,11 +135,11 @@ namespace Light.Json.Tokenization.Utf8
 
             if (currentIndex == decimalSymbolIndex + 1)
             {
-                var erroneousToken = GetErroneousTokenInUtf16();
+                var erroneousToken = GetErroneousToken();
                 Throw($"Expected digit after decimal symbol in \"{erroneousToken}\" at line {_currentLine} position {_currentPosition}.");
             }
 
-            var slicedSpan = _jsonInUtf8.Slice(_currentIndex, currentIndex - _currentIndex);
+            var slicedSpan = _json.Slice(_currentIndex, currentIndex - _currentIndex);
             var token = new JsonUtf8Token(JsonTokenType.FloatingPointNumber, slicedSpan, slicedSpan.Length, slicedSpan.Length, _currentLine, _currentPosition);
             _currentIndex += token.Memory.Length;
             _currentPosition += token.Memory.Length;
@@ -148,9 +148,9 @@ namespace Light.Json.Tokenization.Utf8
 
         private JsonUtf8Token ReadConstant(JsonTokenType type, Utf8Constant expectedSymbol)
         {
-            if (_currentIndex + expectedSymbol.ByteLength > _jsonInUtf8.Length)
+            if (_currentIndex + expectedSymbol.ByteLength > _json.Length)
                 ThrowInvalidConstant(expectedSymbol);
-            var slicedBytes = _jsonInUtf8.Slice(_currentIndex, expectedSymbol.ByteLength);
+            var slicedBytes = _json.Slice(_currentIndex, expectedSymbol.ByteLength);
             if (!slicedBytes.Span.SequenceEqual(expectedSymbol.ByteSequence.Span))
                 ThrowInvalidConstant(expectedSymbol);
 
@@ -162,7 +162,7 @@ namespace Light.Json.Tokenization.Utf8
 
         private JsonUtf8Token ReadSingleCharacter(JsonTokenType tokenType, Utf8Character character)
         {
-            var memory = _jsonInUtf8.Slice(_currentIndex, character.ByteLength);
+            var memory = _json.Slice(_currentIndex, character.ByteLength);
             var token = new JsonUtf8Token(tokenType, memory, 1, 1, _currentLine, _currentPosition);
             _currentIndex += character.ByteLength;
             ++_currentPosition;
@@ -277,16 +277,16 @@ namespace Light.Json.Tokenization.Utf8
 
         private void ThrowInvalidConstant(in Utf8Constant expectedToken)
         {
-            var invalidToken = GetErroneousTokenInUtf16();
+            var invalidToken = GetErroneousToken();
             if (invalidToken == null)
                 throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" at line {_currentLine} position {_currentPosition}.");
 
             throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" but actually found \"{invalidToken}\" at line {_currentLine} position {_currentPosition}.");
         }
 
-        private string GetErroneousTokenInUtf16()
+        private string GetErroneousToken()
         {
-            var jsonSpan = _jsonInUtf8.Slice(_currentIndex).Span;
+            var jsonSpan = _json.Slice(_currentIndex).Span;
             for (var i = 0; i < jsonSpan.Length; ++i)
             {
                 if (jsonSpan[i] != (byte) JsonSymbols.LineFeed)

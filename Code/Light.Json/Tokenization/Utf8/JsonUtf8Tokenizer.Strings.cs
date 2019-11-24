@@ -7,11 +7,11 @@ namespace Light.Json.Tokenization.Utf8
     {
         public string ReadString()
         {
-            var json = _jsonInUtf8.Span;
+            var json = _json.Span;
             if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException("Expected JSON string but found end of document.");
             if (json[_currentIndex] != JsonSymbols.QuotationMark)
-                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousTokenInUtf16()}\").");
+                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousToken()}\").");
 
             for (var i = _currentIndex + 1; i < json.Length; ++i)
             {
@@ -35,7 +35,7 @@ namespace Light.Json.Tokenization.Utf8
 
         private JsonUtf8Token ReadStringToken(Utf8Character previousCharacter)
         {
-            var leftBoundJson = _jsonInUtf8.Slice(_currentIndex);
+            var leftBoundJson = _json.Slice(_currentIndex);
 
             var currentIndex = 1;
             var numberOfCharacters = 1;
@@ -295,9 +295,9 @@ namespace Light.Json.Tokenization.Utf8
         }
 
         private DeserializationException CreateEndOfJsonStringNotFoundException() =>
-            new DeserializationException($"Could not find end of JSON string \"{GetErroneousTokenInUtf16()}\" at line {_currentLine} position {_currentPosition}.");
+            new DeserializationException($"Could not find end of JSON string \"{GetErroneousToken()}\" at line {_currentLine} position {_currentPosition}.");
 
         private DeserializationException CreateInvalidEscapeSequenceInJsonStringException() =>
-            new DeserializationException($"Found invalid escape sequence in JSON string \"{GetErroneousTokenInUtf16()}\" at line {_currentLine} position {_currentPosition}.");
+            new DeserializationException($"Found invalid escape sequence in JSON string \"{GetErroneousToken()}\" at line {_currentLine} position {_currentPosition}.");
     }
 }
