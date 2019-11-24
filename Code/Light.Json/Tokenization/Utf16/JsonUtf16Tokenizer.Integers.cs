@@ -60,13 +60,19 @@ namespace Light.Json.Tokenization.Utf16
                 ++currentIndex;
                 CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
             }
+            else if (currentCharacter == 'e' || currentCharacter == 'E')
+            {
+                ++currentIndex;
+                var exponent = ParseExponent(json, ref currentIndex);
+                parsedNumber = ApplyExponent(parsedNumber, exponent);
+            }
 
             return parsedNumber;
         }
 
         private long ReadNegativeInteger(in ReadOnlySpan<char> json, char currentCharacter, ref int currentIndex, long minimumValue, int maximumNumberOfDigits)
         {
-            var parsedNumber = -(long) (currentCharacter - 48);
+            var parsedNumber = -(long) (currentCharacter - '0');
             var numberOfDigits = 1;
 
             for (; currentIndex < json.Length; ++currentIndex)
@@ -75,7 +81,7 @@ namespace Light.Json.Tokenization.Utf16
                 if (!currentCharacter.IsJsonDigit())
                     break;
 
-                parsedNumber = parsedNumber * 10 - (currentCharacter - 48);
+                parsedNumber = parsedNumber * 10 - (currentCharacter - '0');
                 if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber < minimumValue)
                     throw new DeserializationException($"The JSON number {GetErroneousToken()} is too small.");
             }
@@ -84,6 +90,90 @@ namespace Light.Json.Tokenization.Utf16
             {
                 ++currentIndex;
                 CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
+            }
+
+
+            return parsedNumber;
+        }
+
+        private int ParseExponent(in ReadOnlySpan<char> json, ref int currentIndex)
+        {
+            var isMantissaPositive = true;
+            var currentCharacter = json[currentIndex];
+            if (currentCharacter == '-')
+            {
+                isMantissaPositive = false;
+                if (++currentIndex == json.Length)
+                    throw CreateInvalidExponentException();
+                currentCharacter = json[currentIndex];
+            }
+            else if (currentCharacter == '+')
+            {
+                if (++currentIndex == json.Length)
+                    throw CreateInvalidExponentException();
+                currentCharacter = json[currentIndex];
+            }
+
+            if (!currentCharacter.IsJsonDigit())
+                throw CreateInvalidExponentException();
+
+            var exponent = currentCharacter - '0';
+            var numberOfDigits = 1;
+            for (; currentIndex < json.Length; ++currentIndex)
+            {
+                currentCharacter = json[currentIndex];
+                if (currentCharacter.IsJsonDigit())
+                    break;
+
+                if (++numberOfDigits < 10)
+                {
+                    exponent = exponent * 10 + (currentCharacter - '0');
+                }
+                else
+                {
+
+                    try
+                    {
+                        checked
+                        {
+                            exponent = exponent * 10 + (currentCharacter - '0');
+                        }
+                    }
+                    catch (OverflowException exception)
+                    {
+                        throw CreateExponentOverflowException(exception);
+                    }
+                }
+            }
+
+            return isMantissaPositive ? exponent : -exponent;
+        }
+
+        private long ApplyExponent(long parsedNumber, int exponent)
+        {
+            if (exponent > 0)
+            {
+                while (exponent-- > 0)
+                {
+                    if (parsedNumber < 100_000_000)
+                    {
+                        parsedNumber *= 10;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            checked
+                            {
+                                parsedNumber *= 10;
+                            }
+                        }
+                        catch (OverflowException exception)
+                        {
+                            throw CreateOverflowException(exception);
+                        }
+                    }
+                }
             }
 
             return parsedNumber;
@@ -110,13 +200,29 @@ namespace Light.Json.Tokenization.Utf16
             }
         }
 
-        private DeserializationException CreateInvalidNumberException() =>
-            new DeserializationException($"Found invalid JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition}.");
+        private DeserializationException CreateInvalidNumberException()
+        {
+            return new DeserializationException($"Found invalid JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition}.");
+        }
 
-        private DeserializationException CreateInvalidDecimalInIntegerNumberException() =>
-            new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number.");
+        private DeserializationException CreateInvalidDecimalInIntegerNumberException()
+        {
+            return new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number.");
+        }
 
-        private DeserializationException CreateInvalidExponentException() =>
-            new DeserializationException($"Found invalid JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} (exponent is invalid).");
+        private DeserializationException CreateInvalidExponentException()
+        {
+            return new DeserializationException($"Found invalid JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} (exponent is invalid).");
+        }
+
+        private DeserializationException CreateExponentOverflowException(Exception innerException = null)
+        {
+            return new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed because the exponent overflows.", innerException);
+        }
+
+        private DeserializationException CreateOverflowException(OverflowException innerException = null)
+        {
+            return new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed because it produces an overflow.", innerException);
+        }
     }
 }

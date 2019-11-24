@@ -71,7 +71,8 @@ namespace Light.Json.Tests.Deserialization
                 { "3.0", 3 },
                 { "0.000", 0 },
                 { int.MaxValue.ToString(), int.MaxValue },
-                { int.MinValue.ToString(), int.MinValue }
+                { int.MinValue.ToString(), int.MinValue },
+                { "7E2", 700 }
             };
 
         [Theory]
