@@ -286,23 +286,48 @@ namespace Light.Json.Tokenization.Utf8
 
         private string GetErroneousToken()
         {
-            var jsonSpan = _json.Slice(_currentIndex).Span;
-            for (var i = 0; i < jsonSpan.Length; ++i)
+            var remainingJsonLength = _json.Length - _currentIndex;
+            var json = _json.Slice(_currentIndex, Math.Min(remainingJsonLength, 40)).Span;
+
+            if (json.IsEmpty)
+                return "";
+
+            if (json[0] == '"')
+                return GetErroneousJsonStringToken(json);
+
+            for (var i = 0; i < json.Length; ++i)
             {
-                if (jsonSpan[i] != (byte) JsonSymbols.LineFeed)
-                    continue;
-
-                var length = i;
-                if (i - 1 > 0 && jsonSpan[i - 1] == JsonSymbols.CarriageReturn)
-                    --length;
-
-                return jsonSpan.ConvertFromUtf8ToString(length);
+                switch (json[i])
+                {
+                    case (byte) '\n':
+                        var length = i;
+                        if (i - 1 > 0 && json[i - 1] == '\r')
+                            --length;
+                        return json.ConvertFromUtf8ToString(length);
+                    case (byte) ',':
+                    case (byte) ':':
+                    case (byte) ']':
+                    case (byte) '}':
+                        return json.ConvertFromUtf8ToString(i);
+                }
             }
 
-            if (jsonSpan.Length > 40)
-                jsonSpan = jsonSpan.Slice(0, 40);
+            return json.ConvertFromUtf8ToString();
+        }
 
-            return jsonSpan.ConvertFromUtf8ToString();
+        private static string GetErroneousJsonStringToken(in ReadOnlySpan<byte> utf8Json)
+        {
+            byte previousCharacter = 0;
+            for (var i = 1; i < utf8Json.Length; ++i)
+            {
+                var currentCharacter = utf8Json[i];
+                if (currentCharacter == '"' && previousCharacter != '\\')
+                    return utf8Json.ConvertFromUtf8ToString(Math.Min(utf8Json.Length, i + 1));
+
+                previousCharacter = currentCharacter;
+            }
+
+            return utf8Json.ConvertFromUtf8ToString();
         }
 
         public override bool Equals(object obj) =>

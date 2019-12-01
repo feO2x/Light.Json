@@ -10,14 +10,14 @@ namespace Light.Json.Tokenization.Utf8
             var json = _json.Span;
             if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException("Expected JSON string but found end of document.");
-            if (json[_currentIndex] != JsonSymbols.QuotationMark)
+            if (json[_currentIndex] != '"')
                 throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousToken()}\").");
 
             for (var i = _currentIndex + 1; i < json.Length; ++i)
             {
                 switch (json[i])
                 {
-                    case (byte) JsonSymbols.QuotationMark:
+                    case (byte) '"':
                         var targetSpan = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
                         _currentIndex += targetSpan.Length;
 
@@ -25,7 +25,7 @@ namespace Light.Json.Tokenization.Utf8
 
                         _currentPosition += targetString.Length + 2;
                         return targetString;
-                    case (byte) JsonSymbols.Backslash:
+                    case (byte) '\\':
                         return ReadStringWithEscapeSequences(json, i);
                 }
             }

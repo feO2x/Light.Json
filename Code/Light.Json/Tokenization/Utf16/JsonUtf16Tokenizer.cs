@@ -213,9 +213,48 @@ namespace Light.Json.Tokenization.Utf16
 
         private string GetErroneousToken()
         {
-            var leftBoundJson = _json.Slice(_currentIndex);
-            var erroneousToken = leftBoundJson.Slice(0, Math.Min(40, leftBoundJson.Length));
-            return erroneousToken.ToString();
+            var remainingJsonLength = _json.Length - _currentIndex;
+            var json = _json.Slice(_currentIndex, Math.Min(remainingJsonLength, 40)).Span;
+
+           if (json.IsEmpty)
+                return "";
+
+            if (json[0] == '"')
+                return GetErroneousJsonStringToken(json);
+
+            for (var i = 0; i < json.Length; ++i)
+            {
+                switch (json[i])
+                {
+                    case '\n':
+                        var length = i;
+                        if (i - 1 > 0 && json[i - 1] == '\r')
+                            --length;
+                        return json.Slice(0, length).ToString();
+                    case ',':
+                    case ':':
+                    case ']':
+                    case '}':
+                        return json.Slice(0, i).ToString();
+                }
+            }
+
+            return json.ToString();
+        }
+
+        private static string GetErroneousJsonStringToken(in ReadOnlySpan<char> json)
+        {
+            var previousCharacter = default(char);
+            for (var i = 1; i < json.Length; ++i)
+            {
+                var currentCharacter = json[i];
+                if (currentCharacter == '"' && previousCharacter != '\\')
+                    return json.Slice(0, Math.Min(json.Length, i + 1)).ToString();
+
+                previousCharacter = currentCharacter;
+            }
+
+            return json.ToString();
         }
 
         private JsonUtf16Token ReadNegativeNumber(ReadOnlySpan<char> json)
