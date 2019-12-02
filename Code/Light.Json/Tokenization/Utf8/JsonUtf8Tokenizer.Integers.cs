@@ -1,5 +1,5 @@
 ﻿using System;
-using Light.Json.FrameworkExtensions;
+using System.Buffers.Text;
 
 namespace Light.Json.Tokenization.Utf8
 {
@@ -7,107 +7,120 @@ namespace Light.Json.Tokenization.Utf8
     {
         public int ReadInt32()
         {
-            return (int) ReadSignedInteger(int.MinValue, int.MaxValue, 10);
+            return (int) ReadSignedInteger(int.MinValue, int.MaxValue, "System.Int32");
         }
 
-        private long ReadSignedInteger(long minimumValue, long maximumValue, int maximumNumberOfDigits)
+        private long ReadSignedInteger(long minimum, long maximum, string typeName)
         {
             var json = _json.Span;
             if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException("Expected JSON integer number but found end of document.");
 
-            var i = _currentIndex;
-            var currentCharacter = json[i];
-            var isNumberPositive = true;
-            if (currentCharacter == '-')
-            {
-                isNumberPositive = false;
-                if (++i == json.Length)
-                    throw CreateInvalidNumberException();
-                currentCharacter = json[i];
-            }
-
-            if (!currentCharacter.IsJsonDigit())
+            json = json.Slice(_currentIndex);
+            if (!Utf8Parser.TryParse(json, out long parsedNumber, out var currentIndex))
                 throw CreateInvalidNumberException();
 
-            ++i;
-            var parsedNumber = isNumberPositive ? ReadPositiveInteger(json, currentCharacter, ref i, maximumValue, maximumNumberOfDigits) : ReadNegativeInteger(json, currentCharacter, ref i, minimumValue, maximumNumberOfDigits);
+            if (json.Length == currentIndex)
+                goto UpdateStateAndReturnParsedNumber;
 
-            _currentPosition += i - _currentIndex;
-            _currentIndex = i;
+            var currentCharacter = json[currentIndex++];
+            switch (currentCharacter)
+            {
+                case (byte) '.':
+                    parsedNumber = EnsureDigitsAfterDecimalPointAreZero(json, ref currentIndex, parsedNumber);
+                    goto UpdateStateAndReturnParsedNumber;
+                case (byte) 'e':
+                case (byte) 'E':
+                    parsedNumber = ParseAndApplyExponent(json, ref currentIndex, parsedNumber);
+                    goto UpdateStateAndReturnParsedNumber;
+            }
+
+            UpdateStateAndReturnParsedNumber:
+            if (parsedNumber < minimum || parsedNumber > maximum)
+                throw CreateOverflowException(typeName);
+
+            _currentPosition += currentIndex;
+            _currentIndex += currentIndex;
+            return parsedNumber;
+        }
+
+        private long EnsureDigitsAfterDecimalPointAreZero(ReadOnlySpan<byte> json, ref int externalIndex, long parsedNumber)
+        {
+            if (externalIndex == json.Length)
+                throw CreateInvalidNumberException();
+
+            json = json.Slice(externalIndex);
+            if (!Utf8Parser.TryParse(json, out long @decimal, out var internalIndex))
+                throw CreateInvalidNumberException();
+
+            if (@decimal != 0L)
+                throw CreateInvalidDecimalInIntegerNumberException();
+
+            if (internalIndex == json.Length)
+                goto ReturnParsedNumber;
+
+            var currentCharacter = json[internalIndex];
+            if (currentCharacter == 'e' || currentCharacter == 'E')
+                parsedNumber = ParseAndApplyExponent(json, ref internalIndex, parsedNumber);
+
+            ReturnParsedNumber:
+            externalIndex += internalIndex;
+            return parsedNumber;
+        }
+
+        private long ParseAndApplyExponent(ReadOnlySpan<byte> json, ref int externalIndex, long parsedNumber)
+        {
+            if (externalIndex == json.Length)
+                throw CreateInvalidNumberException();
+
+            json = json.Slice(externalIndex);
+            if (!Utf8Parser.TryParse(json, out int exponent, out var internalIndex))
+                throw CreateInvalidNumberException();
+
+            if (exponent != 0)
+                parsedNumber = exponent > 0 ? ApplyPositiveExponent(parsedNumber, exponent) : ApplyNegativeExponent(parsedNumber, exponent);
+
+            externalIndex += internalIndex;
+            return parsedNumber;
+        }
+
+        private long ApplyPositiveExponent(long parsedNumber, int exponent)
+        {
+            while (exponent-- > 0)
+            {
+                if (parsedNumber < 100_000_000_000_000_000L)
+                {
+                    parsedNumber *= 10L;
+                }
+                else
+                {
+                    try
+                    {
+                        checked
+                        {
+                            parsedNumber *= 10;
+                        }
+                    }
+                    catch (OverflowException overflowException)
+                    {
+                        throw CreateInt64OverflowException(overflowException);
+                    }
+                }
+            }
 
             return parsedNumber;
         }
 
-        private long ReadPositiveInteger(in ReadOnlySpan<byte> json, byte currentCharacter, ref int currentIndex, long maximumValue, int maximumNumberOfDigits)
+        private long ApplyNegativeExponent(long parsedNumber, int exponent)
         {
-            var parsedNumber = (long) (currentCharacter - '0');
-            var numberOfDigits = 1;
-
-            for (; currentIndex < json.Length; ++currentIndex)
+            while (exponent-- > 0)
             {
-                currentCharacter = json[currentIndex];
-                if (!currentCharacter.IsJsonDigit())
-                    break;
-
-                parsedNumber = parsedNumber * 10 + (currentCharacter - '0');
-                if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber > maximumValue)
-                    throw new DeserializationException($"The JSON number {GetErroneousToken()} is too big.");
-            }
-
-            if (currentCharacter == '.')
-            {
-                ++currentIndex;
-                CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
+                parsedNumber = Math.DivRem(parsedNumber, 10, out var remainder);
+                if (remainder > 0)
+                    throw CreateInvalidNegativeExponentException();
             }
 
             return parsedNumber;
-        }
-
-        private long ReadNegativeInteger(in ReadOnlySpan<byte> json, byte currentCharacter, ref int currentIndex, long minimumValue, int maximumNumberOfDigits)
-        {
-            var parsedNumber = -(long) (currentCharacter - '0');
-            var numberOfDigits = 1;
-
-            for (; currentIndex < json.Length; ++currentIndex)
-            {
-                currentCharacter = json[currentIndex];
-                if (!currentCharacter.IsJsonDigit())
-                    break;
-
-                parsedNumber = parsedNumber * 10 - (currentCharacter - '0');
-                if (++numberOfDigits >= maximumNumberOfDigits && parsedNumber < minimumValue)
-                    throw new DeserializationException($"The JSON number {GetErroneousToken()} is too small.");
-            }
-
-            if (currentCharacter == '.')
-            {
-                ++currentIndex;
-                CheckIfOnlyZeroesAreAfterDecimalPoint(json, ref currentIndex);
-            }
-
-            return parsedNumber;
-        }
-
-        private void CheckIfOnlyZeroesAreAfterDecimalPoint(in ReadOnlySpan<byte> json, ref int i)
-        {
-            if (i == json.Length)
-                throw CreateInvalidNumberException();
-
-            var digitAfterDecimalPoint = json[i];
-            if (digitAfterDecimalPoint != '0')
-                throw CreateInvalidNumberException();
-
-            for (++i; i < json.Length; ++i)
-            {
-                var currentCharacter = json[i];
-                if (currentCharacter == '0')
-                    continue;
-                if (currentCharacter.IsJsonDigitButNotZero())
-                    throw CreateInvalidDecimalInIntegerNumberException();
-
-                return;
-            }
         }
 
         private DeserializationException CreateInvalidNumberException() =>
@@ -115,5 +128,14 @@ namespace Light.Json.Tokenization.Utf8
 
         private DeserializationException CreateInvalidDecimalInIntegerNumberException() =>
             new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number.");
+
+        private DeserializationException CreateInt64OverflowException(Exception innerException) =>
+            new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} causes an overflow.", innerException);
+
+        private DeserializationException CreateOverflowException(string typeName) =>
+            new DeserializationException($"The JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to type \"{typeName}\" without producing an overflow.");
+
+        private DeserializationException CreateInvalidNegativeExponentException() =>
+            new DeserializationException($"The negative exponent of JSON number {GetErroneousToken()} at line {_currentLine} position {_currentPosition} cannot be parsed to an integer number.");
     }
 }
