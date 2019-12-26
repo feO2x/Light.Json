@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Light.Json.FrameworkExtensions
 {
-    public static class SpanExtensions
+    public static class Utf8Conversion
     {
         public static unsafe string ConvertFromUtf8ToString(this ReadOnlySpan<byte> utf8Span)
         {
