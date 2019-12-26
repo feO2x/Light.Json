@@ -9,31 +9,30 @@ namespace Light.Json.Tests.PrimitiveParsing
     public static class IntegerParserTests
     {
         [Theory]
-        [InlineData(0L)]
-        [InlineData(long.MinValue)]
-        [InlineData(long.MaxValue)]
-        [InlineData(long.MinValue / 10)]
-        [InlineData(long.MinValue + 1)]
-        [InlineData(long.MaxValue / 10)]
-        [InlineData(long.MaxValue - 1)]
-        public static void ValidInt64(long number)
-        {
-            var serializedNumber = new ReadOnlySpan<byte>(number.ToString().ToUtf8());
-
-            var result = serializedNumber.TryParseInt64(out var parsedNumber, out var bytesConsumed);
-
-            result.Should().Be(IntegerParseResult.Success);
-            parsedNumber.Should().Be(number);
-            bytesConsumed.Should().Be(serializedNumber.Length);
-        }
+        [MemberData(nameof(ValidInt64Data))]
+        public static void ValidInt64Utf8(long number) =>
+            TestValidNumberUtf8(number.ToString(), number);
 
         [Theory]
-        [InlineData("-")]
-        [InlineData("+")]
-        [InlineData("k")]
-        [InlineData("%!$")]
-        [InlineData("")]
-        public static void InvalidInt64(string invalidNumber)
+        [MemberData(nameof(ValidInt64Data))]
+        public static void ValidInt64Utf16(long number) =>
+            TestValidNumberUtf16(number.ToString(), number);
+
+        public static readonly TheoryData<long> ValidInt64Data =
+            new TheoryData<long>
+            {
+                0L,
+                long.MinValue,
+                long.MaxValue,
+                long.MinValue / 10,
+                long.MinValue + 1,
+                long.MaxValue / 10,
+                long.MaxValue - 1
+            };
+
+        [Theory]
+        [MemberData(nameof(InvalidNumberData))]
+        public static void InvalidInt64Utf8(string invalidNumber)
         {
             var span = new ReadOnlySpan<byte>(invalidNumber.ToUtf8());
 
@@ -43,13 +42,79 @@ namespace Light.Json.Tests.PrimitiveParsing
         }
 
         [Theory]
-        [InlineData("00", 0L)]
-        [InlineData("000000", 0L)]
-        [InlineData("00000140105", 140105L)]
-        [InlineData("-00000000001032", -1032L)]
-        [InlineData("000000009223372036854775807", long.MaxValue)]
-        [InlineData("-000009223372036854775808", long.MinValue)]
-        public static void LeadingZeroes(string serializedNumber, long expectedNumber)
+        [MemberData(nameof(InvalidNumberData))]
+        public static void InvalidIn64Utf16(string invalidNumber)
+        {
+            var span = invalidNumber.AsSpan();
+
+            var result = span.TryParseInt64(out _, out _);
+
+            result.Should().Be(IntegerParseResult.NoNumber);
+        }
+
+        public static readonly TheoryData<string> InvalidNumberData =
+            new TheoryData<string>
+            {
+                "-",
+                "+",
+                "k",
+                "%!$",
+                ""
+            };
+
+        [Theory]
+        [MemberData(nameof(LeadingZeroesData))]
+        public static void LeadingZeroesUtf8(string serializedNumber, long expectedNumber) =>
+            TestValidNumberUtf8(serializedNumber, expectedNumber);
+
+        [Theory]
+        [MemberData(nameof(LeadingZeroesData))]
+        public static void LeadingZeroesUtf16(string serializedNumber, long expectedNumber) =>
+            TestValidNumberUtf16(serializedNumber, expectedNumber);
+
+        public static readonly TheoryData<string, long> LeadingZeroesData =
+            new TheoryData<string, long>
+            {
+                { "00", 0L },
+                { "000000", 0L },
+                { "00000140105", 140105L },
+                { "-00000000001032", -1032L },
+                { "000000009223372036854775807", long.MaxValue },
+                { "-000009223372036854775808", long.MinValue }
+            };
+
+        [Theory]
+        [MemberData(nameof(OverflowData))]
+        public static void OverflowUtf8(string serializedNumber)
+        {
+            var span = new ReadOnlySpan<byte>(serializedNumber.ToUtf8());
+
+            var result = span.TryParseInt64(out _, out _);
+
+            result.Should().Be(IntegerParseResult.Overflow);
+        }
+
+        [Theory]
+        [MemberData(nameof(OverflowData))]
+        public static void OverflowUtf16(string serializedNumber)
+        {
+            var span = serializedNumber.AsSpan();
+
+            var result = span.TryParseInt64(out _, out _);
+
+            result.Should().Be(IntegerParseResult.Overflow);
+        }
+
+        public static readonly TheoryData<string> OverflowData =
+            new TheoryData<string>
+            {
+                "9223372036854775808",
+                "-9223372036854775809",
+                "129223372036854775807",
+                "-3921219223372036854775807"
+            };
+
+        private static void TestValidNumberUtf8(string serializedNumber, long expectedNumber)
         {
             var span = new ReadOnlySpan<byte>(serializedNumber.ToUtf8());
 
@@ -60,18 +125,15 @@ namespace Light.Json.Tests.PrimitiveParsing
             bytesConsumed.Should().Be(span.Length);
         }
 
-        [Theory]
-        [InlineData("9223372036854775808")]
-        [InlineData("-9223372036854775809")]
-        [InlineData("129223372036854775807")]
-        [InlineData("-3921219223372036854775807")]
-        public static void Overflow(string serializedNumber)
+        private static void TestValidNumberUtf16(string serializedNumber, long expectedNumber)
         {
-            var span = new ReadOnlySpan<byte>(serializedNumber.ToUtf8());
+            var span = serializedNumber.AsSpan();
 
-            var result = span.TryParseInt64(out _, out _);
+            var result = span.TryParseInt64(out var parsedNumber, out var bytesConsumed);
 
-            result.Should().Be(IntegerParseResult.Overflow);
+            result.Should().Be(IntegerParseResult.Success);
+            parsedNumber.Should().Be(expectedNumber);
+            bytesConsumed.Should().Be(span.Length);
         }
     }
 }
