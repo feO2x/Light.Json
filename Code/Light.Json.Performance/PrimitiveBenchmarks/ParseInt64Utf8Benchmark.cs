@@ -34,7 +34,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public long LightJson()
         {
-            if (IntegerParser.TryParseInt64(SerializedValue.NumberInUtf8, out var value, out _) != IntegerParseResult.Success)
+            if (IntegerParser.TryParseInt64(SerializedValue.NumberInUtf8, out var value, out _) != IntegerParseResult.ParsingSuccessful)
                 throw new InvalidOperationException();
             return value;
         }

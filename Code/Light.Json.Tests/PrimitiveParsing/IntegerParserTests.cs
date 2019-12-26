@@ -84,6 +84,25 @@ namespace Light.Json.Tests.PrimitiveParsing
             };
 
         [Theory]
+        [MemberData(nameof(DecimalZeroesData))]
+        public static void DecimalZeroesUtf8(string serializedNumber, long expectedNumber) =>
+            TestValidNumberUtf8(serializedNumber, expectedNumber);
+
+        [Theory]
+        [MemberData(nameof(DecimalZeroesData))]
+        public static void DecimalZeroesUtf16(string serializedNumber, long expectedNumber) =>
+            TestValidNumberUtf16(serializedNumber, expectedNumber);
+
+        public static readonly TheoryData<string, long> DecimalZeroesData =
+            new TheoryData<string, long>
+            {
+                { "1.0", 1L },
+                { "00042.000", 42L },
+                { "192020192941341.000000000", 192020192941341L },
+                { "9223372036854775807.000", long.MaxValue }
+            };
+
+        [Theory]
         [MemberData(nameof(OverflowData))]
         public static void OverflowUtf8(string serializedNumber)
         {
@@ -120,7 +139,7 @@ namespace Light.Json.Tests.PrimitiveParsing
 
             var result = span.TryParseInt64(out var parsedNumber, out var bytesConsumed);
 
-            result.Should().Be(IntegerParseResult.Success);
+            result.Should().Be(IntegerParseResult.ParsingSuccessful);
             parsedNumber.Should().Be(expectedNumber);
             bytesConsumed.Should().Be(span.Length);
         }
@@ -131,7 +150,7 @@ namespace Light.Json.Tests.PrimitiveParsing
 
             var result = span.TryParseInt64(out var parsedNumber, out var bytesConsumed);
 
-            result.Should().Be(IntegerParseResult.Success);
+            result.Should().Be(IntegerParseResult.ParsingSuccessful);
             parsedNumber.Should().Be(expectedNumber);
             bytesConsumed.Should().Be(span.Length);
         }

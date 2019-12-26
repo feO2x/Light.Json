@@ -8,9 +8,9 @@ namespace Light.Json.PrimitiveParsing
         private const long Int64MaximumThreshold = long.MaxValue / 10;
         private const long Int64MinimumThreshold = long.MinValue / 10;
 
-        public static IntegerParseResult TryParseInt64(this ReadOnlySpan<byte> source, out long number, out int bytesConsumed)
+        public static IntegerParseResult TryParseInt64(this ReadOnlySpan<byte> utf8Source, out long number, out int bytesConsumed)
         {
-            if (source.Length == 0)
+            if (utf8Source.Length == 0)
             {
                 bytesConsumed = 0;
                 number = default;
@@ -18,30 +18,30 @@ namespace Light.Json.PrimitiveParsing
             }
 
             bytesConsumed = 0;
-            var currentCharacter = source[bytesConsumed];
+            var currentCharacter = utf8Source[bytesConsumed];
 
             // Check for sign
             var isPositiveNumber = true;
             if (currentCharacter == '-')
             {
                 isPositiveNumber = false;
-                if (++bytesConsumed == source.Length)
+                if (++bytesConsumed == utf8Source.Length)
                 {
                     number = default;
                     return IntegerParseResult.NoNumber;
                 }
 
-                currentCharacter = source[bytesConsumed];
+                currentCharacter = utf8Source[bytesConsumed];
             }
             else if (currentCharacter == '+')
             {
-                if (++bytesConsumed == source.Length)
+                if (++bytesConsumed == utf8Source.Length)
                 {
                     number = default;
                     return IntegerParseResult.NoNumber;
                 }
 
-                currentCharacter = source[bytesConsumed];
+                currentCharacter = utf8Source[bytesConsumed];
             }
 
             // If the first character is no digit, then it's not a valid number
@@ -55,55 +55,59 @@ namespace Light.Json.PrimitiveParsing
             if (currentCharacter == '0')
             {
                 IgnoreZero:
-                if (++bytesConsumed == source.Length)
+                if (++bytesConsumed == utf8Source.Length)
                 {
                     number = 0;
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
                 }
 
-                currentCharacter = source[bytesConsumed];
+                currentCharacter = utf8Source[bytesConsumed];
                 if (currentCharacter == '0')
                     goto IgnoreZero;
 
                 if (!currentCharacter.IsJsonDigitButNotZero())
                 {
                     number = 0;
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
                 }
             }
 
             number = currentCharacter - '0';
 
-            return isPositiveNumber ? TryReadPositiveInt64(source, ref number, ref bytesConsumed) : TryReadNegativeInt64(source, ref number, ref bytesConsumed);
+            return isPositiveNumber ? TryReadPositiveInt64(utf8Source, ref number, ref bytesConsumed) : TryReadNegativeInt64(utf8Source, ref number, ref bytesConsumed);
         }
 
-        private static IntegerParseResult TryReadPositiveInt64(in ReadOnlySpan<byte> source, ref long number, ref int bytesConsumed)
+        private static IntegerParseResult TryReadPositiveInt64(in ReadOnlySpan<byte> utf8Source, ref long number, ref int bytesConsumed)
         {
             // The calling method already has read the first digit.
             // The digits up to digit 18 can be applied without causing an overflow for Int64.
             var targetIndex = bytesConsumed + 18;
             byte currentCharacter;
-            if (source.Length <= targetIndex)
+            if (utf8Source.Length <= targetIndex)
             {
-                for (++bytesConsumed; bytesConsumed < source.Length; ++bytesConsumed)
+                for (++bytesConsumed; bytesConsumed < utf8Source.Length; ++bytesConsumed)
                 {
-                    currentCharacter = source[bytesConsumed];
+                    currentCharacter = utf8Source[bytesConsumed];
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 + currentCharacter - '0';
+                    else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
                     else
-                        return IntegerParseResult.Success;
+                        return IntegerParseResult.ParsingSuccessful;
                 }
 
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
             }
 
             for (++bytesConsumed; bytesConsumed < targetIndex; ++bytesConsumed)
             {
-                currentCharacter = source[bytesConsumed];
+                currentCharacter = utf8Source[bytesConsumed];
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 + currentCharacter - '0';
+                else if (currentCharacter == '.')
+                    return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
                 else
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
             }
 
             /* 19th digit is tricky:
@@ -111,12 +115,12 @@ namespace Light.Json.PrimitiveParsing
              *  - it definitely produces an overflow if number is greater than long.MaxValue / 10
              *  - it produces an overflow if number is equal to long.MaxValue / 10 and the last digit is greater than 7 (last digit of long.MaxValue)
              */
-            if (bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+            if (bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.ParsingSuccessful;
 
-            currentCharacter = source[bytesConsumed];
+            currentCharacter = utf8Source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.Success;
+                return currentCharacter == '.' ? ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed) : IntegerParseResult.ParsingSuccessful;
 
             if (number > Int64MaximumThreshold)
                 return IntegerParseResult.Overflow;
@@ -127,41 +131,45 @@ namespace Light.Json.PrimitiveParsing
             number = number * 10 + lastDigit;
 
             // 20th digit produces an overflow, no matter what
-            if (++bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+            if (++bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.ParsingSuccessful;
 
-            currentCharacter = source[bytesConsumed];
-            return !currentCharacter.IsJsonDigit() ? IntegerParseResult.Success : IntegerParseResult.Overflow;
+            currentCharacter = utf8Source[bytesConsumed];
+            if (currentCharacter.IsJsonDigit())
+                return IntegerParseResult.Overflow;
+            if (currentCharacter == '.')
+                return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
+            return IntegerParseResult.ParsingSuccessful;
         }
 
-        private static IntegerParseResult TryReadNegativeInt64(in ReadOnlySpan<byte> source, ref long number, ref int bytesConsumed)
+        private static IntegerParseResult TryReadNegativeInt64(in ReadOnlySpan<byte> utf8Source, ref long number, ref int bytesConsumed)
         {
             // The calling method already has read the first digit.
             // The digits up to digit 18 can be applied without causing an overflow for Int64.
             number = -number;
             var targetIndex = bytesConsumed + 18;
             byte currentCharacter;
-            if (source.Length <= targetIndex)
+            if (utf8Source.Length <= targetIndex)
             {
-                for (++bytesConsumed; bytesConsumed < source.Length; ++bytesConsumed)
+                for (++bytesConsumed; bytesConsumed < utf8Source.Length; ++bytesConsumed)
                 {
-                    currentCharacter = source[bytesConsumed];
+                    currentCharacter = utf8Source[bytesConsumed];
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 - (currentCharacter - '0');
                     else
-                        return IntegerParseResult.Success;
+                        return IntegerParseResult.ParsingSuccessful;
                 }
 
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
             }
 
             for (++bytesConsumed; bytesConsumed < targetIndex; ++bytesConsumed)
             {
-                currentCharacter = source[bytesConsumed];
+                currentCharacter = utf8Source[bytesConsumed];
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 - (currentCharacter - '0');
                 else
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
             }
 
             /* 19th digit is tricky:
@@ -169,12 +177,12 @@ namespace Light.Json.PrimitiveParsing
              *  - it definitely produces an overflow if number is less than long.MinValue / 10
              *  - it produces an overflow if number is equal to long.MinValue / 10 and the last digit is greater than 7 (last digit of long.MaxValue)
              */
-             if (bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+            if (bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.ParsingSuccessful;
 
-            currentCharacter = source[bytesConsumed];
+            currentCharacter = utf8Source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
 
             if (number < Int64MinimumThreshold)
                 return IntegerParseResult.Overflow;
@@ -185,11 +193,11 @@ namespace Light.Json.PrimitiveParsing
             number = number * 10 - lastDigit;
 
             // 20th digit produces an overflow, no matter what
-            if (++bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+            if (++bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.ParsingSuccessful;
 
-            currentCharacter = source[bytesConsumed];
-            return !currentCharacter.IsJsonDigit() ? IntegerParseResult.Success : IntegerParseResult.Overflow;
+            currentCharacter = utf8Source[bytesConsumed];
+            return currentCharacter.IsJsonDigit() ? IntegerParseResult.Overflow : IntegerParseResult.ParsingSuccessful;
         }
 
         public static IntegerParseResult TryParseInt64(this ReadOnlySpan<char> source, out long number, out int bytesConsumed)
@@ -242,7 +250,7 @@ namespace Light.Json.PrimitiveParsing
                 if (++bytesConsumed == source.Length)
                 {
                     number = 0;
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
                 }
 
                 currentCharacter = source[bytesConsumed];
@@ -252,7 +260,7 @@ namespace Light.Json.PrimitiveParsing
                 if (!currentCharacter.IsJsonDigitButNotZero())
                 {
                     number = 0;
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
                 }
             }
 
@@ -274,11 +282,13 @@ namespace Light.Json.PrimitiveParsing
                     currentCharacter = source[bytesConsumed];
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 + currentCharacter - '0';
+                    else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
                     else
-                        return IntegerParseResult.Success;
+                        return IntegerParseResult.ParsingSuccessful;
                 }
 
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
             }
 
             for (++bytesConsumed; bytesConsumed < targetIndex; ++bytesConsumed)
@@ -286,8 +296,10 @@ namespace Light.Json.PrimitiveParsing
                 currentCharacter = source[bytesConsumed];
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 + currentCharacter - '0';
+                else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
                 else
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
             }
 
             /* 19th digit is tricky:
@@ -296,11 +308,11 @@ namespace Light.Json.PrimitiveParsing
              *  - it produces an overflow if number is equal to long.MaxValue / 10 and the last digit is greater than 7 (last digit of long.MaxValue)
              */
             if (bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
 
             currentCharacter = source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.Success;
+                return currentCharacter == '.' ? ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed) : IntegerParseResult.ParsingSuccessful;
 
             if (number > Int64MaximumThreshold)
                 return IntegerParseResult.Overflow;
@@ -312,10 +324,13 @@ namespace Light.Json.PrimitiveParsing
 
             // 20th digit produces an overflow, no matter what
             if (++bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
 
             currentCharacter = source[bytesConsumed];
-            return !currentCharacter.IsJsonDigit() ? IntegerParseResult.Success : IntegerParseResult.Overflow;
+            if (currentCharacter == '.')
+                return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
+
+            return currentCharacter.IsJsonDigit() ? IntegerParseResult.Overflow : IntegerParseResult.ParsingSuccessful;
         }
 
         private static IntegerParseResult TryReadNegativeInt64(in ReadOnlySpan<char> source, ref long number, ref int bytesConsumed)
@@ -333,10 +348,10 @@ namespace Light.Json.PrimitiveParsing
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 - (currentCharacter - '0');
                     else
-                        return IntegerParseResult.Success;
+                        return IntegerParseResult.ParsingSuccessful;
                 }
 
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
             }
 
             for (++bytesConsumed; bytesConsumed < targetIndex; ++bytesConsumed)
@@ -345,7 +360,7 @@ namespace Light.Json.PrimitiveParsing
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 - (currentCharacter - '0');
                 else
-                    return IntegerParseResult.Success;
+                    return IntegerParseResult.ParsingSuccessful;
             }
 
             /* 19th digit is tricky:
@@ -353,12 +368,12 @@ namespace Light.Json.PrimitiveParsing
              *  - it definitely produces an overflow if number is less than long.MinValue / 10
              *  - it produces an overflow if number is equal to long.MinValue / 10 and the last digit is greater than 7 (last digit of long.MaxValue)
              */
-             if (bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+            if (bytesConsumed == source.Length)
+                return IntegerParseResult.ParsingSuccessful;
 
             currentCharacter = source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
 
             if (number < Int64MinimumThreshold)
                 return IntegerParseResult.Overflow;
@@ -370,10 +385,98 @@ namespace Light.Json.PrimitiveParsing
 
             // 20th digit produces an overflow, no matter what
             if (++bytesConsumed == source.Length)
-                return IntegerParseResult.Success;
+                return IntegerParseResult.ParsingSuccessful;
 
             currentCharacter = source[bytesConsumed];
-            return !currentCharacter.IsJsonDigit() ? IntegerParseResult.Success : IntegerParseResult.Overflow;
+            if (currentCharacter.IsJsonDigit())
+                return IntegerParseResult.Overflow;
+            if (currentCharacter == '.')
+                return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
+            return IntegerParseResult.ParsingSuccessful;
+        }
+
+        public static IntegerParseResult TryParseUInt64(this ReadOnlySpan<byte> utf8Source, out ulong number, out int bytesConsumed)
+        {
+            if (utf8Source.Length == 0)
+            {
+                bytesConsumed = 0;
+                number = default;
+                return IntegerParseResult.NoNumber;
+            }
+
+            bytesConsumed = 0;
+            var currentCharacter = utf8Source[bytesConsumed];
+
+            // Check for sign
+            if (currentCharacter == '-')
+            {
+                number = 0;
+                return TryReadNegativeZero(utf8Source, ref bytesConsumed);
+            }
+
+            if (currentCharacter == '+')
+            {
+                if (++bytesConsumed == utf8Source.Length)
+                {
+                    number = default;
+                    return IntegerParseResult.NoNumber;
+                }
+
+                currentCharacter = utf8Source[bytesConsumed];
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private static IntegerParseResult TryReadNegativeZero(in ReadOnlySpan<byte> utf8Source, ref int bytesConsumed)
+        {
+            // This method is called when the first character of the number is a digit
+            if (++bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.NoNumber;
+
+            var currentCharacter = utf8Source[bytesConsumed];
+            if (currentCharacter != '0')
+                return IntegerParseResult.NoNumber;
+
+            throw new NotImplementedException();
+        }
+
+        private static IntegerParseResult ReadZeroesAfterDecimalDigit(in ReadOnlySpan<byte> utf8Source, ref long number, ref int bytesConsumed)
+        {
+            // When this method is called, the decimal point (.) was already parsed
+            if (++bytesConsumed == utf8Source.Length)
+                return IntegerParseResult.NoNumber;
+
+            IgnoreZeroes:
+            var currentCharacter = utf8Source[bytesConsumed];
+            if (currentCharacter == '0')
+            {
+                if (++bytesConsumed == utf8Source.Length)
+                    return IntegerParseResult.ParsingSuccessful;
+
+                goto IgnoreZeroes;
+            }
+
+            return currentCharacter.IsJsonDigitButNotZero() ? IntegerParseResult.NonZeroDigitsAfterDecimalPoint : IntegerParseResult.ParsingSuccessful;
+        }
+
+        private static IntegerParseResult ReadZeroesAfterDecimalDigit(in ReadOnlySpan<char> source, ref long number, ref int bytesConsumed)
+        {
+            // When this method is called, the decimal point (.) was already parsed
+            if (++bytesConsumed == source.Length)
+                return IntegerParseResult.NoNumber;
+
+            IgnoreZeroes:
+            var currentCharacter = source[bytesConsumed];
+            if (currentCharacter == '0')
+            {
+                if (++bytesConsumed == source.Length)
+                    return IntegerParseResult.ParsingSuccessful;
+
+                goto IgnoreZeroes;
+            }
+
+            return currentCharacter.IsJsonDigitButNotZero() ? IntegerParseResult.NonZeroDigitsAfterDecimalPoint : IntegerParseResult.ParsingSuccessful;
         }
     }
 }

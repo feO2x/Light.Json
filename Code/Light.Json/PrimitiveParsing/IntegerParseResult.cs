@@ -4,6 +4,7 @@
     {
         NoNumber,
         Overflow,
-        Success
+        NonZeroDigitsAfterDecimalPoint,
+        ParsingSuccessful
     }
 }
