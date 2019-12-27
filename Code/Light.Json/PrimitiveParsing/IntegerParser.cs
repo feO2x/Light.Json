@@ -156,6 +156,8 @@ namespace Light.Json.PrimitiveParsing
                     currentCharacter = utf8Source[bytesConsumed];
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 - (currentCharacter - '0');
+                    else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
                     else
                         return IntegerParseResult.ParsingSuccessful;
                 }
@@ -168,6 +170,8 @@ namespace Light.Json.PrimitiveParsing
                 currentCharacter = utf8Source[bytesConsumed];
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 - (currentCharacter - '0');
+                else if (currentCharacter == '.')
+                    return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
                 else
                     return IntegerParseResult.ParsingSuccessful;
             }
@@ -182,7 +186,7 @@ namespace Light.Json.PrimitiveParsing
 
             currentCharacter = utf8Source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.ParsingSuccessful;
+                return currentCharacter == '.' ? ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed) : IntegerParseResult.ParsingSuccessful;
 
             if (number < Int64MinimumThreshold)
                 return IntegerParseResult.Overflow;
@@ -197,7 +201,11 @@ namespace Light.Json.PrimitiveParsing
                 return IntegerParseResult.ParsingSuccessful;
 
             currentCharacter = utf8Source[bytesConsumed];
-            return currentCharacter.IsJsonDigit() ? IntegerParseResult.Overflow : IntegerParseResult.ParsingSuccessful;
+            if (currentCharacter.IsJsonDigit())
+                return IntegerParseResult.Overflow;
+            if (currentCharacter == '.')
+                return ReadZeroesAfterDecimalDigit(utf8Source, ref number, ref bytesConsumed);
+            return IntegerParseResult.ParsingSuccessful;
         }
 
         public static IntegerParseResult TryParseInt64(this ReadOnlySpan<char> source, out long number, out int bytesConsumed)
@@ -297,7 +305,7 @@ namespace Light.Json.PrimitiveParsing
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 + currentCharacter - '0';
                 else if (currentCharacter == '.')
-                        return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
+                    return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
                 else
                     return IntegerParseResult.ParsingSuccessful;
             }
@@ -347,6 +355,8 @@ namespace Light.Json.PrimitiveParsing
                     currentCharacter = source[bytesConsumed];
                     if (currentCharacter.IsJsonDigit())
                         number = number * 10 - (currentCharacter - '0');
+                    else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
                     else
                         return IntegerParseResult.ParsingSuccessful;
                 }
@@ -359,6 +369,8 @@ namespace Light.Json.PrimitiveParsing
                 currentCharacter = source[bytesConsumed];
                 if (currentCharacter.IsJsonDigit())
                     number = number * 10 - (currentCharacter - '0');
+                else if (currentCharacter == '.')
+                        return ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed);
                 else
                     return IntegerParseResult.ParsingSuccessful;
             }
@@ -373,7 +385,7 @@ namespace Light.Json.PrimitiveParsing
 
             currentCharacter = source[bytesConsumed];
             if (!currentCharacter.IsJsonDigit())
-                return IntegerParseResult.ParsingSuccessful;
+                return currentCharacter == '.' ? ReadZeroesAfterDecimalDigit(source, ref number, ref bytesConsumed) : IntegerParseResult.ParsingSuccessful;
 
             if (number < Int64MinimumThreshold)
                 return IntegerParseResult.Overflow;
