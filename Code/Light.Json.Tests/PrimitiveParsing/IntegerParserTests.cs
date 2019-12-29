@@ -22,6 +22,8 @@ namespace Light.Json.Tests.PrimitiveParsing
             new TheoryData<long>
             {
                 0L,
+                1L,
+                -1L,
                 long.MinValue,
                 long.MaxValue,
                 long.MinValue / 10,
@@ -81,29 +83,6 @@ namespace Light.Json.Tests.PrimitiveParsing
                 { "-00000000001032", -1032L },
                 { "000000009223372036854775807", long.MaxValue },
                 { "-000009223372036854775808", long.MinValue }
-            };
-
-        [Theory]
-        [MemberData(nameof(DecimalZeroesData))]
-        public static void DecimalZeroesUtf8(string serializedNumber, long expectedNumber) =>
-            TestValidNumberUtf8(serializedNumber, expectedNumber);
-
-        [Theory]
-        [MemberData(nameof(DecimalZeroesData))]
-        public static void DecimalZeroesUtf16(string serializedNumber, long expectedNumber) =>
-            TestValidNumberUtf16(serializedNumber, expectedNumber);
-
-        public static readonly TheoryData<string, long> DecimalZeroesData =
-            new TheoryData<string, long>
-            {
-                { "1.0", 1L },
-                { "00042.000", 42L },
-                { "192020192941341.000000000", 192020192941341L },
-                { "9223372036854775807.000", long.MaxValue },
-                { "-8.00", -8L },
-                { "-9223372036854775808.0", long.MinValue },
-                { "839291039373829304.0", 839291039373829304L },
-                { "-56383020492834848.000000000000000000", -56383020492834848L }
             };
 
         [Theory]

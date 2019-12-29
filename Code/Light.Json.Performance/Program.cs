@@ -11,8 +11,7 @@ namespace Light.Json.Performance
     {
         public static IConfig CreateDefaultConfig() =>
             DefaultConfig.Instance
-                         .With(Job.Default.With(CoreRuntime.Core22))
-                         .With(Job.Default.With(CoreRuntime.Core30))
+                         .With(Job.Default.With(CoreRuntime.Core31))
                          .With(Job.Default.With(ClrRuntime.Net48))
                          .With(MarkdownExporter.Default)
                          .With(MemoryDiagnoser.Default);

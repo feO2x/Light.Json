@@ -6,7 +6,7 @@ using DotnetUtf8Parser = System.Buffers.Text.Utf8Parser;
 
 namespace Light.Json.Performance.PrimitiveBenchmarks
 {
-    public class ParseInt64Utf8Benchmark
+    public class ParseInt64Benchmark
     {
         [ParamsSource(nameof(SerializedValues))]
         public SerializedInt64 SerializedValue;
@@ -32,33 +32,41 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         }
 
         [Benchmark]
-        public long LightJson()
+        public long LightJsonUtf8()
         {
             if (IntegerParser.TryParseInt64(SerializedValue.NumberInUtf8, out var value, out _) != IntegerParseResult.ParsingSuccessful)
                 throw new InvalidOperationException();
             return value;
         }
 
+        [Benchmark]
+        public long LightJsonUtf16()
+        {
+            if (SerializedValue.NumberInUtf16.AsSpan().TryParseInt64(out var value, out _) != IntegerParseResult.ParsingSuccessful)
+                throw new InvalidOperationException();
+            return value;
+        }
+
         public readonly struct SerializedInt64
         {
-            private readonly string _serializedValue;
+            public readonly string NumberInUtf16;
             public readonly byte[] NumberInUtf8;
 
             public SerializedInt64(long number)
             {
-                _serializedValue = number.ToString();
-                NumberInUtf8 = _serializedValue.ToUtf8();
+                NumberInUtf16 = number.ToString();
+                NumberInUtf8 = NumberInUtf16.ToUtf8();
             }
 
             public SerializedInt64(string serializedValue)
             {
-                _serializedValue = serializedValue;
-                NumberInUtf8 = _serializedValue.ToUtf8();
+                NumberInUtf16 = serializedValue;
+                NumberInUtf8 = NumberInUtf16.ToUtf8();
             }
 
             public override string ToString()
             {
-                return _serializedValue;
+                return NumberInUtf16;
             }
         }
     }
