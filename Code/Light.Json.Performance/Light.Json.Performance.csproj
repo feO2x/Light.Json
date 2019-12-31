@@ -15,6 +15,7 @@
     <PackageReference Include="Light.GuardClauses" Version="7.*" />
     <PackageReference Include="Newtonsoft.Json" Version="12.*" />
     <PackageReference Include="Utf8Json" Version="1.*" />
+    <PackageReference Include="System.Text.Json" Version="4.*" />
     <ProjectReference Include="..\Light.Json\Light.Json.csproj" />
   </ItemGroup>
 

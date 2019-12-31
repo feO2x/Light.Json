@@ -2,8 +2,8 @@
 {
     public enum IntegerParseResult
     {
+        ParsingSuccessful,
         NoNumber,
-        Overflow,
-        ParsingSuccessful
+        Overflow
     }
 }
