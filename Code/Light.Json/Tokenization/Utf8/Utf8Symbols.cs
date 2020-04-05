@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Tokenization.Utf8
 {

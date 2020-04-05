@@ -1,13 +1,14 @@
-﻿namespace Light.Json.Tokenization
+﻿using Light.Json.Parsing;
+
+namespace Light.Json.Tokenization
 {
     public interface IJsonToken
     {
         JsonTokenType Type { get; }
-        int Length { get; }
         int Line { get; }
         int Position { get; }
-        TokenCharacterInfo GetCharacterAt(int startIndex = 0);
-        string ParseJsonStringToDotnetString();
+
+        bool Equals(in DeserializationConstant constant);
     }
 
     public static class JsonTokenExtensions

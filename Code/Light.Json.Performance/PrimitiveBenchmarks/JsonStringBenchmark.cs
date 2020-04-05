@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using BenchmarkDotNet.Attributes;
-using Light.Json.Tokenization.Utf8;
+using Light.Json.FrameworkExtensions;
 using Newtonsoft.Json;
 using Utf8JsonSerializer = Utf8Json.JsonSerializer;
 

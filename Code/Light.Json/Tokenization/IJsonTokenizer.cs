@@ -5,5 +5,9 @@
         TToken GetNextToken();
         string ReadString();
         int ReadInt32();
+        void ReadBeginOfObject();
+        void ReadEndOfObject();
+        void ReadNameValueSeparator();
+        TToken ReadNameToken();
     }
 }

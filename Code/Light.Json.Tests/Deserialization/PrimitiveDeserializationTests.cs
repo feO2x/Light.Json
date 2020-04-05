@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using Light.Json.Tokenization.Utf8;
+using Light.Json.FrameworkExtensions;
 using Xunit;
 using Xunit.Abstractions;
 

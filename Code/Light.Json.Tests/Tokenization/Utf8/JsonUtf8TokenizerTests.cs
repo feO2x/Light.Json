@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Light.Json.FrameworkExtensions;
 using Light.Json.Tokenization;
 using Light.Json.Tokenization.Utf8;
 using Xunit;
@@ -258,7 +259,6 @@ namespace Light.Json.Tests.Tokenization.Utf8
         private static void ShouldEqual(this JsonUtf8Token token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Length.Should().Be(expected.Length);
             token.Memory.Span.MustEqual(expected.ToUtf8());
         }
     }

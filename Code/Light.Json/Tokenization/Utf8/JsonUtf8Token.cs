@@ -1,23 +1,18 @@
 ﻿using System;
-using System.Text;
-using Light.GuardClauses.Exceptions;
 using Light.Json.FrameworkExtensions;
+using Light.Json.Parsing;
 
 namespace Light.Json.Tokenization.Utf8
 {
-    public readonly struct JsonUtf8Token : IJsonToken
+    public readonly struct JsonUtf8Token : IJsonToken, IEquatable<JsonUtf8Token>
     {
         public JsonUtf8Token(JsonTokenType type,
                              ReadOnlyMemory<byte> memory,
-                             int length,
-                             int charLength,
                              int line,
                              int position)
         {
             Type = type;
             Memory = memory;
-            Length = length;
-            CharLength = charLength;
             Line = line;
             Position = position;
         }
@@ -26,63 +21,33 @@ namespace Light.Json.Tokenization.Utf8
 
         public ReadOnlyMemory<byte> Memory { get; }
 
-        public int Length { get; }
-
-        public int CharLength { get; }
-
         public int Line { get; }
 
         public int Position { get; }
 
-        public TokenCharacterInfo GetCharacterAt(int startIndex = 0)
-        {
-            var result = Utf8Character.TryParseNext(Memory.Span, out var character, startIndex);
-            if (result != Utf8ParseResult.CharacterParsedSuccessfully)
-                throw new InvalidStateException($"The UTF8 character at index {startIndex} is invalid. This should not happen - the tokenizer created an invalid token.");
-
-            startIndex += character.ByteLength;
-            if (startIndex == Memory.Length)
-                startIndex = -1;
-
-            return new TokenCharacterInfo(character.Utf16Code, startIndex);
-        }
-
-        public unsafe string ParseJsonStringToDotnetString()
-        {
-            this.MustBeOfType(JsonTokenType.String);
-            if (Memory.Length == 2)
-                return string.Empty;
-
-            var innerStringLength = Memory.Length - 2;
-            var stringWithoutQuotationMarks = Memory.Span.Slice(1, innerStringLength);
-            fixed (byte* bytePointer = stringWithoutQuotationMarks)
-            {
-                return Encoding.UTF8.GetString(bytePointer, innerStringLength);
-            }
-        }
+        public bool Equals(in DeserializationConstant constant) =>
+            Memory.Length <= 2 ? constant.Utf8.IsEmpty : Memory.Slice(1, Memory.Length - 2).Span.SequenceEqual(constant.Utf8.Span);
 
         public bool Equals(JsonUtf8Token other) =>
-            Type == other.Type && Memory.Equals(other.Memory);
+            Type == other.Type && Memory.Equals(other.Memory) && Line == other.Line && Position == other.Position;
 
-        public override string ToString()
+
+        public override bool Equals(object? obj) =>
+            obj is JsonUtf8Token token && Equals(token);
+
+        public override int GetHashCode()
         {
-            Span<char> target = stackalloc char[CharLength];
-            var currentIndex = 0;
-            var span = Memory.Span;
-            for (var i = 0; i < Length; ++i)
+            unchecked
             {
-                Utf8Character.TryParseNext(span, out var utf8Character, currentIndex);
-                currentIndex += utf8Character.CopyUtf16To(target, currentIndex);
+                var hashCode = (int) Type;
+                hashCode = (hashCode * 397) ^ Memory.GetHashCode();
+                hashCode = (hashCode * 397) ^ Line;
+                hashCode = (hashCode * 397) ^ Position;
+                return hashCode;
             }
-
-            return target.ToString();
         }
 
-        public override bool Equals(object obj) =>
-            throw BoxingNotSupported.CreateException();
-
-        public override int GetHashCode() =>
-            throw BoxingNotSupported.CreateException();
+        public override string ToString() => Memory.Span.ConvertFromUtf8ToString();
 
         public static bool operator ==(JsonUtf8Token x, JsonUtf8Token y) => x.Equals(y);
 

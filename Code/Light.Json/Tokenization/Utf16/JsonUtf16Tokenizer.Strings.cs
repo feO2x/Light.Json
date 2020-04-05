@@ -9,20 +9,18 @@ namespace Light.Json.Tokenization.Utf16
             var json = _json.Span;
             if (!TrySkipWhiteSpace(json))
                 throw new DeserializationException("Expected JSON string but found end of document.");
-            if (json[_currentIndex] != JsonSymbols.QuotationMark)
-                throw new DeserializationException($"Expected JSON string at line {_currentLine} position {_currentPosition} (near \"{GetErroneousToken()}\").");
+            if (json[CurrentIndex] != JsonSymbols.QuotationMark)
+                throw new DeserializationException($"Expected JSON string at line {CurrentLine} position {CurrentPosition} (near \"{GetErroneousToken()}\").");
 
-            for (var i = _currentIndex + 1; i < json.Length; ++i)
+            for (var i = CurrentIndex + 1; i < json.Length; ++i)
             {
                 switch (json[i])
                 {
                     case JsonSymbols.QuotationMark:
-                        var targetSpan = json.Slice(_currentIndex + 1, i - _currentIndex - 1);
-                        _currentIndex += targetSpan.Length;
-
+                        var targetSpan = json.Slice(CurrentIndex + 1, i - CurrentIndex - 1);
                         var targetString = targetSpan.ToString();
-
-                        _currentPosition += targetString.Length + 2;
+                        CurrentIndex += targetSpan.Length + 2;
+                        CurrentPosition += targetString.Length + 2;
                         return targetString;
                     case JsonSymbols.Backslash:
                         return ReadStringWithEscapeSequences(json, i);
@@ -32,9 +30,17 @@ namespace Light.Json.Tokenization.Utf16
             throw CreateEndOfJsonStringNotFoundException();
         }
 
+        public JsonUtf16Token ReadNameToken()
+        {
+            var token = GetNextToken();
+            token.MustBeOfType(JsonTokenType.String);
+            ReadNameValueSeparator();
+            return token;
+        }
+
         private JsonUtf16Token ReadStringToken()
         {
-            var leftBoundedJson = _json.Slice(_currentIndex);
+            var leftBoundedJson = _json.Slice(CurrentIndex);
             var leftBoundedJsonSpan = leftBoundedJson.Span;
             for (var i = 1; i < leftBoundedJsonSpan.Length; ++i)
             {
@@ -46,9 +52,9 @@ namespace Light.Json.Tokenization.Utf16
                     continue;
 
                 var slicedMemory = leftBoundedJson.Slice(0, i + 1);
-                var token = new JsonUtf16Token(JsonTokenType.String, slicedMemory, _currentLine, _currentPosition);
-                _currentIndex += slicedMemory.Length;
-                _currentPosition += slicedMemory.Length;
+                var token = new JsonUtf16Token(JsonTokenType.String, slicedMemory, CurrentLine, CurrentPosition);
+                CurrentIndex += slicedMemory.Length;
+                CurrentPosition += slicedMemory.Length;
                 return token;
             }
 
@@ -74,9 +80,9 @@ namespace Light.Json.Tokenization.Utf16
 
             // Copy the characters from the beginning to the first byte sequence to the target array
             var currentIndex = 0;
-            if (indexOfFirstEscapeCharacter > _currentIndex + 1)
+            if (indexOfFirstEscapeCharacter > CurrentIndex + 1)
             {
-                var firstUnescapedCharacters = json.Slice(_currentIndex + 1, indexOfFirstEscapeCharacter - (_currentIndex + 1));
+                var firstUnescapedCharacters = json.Slice(CurrentIndex + 1, indexOfFirstEscapeCharacter - (CurrentIndex + 1));
                 firstUnescapedCharacters.CopyTo(escapedArray);
                 currentIndex += firstUnescapedCharacters.Length;
             }
@@ -179,7 +185,7 @@ namespace Light.Json.Tokenization.Utf16
                          * thus, we will subtract 1 (one quotation mark is removed already
                          * by calculating with the indexes only).
                          */
-                        return i - _currentIndex + deltaBytes - 1;
+                        return i - CurrentIndex + deltaBytes - 1;
                     case JsonSymbols.Backslash:
                         isInEscapeSequence = true;
                         continue;
@@ -249,9 +255,9 @@ namespace Light.Json.Tokenization.Utf16
         }
 
         private DeserializationException CreateEndOfJsonStringNotFoundException() =>
-            new DeserializationException($"Could not find end of JSON string \"{GetErroneousToken()}\" at line {_currentLine} position {_currentPosition}.");
+            new DeserializationException($"Could not find end of JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
 
         private DeserializationException CreateInvalidEscapeSequenceInJsonStringException() =>
-            new DeserializationException($"Found invalid escape sequence in JSON string \"{GetErroneousToken()}\" at line {_currentLine} position {_currentPosition}.");
+            new DeserializationException($"Found invalid escape sequence in JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
     }
 }

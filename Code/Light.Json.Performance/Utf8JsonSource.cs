@@ -1,5 +1,5 @@
 ﻿using Light.GuardClauses;
-using Light.Json.Tokenization.Utf8;
+using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Performance
 {
