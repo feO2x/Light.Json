@@ -2,7 +2,7 @@
 using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Parsing
+namespace Light.Json.Deserialization.Parsing
 {
     public readonly struct DeserializationConstant
     {

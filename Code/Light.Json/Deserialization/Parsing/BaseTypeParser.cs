@@ -1,7 +1,7 @@
-﻿using Light.Json.FrameworkExtensions;
-using Light.Json.Tokenization;
+﻿using Light.Json.Deserialization.Tokenization;
+using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Parsing
+namespace Light.Json.Deserialization.Parsing
 {
     public abstract class BaseTypeParser<T> : ITypeParser<T>
     {

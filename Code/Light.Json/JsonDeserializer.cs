@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Light.Json.Deserialization.Parsing;
+using Light.Json.Deserialization.Tokenization;
+using Light.Json.Deserialization.Tokenization.Utf16;
+using Light.Json.Deserialization.Tokenization.Utf8;
 using Light.Json.FrameworkExtensions;
-using Light.Json.Parsing;
-using Light.Json.Tokenization;
-using Light.Json.Tokenization.Utf16;
-using Light.Json.Tokenization.Utf8;
 
 namespace Light.Json
 {

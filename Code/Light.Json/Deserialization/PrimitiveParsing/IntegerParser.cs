@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Light.Json.PrimitiveParsing
+namespace Light.Json.Deserialization.PrimitiveParsing
 {
     public static class IntegerParser
     {

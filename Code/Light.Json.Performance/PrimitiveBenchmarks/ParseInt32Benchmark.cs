@@ -1,7 +1,7 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
+using Light.Json.Deserialization.PrimitiveParsing;
 using Light.Json.FrameworkExtensions;
-using Light.Json.PrimitiveParsing;
 
 namespace Light.Json.Performance.PrimitiveBenchmarks
 {

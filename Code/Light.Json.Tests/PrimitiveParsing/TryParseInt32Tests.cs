@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
+using Light.Json.Deserialization.PrimitiveParsing;
 using Light.Json.FrameworkExtensions;
-using Light.Json.PrimitiveParsing;
 using Xunit;
 
 namespace Light.Json.Tests.PrimitiveParsing

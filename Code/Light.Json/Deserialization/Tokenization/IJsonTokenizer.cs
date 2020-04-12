@@ -1,4 +1,4 @@
-﻿namespace Light.Json.Tokenization
+﻿namespace Light.Json.Deserialization.Tokenization
 {
     public interface IJsonTokenizer<out TToken> where TToken : IJsonToken
     {

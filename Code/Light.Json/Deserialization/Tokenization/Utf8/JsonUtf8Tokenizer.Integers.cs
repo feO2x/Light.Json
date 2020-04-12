@@ -1,6 +1,6 @@
-﻿using Light.Json.PrimitiveParsing;
+﻿using Light.Json.Deserialization.PrimitiveParsing;
 
-namespace Light.Json.Tokenization.Utf8
+namespace Light.Json.Deserialization.Tokenization.Utf8
 {
     public partial struct JsonUtf8Tokenizer
     {

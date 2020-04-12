@@ -1,7 +1,7 @@
 ﻿using System;
-using Light.Json.Parsing;
+using Light.Json.Deserialization.Parsing;
 
-namespace Light.Json.Tokenization.Utf16
+namespace Light.Json.Deserialization.Tokenization.Utf16
 {
     public readonly struct JsonUtf16Token : IJsonToken, IEquatable<JsonUtf16Token>
     {

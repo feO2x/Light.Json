@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
-using Light.Json.Tokenization;
-using Light.Json.Tokenization.Utf16;
+using Light.Json.Deserialization.Tokenization;
+using Light.Json.Deserialization.Tokenization.Utf16;
 using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf16

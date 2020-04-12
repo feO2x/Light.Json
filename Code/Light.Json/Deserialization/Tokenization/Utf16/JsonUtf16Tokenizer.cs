@@ -2,7 +2,7 @@
 using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Tokenization.Utf16
+namespace Light.Json.Deserialization.Tokenization.Utf16
 {
     public partial struct JsonUtf16Tokenizer : IJsonTokenizer<JsonUtf16Token>
     {

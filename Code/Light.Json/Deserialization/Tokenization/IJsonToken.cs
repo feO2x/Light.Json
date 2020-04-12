@@ -1,6 +1,6 @@
-﻿using Light.Json.Parsing;
+﻿using Light.Json.Deserialization.Parsing;
 
-namespace Light.Json.Tokenization
+namespace Light.Json.Deserialization.Tokenization
 {
     public interface IJsonToken
     {

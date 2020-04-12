@@ -1,8 +1,8 @@
 ﻿using System;
 using FluentAssertions;
+using Light.Json.Deserialization.Tokenization;
+using Light.Json.Deserialization.Tokenization.Utf8;
 using Light.Json.FrameworkExtensions;
-using Light.Json.Tokenization;
-using Light.Json.Tokenization.Utf8;
 using Xunit;
 
 namespace Light.Json.Tests.Tokenization.Utf8

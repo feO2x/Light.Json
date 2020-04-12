@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
+using Light.Json.Deserialization.Parsing;
+using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
-using Light.Json.Parsing;
-using Light.Json.Tokenization;
 using Xunit;
 
 namespace Light.Json.Tests.Deserialization

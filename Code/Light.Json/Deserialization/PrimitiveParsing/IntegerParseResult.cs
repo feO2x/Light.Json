@@ -1,4 +1,4 @@
-﻿namespace Light.Json.PrimitiveParsing
+﻿namespace Light.Json.Deserialization.PrimitiveParsing
 {
     public enum IntegerParseResult
     {

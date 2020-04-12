@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Light.GuardClauses;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Parsing
+namespace Light.Json.Deserialization.Parsing
 {
     public sealed class ImmutableTypeParserProvider : ITypeParserProvider
     {

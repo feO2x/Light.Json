@@ -1,8 +1,8 @@
 ﻿using System;
+using Light.Json.Deserialization.Parsing;
 using Light.Json.FrameworkExtensions;
-using Light.Json.Parsing;
 
-namespace Light.Json.Tokenization.Utf8
+namespace Light.Json.Deserialization.Tokenization.Utf8
 {
     public readonly struct JsonUtf8Token : IJsonToken, IEquatable<JsonUtf8Token>
     {

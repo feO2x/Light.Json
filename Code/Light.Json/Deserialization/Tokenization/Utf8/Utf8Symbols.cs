@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Light.Json.FrameworkExtensions;
 
-namespace Light.Json.Tokenization.Utf8
+namespace Light.Json.Deserialization.Tokenization.Utf8
 {
     public static class Utf8Symbols
     {

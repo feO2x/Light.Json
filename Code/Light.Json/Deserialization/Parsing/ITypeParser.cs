@@ -1,6 +1,6 @@
-﻿using Light.Json.Tokenization;
+﻿using Light.Json.Deserialization.Tokenization;
 
-namespace Light.Json.Parsing
+namespace Light.Json.Deserialization.Parsing
 {
     public interface ITypeParser
     {
