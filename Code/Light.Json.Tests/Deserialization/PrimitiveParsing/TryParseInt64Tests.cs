@@ -4,7 +4,7 @@ using Light.Json.Deserialization.PrimitiveParsing;
 using Light.Json.FrameworkExtensions;
 using Xunit;
 
-namespace Light.Json.Tests.PrimitiveParsing
+namespace Light.Json.Tests.Deserialization.PrimitiveParsing
 {
     public static class TryParseInt64Tests
     {

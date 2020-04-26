@@ -1,13 +1,12 @@
 ﻿using System;
 using FluentAssertions;
 using Light.Json.Deserialization.Tokenization;
-using Light.Json.Deserialization.Tokenization.Utf8;
-using Light.Json.FrameworkExtensions;
+using Light.Json.Deserialization.Tokenization.Utf16;
 using Xunit;
 
-namespace Light.Json.Tests.Tokenization.Utf8
+namespace Light.Json.Tests.Deserialization.Tokenization
 {
-    public static class JsonUtf8TokenizerTests
+    public static class JsonUtf16TokenizerTests
     {
         [Theory]
         [InlineData("\"Foo\"")]
@@ -63,7 +62,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
         [InlineData("-0.2")]
         [InlineData("0.7375 ")]
         public static void TokenizeFloatingPointNumber(string numberAsJson) =>
-            TestTokenizer(numberAsJson, JsonTokenType.FloatingPointNumber);
+            TestTokenizer(numberAsJson, numberAsJson.Trim(), JsonTokenType.FloatingPointNumber);
 
         [Fact]
         public static void TokenizeBeginOfObject() => TestTokenizer("{", JsonTokenType.BeginOfObject);
@@ -150,8 +149,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
     ""lastName"": ""Doe"",
     ""age"": 42
 }";
-            var jsonInUtf8 = json.ToUtf8();
-            var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("\"firstName\"", JsonTokenType.String);
@@ -184,8 +182,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
     78
 ]
 ";
-            var jsonInUtf8 = json.ToUtf8();
-            var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("[", JsonTokenType.BeginOfArray);
             tokenizer.GetNextToken().ShouldEqual("\"This is a JSON string\"", JsonTokenType.String);
@@ -220,8 +217,7 @@ namespace Light.Json.Tests.Tokenization.Utf8
         30
     ]
 }";
-            var jsonInUtf8 = json.ToUtf8();
-            var tokenizer = new JsonUtf8Tokenizer(jsonInUtf8);
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             tokenizer.GetNextToken().ShouldEqual("{", JsonTokenType.BeginOfObject);
             tokenizer.GetNextToken().ShouldEqual("\"someCollection\"", JsonTokenType.String);
@@ -237,18 +233,30 @@ namespace Light.Json.Tests.Tokenization.Utf8
             tokenizer.GetNextToken().ShouldEqual("", JsonTokenType.EndOfDocument);
         }
 
-        private static void TestTokenizer(string json, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(json.Trim(), expectedTokenType);
-
-        private static void TestTokenizer(string json, string expected, JsonTokenType expectedTokenType) =>
-            GetSingleToken(json).ShouldEqual(expected, expectedTokenType);
-
-        private static JsonUtf8Token GetSingleToken(string json)
+        private static void TestTokenizer(string json, JsonTokenType expectedTokenType)
         {
-            var utf8Json = json.ToUtf8();
-            var tokenizer = new JsonUtf8Tokenizer(utf8Json);
+            var trimmedJson = json.Trim();
+            var expectedTokenLength = trimmedJson.Length;
+            GetSingleToken(json, expectedTokenLength).ShouldEqual(trimmedJson, expectedTokenType);
+        }
+
+        private static void TestTokenizer(string json, string expectedToken, JsonTokenType expectedTokenType)
+        {
+            var expectedTokenLength = expectedToken.Length;
+            if (expectedTokenType == JsonTokenType.String)
+                expectedTokenLength += 2;
+            GetSingleToken(json, expectedTokenLength).ShouldEqual(expectedToken, expectedTokenType);
+        }
+
+        private static JsonUtf16Token GetSingleToken(string json, int expectedTokenLength = -1)
+        {
+            var numberOfWhiteSpaceCharactersInFront = json.GetNumberOfWhiteSpaceCharactersInFront();
+            var tokenizer = new JsonUtf16Tokenizer(json.AsMemory());
 
             var token = tokenizer.GetNextToken();
+
+            tokenizer.CurrentLine.Should().Be(1);
+            tokenizer.CurrentPosition.Should().Be(1 + numberOfWhiteSpaceCharactersInFront + expectedTokenLength);
 
             var secondToken = tokenizer.GetNextToken();
             secondToken.Type.Should().Be(JsonTokenType.EndOfDocument);
@@ -256,10 +264,10 @@ namespace Light.Json.Tests.Tokenization.Utf8
             return token;
         }
 
-        private static void ShouldEqual(this JsonUtf8Token token, string expected, JsonTokenType tokenType)
+        private static void ShouldEqual(this JsonUtf16Token token, string expected, JsonTokenType tokenType)
         {
             token.Type.Should().Be(tokenType);
-            token.Memory.Span.MustEqual(expected.ToUtf8());
+            token.Memory.Span.MustEqual(expected.AsSpan());
         }
     }
 }
