@@ -65,7 +65,7 @@ namespace Light.Json.Deserialization.Tokenization.Utf8
             if (currentCharacter.IsJsonDigit())
                 return ReadNumber(json);
 
-            throw new DeserializationException($"Unexpected character \"{(char) currentCharacter}\" at line {CurrentLine} position {CurrentPosition}.");
+            throw new SerializationException($"Unexpected character \"{(char) currentCharacter}\" at line {CurrentLine} position {CurrentPosition}.");
         }
 
         private JsonUtf8Token ReadNumber(ReadOnlySpan<byte> json)
@@ -261,15 +261,15 @@ namespace Light.Json.Deserialization.Tokenization.Utf8
         }
 
         private static void Throw(string message) =>
-            throw new DeserializationException(message);
+            throw new SerializationException(message);
 
         private void ThrowInvalidConstant(in Utf8Constant expectedToken)
         {
             var invalidToken = GetErroneousToken();
             if (invalidToken == null)
-                throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" at line {CurrentLine} position {CurrentPosition}.");
+                throw new SerializationException($"Expected token \"{expectedToken.Utf16Text}\" at line {CurrentLine} position {CurrentPosition}.");
 
-            throw new DeserializationException($"Expected token \"{expectedToken.Utf16Text}\" but actually found \"{invalidToken}\" at line {CurrentLine} position {CurrentPosition}.");
+            throw new SerializationException($"Expected token \"{expectedToken.Utf16Text}\" but actually found \"{invalidToken}\" at line {CurrentLine} position {CurrentPosition}.");
         }
 
         private string GetErroneousToken()

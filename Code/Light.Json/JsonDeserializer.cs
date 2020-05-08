@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using Light.Json.Deserialization.Parsing;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.Deserialization.Tokenization.Utf16;
@@ -52,7 +53,7 @@ namespace Light.Json
 
             var targetType = typeof(TResult);
             if (!_typeParserProvider.TryGetTypeParser<TResult>(new TypeKey(typeof(TResult), typeParserKey), out var typeParser))
-                throw new DeserializationException($"The type \"${targetType}\" cannot be deserialized because there is no type parser registered with the deserializer.");
+                throw new SerializationException($"The type \"${targetType}\" cannot be deserialized because there is no type parser registered with the deserializer.");
 
             return typeParser.Parse<TJsonTokenizer, TJsonToken>(context, ref tokenizer);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using FluentAssertions;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.Deserialization.Tokenization.Utf8;
@@ -95,7 +96,7 @@ namespace Light.Json.Tests.Deserialization.Tokenization
         {
             Action act = () => GetSingleToken(invalidJson);
 
-            act.Should().ThrowExactly<DeserializationException>()
+            act.Should().ThrowExactly<SerializationException>()
                .And.Message.Should().Contain($"Expected token \"{expectedToken}\" but actually found \"{invalidToken}\" at line 1 position {position}.");
         }
 
@@ -107,7 +108,7 @@ namespace Light.Json.Tests.Deserialization.Tokenization
         {
             Action act = () => GetSingleToken(invalidJson);
 
-            act.Should().ThrowExactly<DeserializationException>()
+            act.Should().ThrowExactly<SerializationException>()
                .And.Message.Should().Contain($"Expected digit after minus sign at line 1 position {position}.");
         }
 
@@ -122,7 +123,7 @@ namespace Light.Json.Tests.Deserialization.Tokenization
         {
             Action act = () => GetSingleToken(invalidJson);
 
-            act.Should().ThrowExactly<DeserializationException>()
+            act.Should().ThrowExactly<SerializationException>()
                .And.Message.Should().Contain($"Expected digit after decimal symbol in \"{invalidJson.TrimStart()}\" at line 1 position {position}.");
         }
 
@@ -137,7 +138,7 @@ namespace Light.Json.Tests.Deserialization.Tokenization
         {
             Action act = () => GetSingleToken(invalidJson);
 
-            act.Should().ThrowExactly<DeserializationException>()
+            act.Should().ThrowExactly<SerializationException>()
                .And.Message.Should().Contain($"Unexpected character \"{invalidCharacter}\" at line {line} position {position}.");
         }
 

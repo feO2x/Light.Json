@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using FluentAssertions;
 using Light.Json.FrameworkExtensions;
 using Xunit;
@@ -80,7 +81,7 @@ namespace Light.Json.Tests.Deserialization
         {
             Action act = () => DeserializeUtf16<int>(json);
 
-            act.Should().Throw<DeserializationException>().Which.ShouldBeWrittenTo(_output);
+            act.Should().Throw<SerializationException>().Which.ShouldBeWrittenTo(_output);
         }
 
         [Theory]
@@ -89,7 +90,7 @@ namespace Light.Json.Tests.Deserialization
         {
             Action act = () => DeserializeUtf8<int>(json);
 
-            act.Should().Throw<DeserializationException>().Which.ShouldBeWrittenTo(_output);
+            act.Should().Throw<SerializationException>().Which.ShouldBeWrittenTo(_output);
         }
 
         public static readonly TheoryData<string> InvalidInt32Data =

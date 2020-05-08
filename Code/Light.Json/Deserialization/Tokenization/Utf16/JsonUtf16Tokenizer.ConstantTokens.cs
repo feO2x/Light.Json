@@ -15,9 +15,9 @@
         {
             var json = _json.Span;
             if (!TryReadNextCharacter(json, out var currentCharacter))
-                throw new DeserializationException($"Expected \"{expectedCharacter}\" but found end of JSON document.");
+                throw new SerializationException($"Expected \"{expectedCharacter}\" but found end of JSON document.");
             if (expectedCharacter != currentCharacter)
-                throw new DeserializationException($"Expected \"{expectedCharacter}\" but found \"{currentCharacter}\".");
+                throw new SerializationException($"Expected \"{expectedCharacter}\" but found \"{currentCharacter}\".");
 
             ++CurrentIndex;
             ++CurrentPosition;

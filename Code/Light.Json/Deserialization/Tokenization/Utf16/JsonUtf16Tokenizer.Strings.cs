@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Light.Json.Deserialization.Tokenization.Utf16
 {
@@ -8,9 +9,9 @@ namespace Light.Json.Deserialization.Tokenization.Utf16
         {
             var json = _json.Span;
             if (!TrySkipWhiteSpace(json))
-                throw new DeserializationException("Expected JSON string but found end of document.");
+                throw new SerializationException("Expected JSON string but found end of document.");
             if (json[CurrentIndex] != JsonSymbols.QuotationMark)
-                throw new DeserializationException($"Expected JSON string at line {CurrentLine} position {CurrentPosition} (near \"{GetErroneousToken()}\").");
+                throw new SerializationException($"Expected JSON string at line {CurrentLine} position {CurrentPosition} (near \"{GetErroneousToken()}\").");
 
             for (var i = CurrentIndex + 1; i < json.Length; ++i)
             {
@@ -254,10 +255,10 @@ namespace Light.Json.Deserialization.Tokenization.Utf16
             throw CreateInvalidEscapeSequenceInJsonStringException();
         }
 
-        private DeserializationException CreateEndOfJsonStringNotFoundException() =>
-            new DeserializationException($"Could not find end of JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
+        private SerializationException CreateEndOfJsonStringNotFoundException() =>
+            new SerializationException($"Could not find end of JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
 
-        private DeserializationException CreateInvalidEscapeSequenceInJsonStringException() =>
-            new DeserializationException($"Found invalid escape sequence in JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
+        private SerializationException CreateInvalidEscapeSequenceInJsonStringException() =>
+            new SerializationException($"Found invalid escape sequence in JSON string \"{GetErroneousToken()}\" at line {CurrentLine} position {CurrentPosition}.");
     }
 }

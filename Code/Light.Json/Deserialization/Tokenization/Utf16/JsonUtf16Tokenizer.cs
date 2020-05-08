@@ -58,7 +58,7 @@ namespace Light.Json.Deserialization.Tokenization.Utf16
             if (currentCharacter.IsJsonDigit())
                 return ReadNumber(json);
 
-            throw new DeserializationException($"Unexpected character \"{currentCharacter}\" at line {CurrentLine} position {CurrentPosition}.");
+            throw new SerializationException($"Unexpected character \"{currentCharacter}\" at line {CurrentLine} position {CurrentPosition}.");
         }
 
         private bool TrySkipWhiteSpace(in ReadOnlySpan<char> json)
@@ -298,7 +298,7 @@ namespace Light.Json.Deserialization.Tokenization.Utf16
             Throw($"Expected token \"{expectedTokenText}\" but actually found \"{actualTokenText.ToString()}\" at line {CurrentLine} position {CurrentPosition}.");
 
         private static void Throw(string message) =>
-            throw new DeserializationException(message);
+            throw new SerializationException(message);
 
         public override string ToString() =>
             $"JsonUtf16Tokenizer at Line {CurrentLine} Position {CurrentPosition}";
