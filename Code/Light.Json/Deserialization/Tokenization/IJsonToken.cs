@@ -1,4 +1,5 @@
-﻿using Light.Json.Deserialization.Parsing;
+﻿using System.Runtime.Serialization;
+using Light.Json.Deserialization.Parsing;
 
 namespace Light.Json.Deserialization.Tokenization
 {

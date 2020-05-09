@@ -1,4 +1,5 @@
-﻿using Light.Json.Deserialization.PrimitiveParsing;
+﻿using System.Runtime.Serialization;
+using Light.Json.Deserialization.PrimitiveParsing;
 
 namespace Light.Json.Deserialization.Tokenization.Utf16
 {

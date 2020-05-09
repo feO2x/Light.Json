@@ -1,4 +1,6 @@
-﻿namespace Light.Json.Deserialization.Tokenization.Utf8
+﻿using System.Runtime.Serialization;
+
+namespace Light.Json.Deserialization.Tokenization.Utf8
 {
     public partial struct JsonUtf8Tokenizer
     {
