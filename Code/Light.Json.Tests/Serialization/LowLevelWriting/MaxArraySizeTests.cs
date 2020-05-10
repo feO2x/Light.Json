@@ -3,7 +3,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Light.Json.Tests.Serialization.Buffers
+namespace Light.Json.Tests.Serialization.LowLevelWriting
 {
     public sealed class MaxArraySizeTests
     {
