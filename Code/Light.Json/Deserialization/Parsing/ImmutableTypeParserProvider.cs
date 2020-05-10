@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Light.GuardClauses;
-using Light.Json.FrameworkExtensions;
+using Light.Json.Contracts;
 
 namespace Light.Json.Deserialization.Parsing
 {

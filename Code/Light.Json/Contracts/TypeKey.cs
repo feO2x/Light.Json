@@ -1,7 +1,7 @@
 ﻿using System;
 using Light.GuardClauses;
 
-namespace Light.Json.FrameworkExtensions
+namespace Light.Json.Contracts
 {
     public readonly struct TypeKey : IEquatable<TypeKey>
     {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using Light.Json.Contracts;
 using Light.Json.Deserialization.Parsing;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.Deserialization.Tokenization.Utf16;
@@ -10,11 +11,11 @@ using Light.Json.FrameworkExtensions;
 
 namespace Light.Json
 {
-    public sealed class JsonDeserializer
+    public sealed class JsonSerializer
     {
         private readonly ITypeParserProvider _typeParserProvider;
 
-        public JsonDeserializer(ITypeParserProvider? typeParserProvider = null) =>
+        public JsonSerializer(ITypeParserProvider? typeParserProvider = null) =>
             _typeParserProvider = typeParserProvider ?? new ImmutableTypeParserProvider(new Dictionary<TypeKey, ITypeParser>()); // TODO: must be replaced with Roslyn implementation
 
         public T Deserialize<T>(string utf16Json, string? parserKey = null) => Deserialize<T>(utf16Json.AsMemory(), parserKey);

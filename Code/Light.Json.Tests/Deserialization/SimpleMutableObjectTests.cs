@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
+using Light.Json.Contracts;
 using Light.Json.Deserialization.Parsing;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
@@ -16,8 +17,8 @@ namespace Light.Json.Tests.Deserialization
     ""age"": 33
 }";
 
-        private readonly JsonDeserializer _deserializer =
-            new JsonDeserializer(
+        private readonly JsonSerializer _serializer =
+            new JsonSerializer(
                 new ImmutableTypeParserProvider(
                     new Dictionary<TypeKey, ITypeParser>
                     {
@@ -27,14 +28,14 @@ namespace Light.Json.Tests.Deserialization
         [Fact]
         public void DeserializeSimpleObjectUtf16()
         {
-            var deserializedPerson = _deserializer.Deserialize<Person>(Json);
+            var deserializedPerson = _serializer.Deserialize<Person>(Json);
             CheckDeserializedObject(deserializedPerson);
         }
 
         [Fact]
         public void DeserializeSimpleObjectUtf8()
         {
-            var deserializedPerson = _deserializer.Deserialize<Person>(Json.ToUtf8());
+            var deserializedPerson = _serializer.Deserialize<Person>(Json.ToUtf8());
             CheckDeserializedObject(deserializedPerson);
         }
 

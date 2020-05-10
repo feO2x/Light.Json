@@ -1,4 +1,5 @@
-﻿using Light.Json.Deserialization.Tokenization;
+﻿using Light.Json.Contracts;
+using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Deserialization.Parsing

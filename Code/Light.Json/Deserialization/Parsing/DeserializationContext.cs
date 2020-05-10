@@ -4,9 +4,9 @@ namespace Light.Json.Deserialization.Parsing
 {
     public readonly struct DeserializationContext
     {
-        public DeserializationContext(JsonDeserializer deserializer) =>
-            Deserializer = deserializer.MustNotBeNull(nameof(deserializer));
+        public DeserializationContext(JsonSerializer serializer) =>
+            Serializer = serializer.MustNotBeNull(nameof(serializer));
 
-        public JsonDeserializer Deserializer { get; }
+        public JsonSerializer Serializer { get; }
     }
 }

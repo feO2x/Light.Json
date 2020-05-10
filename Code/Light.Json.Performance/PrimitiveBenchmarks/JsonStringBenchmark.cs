@@ -15,15 +15,15 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
     public class ShortUtf16JsonStringBenchmark
     {
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
         public string ShortUtf16Json = JsonStringBenchmarkConstants.ShortJson;
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -49,15 +49,15 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
     public class LongUtf16JsonStringBenchmark
     {
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
         public string LongUtf16Json = JsonStringBenchmarkConstants.LongJson;
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -83,15 +83,15 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
     public class ShortUtf8JsonStringBenchmark
     {
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
         public byte[] ShortUtf8Json = JsonStringBenchmarkConstants.ShortJson.ToUtf8();
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -118,15 +118,15 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
     public class LongUtf8JsonStringBenchmark
     {
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
         public byte[] LongUtf8Json = JsonStringBenchmarkConstants.LongJson.ToUtf8();
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()

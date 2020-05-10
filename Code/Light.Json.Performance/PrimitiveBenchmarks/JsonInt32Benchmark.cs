@@ -9,8 +9,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 {
     public class DeserializeInt32Utf16Benchmark
     {
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
 
         [ParamsSource(nameof(NumbersInJson))] public string Json;
 
@@ -23,10 +23,10 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         };
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public int SystemTextJson() => SystemTextJsonSerializer.Deserialize<int>(Json);
@@ -54,8 +54,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
     {
         [ParamsSource(nameof(NumbersInJson))] public static Utf8JsonSource JsonSource;
 
-        private JsonSerializer _jsonNetSerializer;
-        private JsonDeserializer _lightJsonSerializer;
+        private Newtonsoft.Json.JsonSerializer _jsonNetSerializer;
+        private JsonSerializer _lightJsonSerializer;
 
         public static Utf8JsonSource[] NumbersInJson { get; } =
         {
@@ -66,10 +66,10 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         };
 
         [GlobalSetup(Target = nameof(JsonNetSerializer))]
-        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = JsonSerializer.CreateDefault();
+        public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonDeserializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public int SystemTextJson() => SystemTextJsonSerializer.Deserialize<int>(JsonSource.Utf8Json);
