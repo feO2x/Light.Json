@@ -1,106 +1,81 @@
 ﻿using System;
+using Light.GuardClauses;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
     public struct JsonUtf8Writer : IJsonWriter
     {
-        private readonly Memory<byte> _memory;
+        private readonly IInMemoryBufferProvider<byte> _bufferProvider;
+        private byte[] _buffer;
         private int _currentIndex;
 
-        public JsonUtf8Writer(Memory<byte> memory)
+        public JsonUtf8Writer(IInMemoryBufferProvider<byte> bufferProvider)
+            : this(bufferProvider.MustNotBeNull(nameof(bufferProvider)).GetInitialBuffer(), bufferProvider) { }
+
+        public JsonUtf8Writer(byte[] buffer, IInMemoryBufferProvider<byte> bufferProvider)
         {
-            _memory = memory;
+            _buffer = buffer.MustNotBeNull(nameof(buffer));
+            _bufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
             _currentIndex = 0;
         }
 
-        public void WriteBeginOfObject() => WriteSingleCharacter((byte) '{');
+        public void WriteBeginOfObject() => this.WriteSingleAsciiCharacter('{');
 
-        public void WriteEndOfObject() => WriteSingleCharacter((byte) '}');
+        public void WriteEndOfObject() => this.WriteSingleAsciiCharacter('}');
 
-        public void WriteBeginOfArray() => WriteSingleCharacter((byte) '[');
+        public void WriteBeginOfArray() => this.WriteSingleAsciiCharacter('[');
 
-        public void WriteEndOfArray() => WriteSingleCharacter((byte) ']');
-
-        public void WriteNameValueSeparator() => WriteSingleCharacter((byte) ':');
-
-        public void WriteEntrySeparator() => WriteSingleCharacter((byte) ',');
-
-        public void WriteTrue()
-        {
-            var span = _memory.Span;
-            WriteSingleCharacter((byte) 't', in span);
-            WriteSingleCharacter((byte) 'r', in span);
-            WriteSingleCharacter((byte) 'u', in span);
-            WriteSingleCharacter((byte) 'e', in span);
-        }
-
-        public void WriteFalse()
-        {
-            var span = _memory.Span;
-            WriteSingleCharacter((byte) 'f', in span);
-            WriteSingleCharacter((byte) 'a', in span);
-            WriteSingleCharacter((byte) 'l', in span);
-            WriteSingleCharacter((byte) 's', in span);
-            WriteSingleCharacter((byte) 'e', in span);
-        }
-
-        public void WriteNull()
-        {
-            var span = _memory.Span;
-            WriteSingleCharacter((byte) 'n', in span);
-            WriteSingleCharacter((byte) 'u', in span);
-            WriteSingleCharacter((byte) 'l', in span);
-            WriteSingleCharacter((byte) 'l', in span);
-        }
+        public void WriteEndOfArray() => this.WriteSingleAsciiCharacter(']');
 
         public void WriteString(ReadOnlySpan<char> @string)
         {
-            var span = _memory.Span;
-            WriteSingleCharacter((byte) '\"', in span);
+            WriteAscii('\"');
             for (var i = 0; i < @string.Length; i++)
             {
                 var character = @string[i];
                 switch (character)
                 {
                     case '"':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) '"', in span);
-                        break;
                     case '\\':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) '\\', in span);
-                        break;
                     case '\b':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) 'b', in span);
-                        break;
                     case '\f':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) 'f', in span);
-                        break;
                     case '\n':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) 'n', in span);
-                        break;
                     case '\r':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) 'r', in span);
-                        break;
                     case '\t':
-                        WriteSingleCharacter((byte) '\\', in span);
-                        WriteSingleCharacter((byte) 't', in span);
+                        WriteEscapedCharacter(character, @string.Length, i);
                         break;
                     default:
-                        WriteSingleCharacter((byte) character, in span);
+                        WriteAscii(character);
                         break;
                 }
             }
-            WriteSingleCharacter((byte) '\"', in span);
+
+            WriteAscii('\"');
         }
 
-        public Memory<byte> ToUtf8Json() => _memory.Slice(0, _currentIndex);
+        public Memory<byte> ToUtf8Json() => new Memory<byte>(_buffer, 0, _currentIndex);
 
-        private void WriteSingleCharacter(byte character) => _memory.Span[_currentIndex++] = character;
-        private void WriteSingleCharacter(byte character, in Span<byte> span) => span[_currentIndex++] = character;
+        private void WriteCharacter(byte character) => _buffer[_currentIndex++] = character;
+
+        public void EnsureCapacity(int numberOfRequiredBufferSlots)
+        {
+            var requiredIndex = _currentIndex + numberOfRequiredBufferSlots;
+            if (requiredIndex < _buffer.Length)
+                return;
+
+            _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, requiredIndex - _buffer.Length + 1);
+        }
+
+        public void WriteAscii(char asciiCharacter) => WriteCharacter((byte) asciiCharacter);
+
+        private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
+        {
+            EnsureOneMoreInJsonString(stringLength, currentIndex);
+            WriteAscii('\\');
+            WriteAscii(escapedCharacter);
+        }
+
+        private void EnsureOneMoreInJsonString(int initialLength, int currentIndex) =>
+            EnsureCapacity(initialLength - currentIndex + 2);
     }
 }

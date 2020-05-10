@@ -1,6 +1,5 @@
 ﻿using System;
 using Light.GuardClauses;
-using Light.Json.Serialization.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
@@ -20,51 +19,19 @@ namespace Light.Json.Serialization.LowLevelWriting
             _currentIndex = 0;
         }
 
-        public void WriteBeginOfObject() => WriteSingleCharacter('{');
+        public void WriteBeginOfObject() => this.WriteSingleAsciiCharacter('{');
 
-        public void WriteEndOfObject() => WriteSingleCharacter('}');
+        public void WriteEndOfObject() => this.WriteSingleAsciiCharacter('}');
 
-        public void WriteBeginOfArray() => WriteSingleCharacter('[');
+        public void WriteBeginOfArray() => this.WriteSingleAsciiCharacter('[');
 
-        public void WriteEndOfArray() => WriteSingleCharacter(']');
-
-        public void WriteNameValueSeparator() => WriteSingleCharacter(':');
-
-        public void WriteEntrySeparator() => WriteSingleCharacter(',');
-
-        public void WriteTrue()
-        {
-            EnsureCapacity(4);
-            WriteCharacter('t');
-            WriteCharacter('r');
-            WriteCharacter('u');
-            WriteCharacter('e');
-        }
-
-        public void WriteFalse()
-        {
-            EnsureCapacity(5);
-            WriteCharacter('f');
-            WriteCharacter('a');
-            WriteCharacter('l');
-            WriteCharacter('s');
-            WriteCharacter('e');
-        }
-
-        public void WriteNull()
-        {
-            EnsureCapacity(4);
-            WriteCharacter('n');
-            WriteCharacter('u');
-            WriteCharacter('l');
-            WriteCharacter('l');
-        }
+        public void WriteEndOfArray() => this.WriteSingleAsciiCharacter(']');
 
         public void WriteString(ReadOnlySpan<char> @string)
         {
             EnsureCapacity(@string.Length + 2);
 
-            WriteCharacter('\"');
+            WriteAscii('\"');
             for (var i = 0; i < @string.Length; i++)
             {
                 var character = @string[i];
@@ -80,30 +47,17 @@ namespace Light.Json.Serialization.LowLevelWriting
                         WriteEscapedCharacter(character, @string.Length, i);
                         break;
                     default:
-                        WriteCharacter(character);
+                        WriteAscii(character);
                         break;
                 }
             }
 
-            WriteCharacter('\"');
+            WriteAscii('\"');
         }
 
         public Memory<char> ToUtf16Json() => new Memory<char>(_buffer, 0, _currentIndex);
 
-        public void WriteSingleCharacter(char character)
-        {
-            EnsureCapacity(1);
-            WriteCharacter(character);
-        }
-
-        public void WriteCharacter(char character) => _buffer[_currentIndex++] = character;
-
-        private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
-        {
-            EnsureOneMoreInJsonString(stringLength, currentIndex);
-            WriteCharacter('\\');
-            WriteCharacter(escapedCharacter);
-        }
+        public void WriteAscii(char asciiCharacter) => _buffer[_currentIndex++] = asciiCharacter;
 
         public void EnsureCapacity(int numberOfRequiredBufferSlots)
         {
@@ -114,7 +68,14 @@ namespace Light.Json.Serialization.LowLevelWriting
             _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, requiredIndex - _buffer.Length + 1);
         }
 
-        public void EnsureOneMoreInJsonString(int initialLength, int currentIndex) =>
+        private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
+        {
+            EnsureOneMoreInJsonString(stringLength, currentIndex);
+            WriteAscii('\\');
+            WriteAscii(escapedCharacter);
+        }
+
+        private void EnsureOneMoreInJsonString(int initialLength, int currentIndex) =>
             EnsureCapacity(initialLength - currentIndex + 2);
     }
 }

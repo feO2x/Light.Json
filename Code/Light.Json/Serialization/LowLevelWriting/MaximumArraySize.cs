@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Light.Json.Serialization.Buffers
+namespace Light.Json.Serialization.LowLevelWriting
 {
     public static class MaximumArraySize
     {

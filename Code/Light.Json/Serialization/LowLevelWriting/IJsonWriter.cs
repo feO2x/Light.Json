@@ -12,15 +12,9 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         void WriteEndOfArray();
 
-        void WriteNameValueSeparator();
+        void EnsureCapacity(int numberOfRequiredBufferSlots);
 
-        void WriteEntrySeparator();
-
-        void WriteTrue();
-
-        void WriteFalse();
-
-        void WriteNull();
+        void WriteAscii(char asciiCharacter);
 
         void WriteString(ReadOnlySpan<char> @string);
     }

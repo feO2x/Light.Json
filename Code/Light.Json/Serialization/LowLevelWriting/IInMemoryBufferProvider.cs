@@ -1,4 +1,4 @@
-﻿namespace Light.Json.Serialization.Buffers
+﻿namespace Light.Json.Serialization.LowLevelWriting
 {
     public interface IInMemoryBufferProvider<T>
     {

@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using Light.GuardClauses;
 
-namespace Light.Json.Serialization.Buffers
+namespace Light.Json.Serialization.LowLevelWriting
 {
     public class ArrayPoolBufferProvider<T> : IInMemoryBufferProvider<T>
     {

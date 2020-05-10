@@ -4,17 +4,14 @@ using Xunit;
 
 namespace Light.Json.Tests.Serialization.LowLevelWriting
 {
-    public abstract class JsonWriterTests<TJsonWriter, TCharacterType>
+    public abstract class JsonWriterTests<TJsonWriter>
         where TJsonWriter : struct, IJsonWriter
     {
-        protected static readonly TCharacterType[] Array = new TCharacterType[1024];
-
         private TJsonWriter _writer;
 
         protected ref TJsonWriter Writer => ref _writer;
 
-        protected JsonWriterTests(TJsonWriter writer) =>
-            _writer = writer;
+        protected JsonWriterTests(TJsonWriter writer) => _writer = writer;
 
         [Fact]
         public void WriteTrue()
@@ -68,14 +65,14 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         [Fact]
         public void WriteNameValueSeparator()
         {
-            Writer.WriteNameValueSeparator();
+            Writer.WriteColon();
             CheckResult(":");
         }
 
         [Fact]
         public void WriteEntrySeparator()
         {
-            Writer.WriteEntrySeparator();
+            Writer.WriteComma();
             CheckResult(",");
         }
 

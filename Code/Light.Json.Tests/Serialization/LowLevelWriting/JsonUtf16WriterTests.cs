@@ -1,10 +1,9 @@
 ﻿using FluentAssertions;
-using Light.Json.Serialization.Buffers;
 using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.LowLevelWriting
 {
-    public sealed class JsonUtf16WriterTests : JsonWriterTests<JsonUtf16Writer, char>
+    public sealed class JsonUtf16WriterTests : JsonWriterTests<JsonUtf16Writer>
     {
         public JsonUtf16WriterTests() : base(new JsonUtf16Writer(new ArrayPoolBufferProvider<char>())) { }
 

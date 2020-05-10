@@ -1,13 +1,12 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using FluentAssertions;
 using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.LowLevelWriting
 {
-    public sealed class JsonUtf8WriterTests : JsonWriterTests<JsonUtf8Writer, byte>
+    public sealed class JsonUtf8WriterTests : JsonWriterTests<JsonUtf8Writer>
     {
-        public JsonUtf8WriterTests() : base(new JsonUtf8Writer(Array.AsMemory())) { }
+        public JsonUtf8WriterTests() : base(new JsonUtf8Writer(new ArrayPoolBufferProvider<byte>())) { }
 
         protected override void CheckResult(string expected)
         {
