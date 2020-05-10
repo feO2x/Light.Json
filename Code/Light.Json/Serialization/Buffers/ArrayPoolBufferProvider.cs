@@ -18,13 +18,13 @@ namespace Light.Json.Serialization.Buffers
         }
 
         public T[] GetInitialBuffer() => ArrayPool.Rent(DefaultArraySize);
-
-        public T[] GetNewBufferWithIncreasedSize(T[] currentBuffer)
+        public T[] GetNewBufferWithIncreasedSize(T[] currentBuffer, int numberOfRequiredBufferSlots)
         {
             currentBuffer.MustNotBeNull(nameof(currentBuffer));
+            numberOfRequiredBufferSlots.MustBeGreaterThan(0, nameof(numberOfRequiredBufferSlots));
 
-            var newSize = DetermineNewBufferSize(currentBuffer.Length);
-            var newBuffer = new T[newSize];
+            var newSize = DetermineNewBufferSize(currentBuffer.Length, numberOfRequiredBufferSlots);
+            var newBuffer = ArrayPool.Rent(newSize);
             currentBuffer.CopyTo(newBuffer, 0);
             ArrayPool.Return(currentBuffer);
             return newBuffer;
@@ -32,11 +32,15 @@ namespace Light.Json.Serialization.Buffers
 
         public void Finish(T[] currentBuffer) => ArrayPool.Return(currentBuffer.MustNotBeNull(nameof(currentBuffer)));
 
-        protected virtual int DetermineNewBufferSize(int currentSize)
+        protected virtual int DetermineNewBufferSize(int currentSize, int numberOfRequiredBufferSlots)
         {
-            if (_maximumArraySize <= currentSize)
-                throw new SerializationException($"A new buffer for serialization cannot be created because the current size of {currentSize} is the maximum size.");
+            var newMinimumSize = currentSize + numberOfRequiredBufferSlots;
+            if (_maximumArraySize < newMinimumSize)
+                throw new SerializationException($"A new buffer for in-memory serialization cannot be created because the required size of {newMinimumSize} is larger than the maximum buffer size.");
+
             var newSize = currentSize * 2;
+            if (newSize < newMinimumSize)
+                newSize = newMinimumSize;
             if (newSize > _maximumArraySize)
                 newSize = _maximumArraySize;
             return newSize;
