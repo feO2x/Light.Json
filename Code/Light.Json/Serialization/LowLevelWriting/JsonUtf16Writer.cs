@@ -71,39 +71,13 @@ namespace Light.Json.Serialization.LowLevelWriting
                 switch (character)
                 {
                     case '"':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('"');
-                        break;
                     case '\\':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('\\');
-                        break;
                     case '\b':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('b');
-                        break;
                     case '\f':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('f');
-                        break;
                     case '\n':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('n');
-                        break;
                     case '\r':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('r');
-                        break;
                     case '\t':
-                        EnsureOneMoreInJsonString(@string.Length, i);
-                        WriteCharacter('\\');
-                        WriteCharacter('t');
+                        WriteEscapedCharacter(character, @string.Length, i);
                         break;
                     default:
                         WriteCharacter(character);
@@ -123,6 +97,13 @@ namespace Light.Json.Serialization.LowLevelWriting
         }
 
         public void WriteCharacter(char character) => _buffer[_currentIndex++] = character;
+
+        private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
+        {
+            EnsureOneMoreInJsonString(stringLength, currentIndex);
+            WriteCharacter('\\');
+            WriteCharacter(escapedCharacter);
+        }
 
         public void EnsureCapacity(int numberOfRequiredBufferSlots)
         {
