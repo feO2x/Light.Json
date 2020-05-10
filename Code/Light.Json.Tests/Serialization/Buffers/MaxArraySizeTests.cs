@@ -7,21 +7,16 @@ namespace Light.Json.Tests.Serialization.Buffers
 {
     public sealed class MaxArraySizeTests
     {
+        private const string SkipReason = "This test triangulates the maximum array size.";
         private readonly ITestOutputHelper _output;
 
         public MaxArraySizeTests(ITestOutputHelper output) =>
             _output = output;
 
-        //[Fact]
-        //public void CharMaximumArraySize() => CheckArraySize<char>(1024 * 1024);
-
-        //[Fact]
-        //public void ByteMaximumArraySize() => CheckArraySize<byte>(2_147_483_591);
-
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void DetermineCharMaximumArraySize() => DetermineArraySize<char>();
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void DetermineByteMaximumArraySize() => DetermineArraySize<byte>();
 
         private void DetermineArraySize<T>()
