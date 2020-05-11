@@ -4,7 +4,7 @@ namespace Light.Json.Contracts
 {
     public interface ISerializationContractProvider
     {
-        bool TryGetContract<TContract>(TypeKey typeKey, out TContract? contract)
+        bool TryGetContract<TContract>(TypeKey typeKey, [NotNullWhen(true)] out TContract? contract)
             where TContract : class, ISerializationContract;
     }
 }

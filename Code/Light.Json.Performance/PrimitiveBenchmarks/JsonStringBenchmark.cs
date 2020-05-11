@@ -23,7 +23,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -57,7 +57,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -91,7 +91,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -126,7 +126,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()

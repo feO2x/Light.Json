@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Serialization;
-using Light.Json.Deserialization.Parsing;
+using Light.Json.Contracts;
 
 namespace Light.Json.Deserialization.Tokenization
 {
@@ -9,7 +9,7 @@ namespace Light.Json.Deserialization.Tokenization
         int Line { get; }
         int Position { get; }
 
-        bool Equals(in DeserializationConstant constant);
+        bool Equals(in ContractConstant constant);
     }
 
     public static class JsonTokenExtensions

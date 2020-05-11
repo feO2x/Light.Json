@@ -103,13 +103,13 @@ namespace Light.Json.Tests.Deserialization
 
         private static T DeserializeUtf16<T>(string json)
         {
-            var deserializer = new JsonSerializer();
+            var deserializer = JsonSerializer.CreateDefault();
             return deserializer.Deserialize<T>(json.AsMemory());
         }
 
         private static T DeserializeUtf8<T>(string json)
         {
-            var deserializer = new JsonSerializer();
+            var deserializer = JsonSerializer.CreateDefault();
             return deserializer.Deserialize<T>(json.ToUtf8());
         }
     }

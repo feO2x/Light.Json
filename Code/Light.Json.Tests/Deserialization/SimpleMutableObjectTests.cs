@@ -4,6 +4,7 @@ using Light.Json.Contracts;
 using Light.Json.Deserialization.Parsing;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
+using Light.Json.Serialization.LowLevelWriting;
 using Xunit;
 
 namespace Light.Json.Tests.Deserialization
@@ -18,12 +19,13 @@ namespace Light.Json.Tests.Deserialization
 }";
 
         private readonly JsonSerializer _serializer =
-            new JsonSerializer(
-                new ImmutableTypeParserProvider(
-                    new Dictionary<TypeKey, ITypeParser>
-                    {
-                        [typeof(Person)] = new PersonParser()
-                    }));
+            new JsonSerializer(new ImmutableSerializationContractProvider(
+                                                                          new Dictionary<TypeKey, ISerializationContract>
+                                                                          {
+                                                                              [typeof(Person)] = new PersonContract()
+                                                                          }),
+                               new ArrayPoolBufferProvider<char>(),
+                               new ArrayPoolBufferProvider<byte>());
 
         [Fact]
         public void DeserializeSimpleObjectUtf16()
@@ -51,13 +53,13 @@ namespace Light.Json.Tests.Deserialization
             public int Age { get; set; }
         }
 
-        public sealed class PersonParser : BaseTypeParser<Person>
+        public sealed class PersonContract : DeserializeOnlyContract<Person>
         {
-            public readonly DeserializationConstant FirstName = "firstName";
-            public readonly DeserializationConstant LastName = "lastName";
-            public readonly DeserializationConstant Age = "age";
+            public readonly ContractConstant Age = "age";
+            public readonly ContractConstant FirstName = "firstName";
+            public readonly ContractConstant LastName = "lastName";
 
-            public override Person Parse<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
+            public override Person Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
             {
                 tokenizer.ReadBeginOfObject();
                 var person = new Person();

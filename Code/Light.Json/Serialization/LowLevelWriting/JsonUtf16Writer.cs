@@ -68,6 +68,13 @@ namespace Light.Json.Serialization.LowLevelWriting
             _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, requiredIndex - _buffer.Length + 1);
         }
 
+        public string Finish()
+        {
+            var json = ToUtf16Json().ToString();
+            _bufferProvider.Finish(_buffer);
+            return json;
+        }
+
         private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
         {
             EnsureOneMoreInJsonString(stringLength, currentIndex);

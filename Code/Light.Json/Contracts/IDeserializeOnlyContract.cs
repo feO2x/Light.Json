@@ -5,7 +5,7 @@ namespace Light.Json.Contracts
 {
     public interface IDeserializeOnlyContract : ISerializationContract
     {
-        public object DeserializeObject<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
+        public object? DeserializeObject<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
             where TJsonTokenizer : struct, IJsonTokenizer<TJsonToken>
             where TJsonToken : struct, IJsonToken;
     }
