@@ -23,8 +23,6 @@ namespace Light.Json.FrameworkExtensions
                 return Encoding.UTF8.GetString(bytePointer, length);
         }
 
-        public static byte[] ToUtf8(this char character) => Encoding.UTF8.GetBytes(character.ToString());
-
         public static byte[] ToUtf8(this string @string) => Encoding.UTF8.GetBytes(@string);
     }
 }

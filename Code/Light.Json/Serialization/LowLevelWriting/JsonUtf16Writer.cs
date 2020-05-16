@@ -6,18 +6,18 @@ namespace Light.Json.Serialization.LowLevelWriting
     public struct JsonUtf16Writer : IJsonWriter
     {
         private char[] _buffer;
-        private int _currentIndex;
         private readonly IInMemoryBufferProvider<char> _bufferProvider;
 
-        public JsonUtf16Writer(IInMemoryBufferProvider<char> bufferProvider) :
-            this(bufferProvider.MustNotBeNull(nameof(bufferProvider)).GetInitialBuffer(), bufferProvider) { }
-
-        public JsonUtf16Writer(char[] buffer, IInMemoryBufferProvider<char> bufferProvider)
+        public JsonUtf16Writer(IInMemoryBufferProvider<char> bufferProvider)
         {
-            _buffer = buffer.MustNotBeNull(nameof(buffer));
             _bufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
-            _currentIndex = 0;
+            _buffer = bufferProvider.GetInitialBuffer();
+            CurrentIndex = EnsuredIndex = 0;
         }
+
+        public int CurrentIndex { get; private set; }
+
+        public int EnsuredIndex { get; private set; }
 
         public void WriteBeginOfObject() => this.WriteSingleAsciiCharacter('{');
 
@@ -27,45 +27,20 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public void WriteEndOfArray() => this.WriteSingleAsciiCharacter(']');
 
-        public void WriteString(ReadOnlySpan<char> @string)
+        public void WriteKeyValueSeparator() => this.WriteSingleAsciiCharacter(':');
+
+        public void WriteValueSeparator() => this.WriteSingleAsciiCharacter(',');
+
+        public Memory<char> ToUtf16Json() => new Memory<char>(_buffer, 0, CurrentIndex);
+
+        public void WriteCharacter(char character) => _buffer[CurrentIndex++] = character;
+
+        public void WriteAscii(char asciiCharacter) => WriteCharacter(asciiCharacter);
+
+        public void EnsureCapacityFromCurrentIndex(int numberOfRequiredBufferSlots)
         {
-            EnsureCapacity(@string.Length + 2);
-
-            WriteAscii('\"');
-            for (var i = 0; i < @string.Length; i++)
-            {
-                var character = @string[i];
-                switch (character)
-                {
-                    case '"':
-                    case '\\':
-                    case '\b':
-                    case '\f':
-                    case '\n':
-                    case '\r':
-                    case '\t':
-                        WriteEscapedCharacter(character, @string.Length, i);
-                        break;
-                    default:
-                        WriteAscii(character);
-                        break;
-                }
-            }
-
-            WriteAscii('\"');
-        }
-
-        public Memory<char> ToUtf16Json() => new Memory<char>(_buffer, 0, _currentIndex);
-
-        public void WriteAscii(char asciiCharacter) => _buffer[_currentIndex++] = asciiCharacter;
-
-        public void EnsureCapacity(int numberOfRequiredBufferSlots)
-        {
-            var requiredIndex = _currentIndex + numberOfRequiredBufferSlots;
-            if (requiredIndex < _buffer.Length)
-                return;
-
-            _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, requiredIndex - _buffer.Length + 1);
+            EnsuredIndex = CurrentIndex + numberOfRequiredBufferSlots;
+            EnsureCapacity();
         }
 
         public string Finish()
@@ -75,14 +50,25 @@ namespace Light.Json.Serialization.LowLevelWriting
             return json;
         }
 
-        private void WriteEscapedCharacter(char escapedCharacter, int stringLength, int currentIndex)
+        public void WriteEscapedCharacter(char escapedCharacter)
         {
-            EnsureOneMoreInJsonString(stringLength, currentIndex);
+            EnsureOneMore();
             WriteAscii('\\');
             WriteAscii(escapedCharacter);
         }
 
-        private void EnsureOneMoreInJsonString(int initialLength, int currentIndex) =>
-            EnsureCapacity(initialLength - currentIndex + 2);
+        private void EnsureOneMore()
+        {
+            ++EnsuredIndex;
+            EnsureCapacity();
+        }
+
+        private void EnsureCapacity()
+        {
+            if (EnsuredIndex < _buffer.Length)
+                return;
+
+            _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, EnsuredIndex - _buffer.Length + 1);
+        }
     }
 }

@@ -63,16 +63,16 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         }
 
         [Fact]
-        public void WriteNameValueSeparator()
+        public void WriteKeyValueSeparator()
         {
-            Writer.WriteColon();
+            Writer.WriteKeyValueSeparator();
             CheckResult(":");
         }
 
         [Fact]
         public void WriteEntrySeparator()
         {
-            Writer.WriteComma();
+            Writer.WriteValueSeparator();
             CheckResult(",");
         }
 

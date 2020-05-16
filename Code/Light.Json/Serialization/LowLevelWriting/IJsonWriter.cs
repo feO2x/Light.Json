@@ -1,9 +1,11 @@
-﻿using System;
-
-namespace Light.Json.Serialization.LowLevelWriting
+﻿namespace Light.Json.Serialization.LowLevelWriting
 {
     public interface IJsonWriter
     {
+        int CurrentIndex { get; }
+
+        int EnsuredIndex { get; }
+
         void WriteBeginOfObject();
 
         void WriteEndOfObject();
@@ -12,10 +14,16 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         void WriteEndOfArray();
 
-        void EnsureCapacity(int numberOfRequiredBufferSlots);
+        void WriteKeyValueSeparator();
+
+        void WriteValueSeparator();
+
+        void EnsureCapacityFromCurrentIndex(int numberOfRequiredBufferSlots);
 
         void WriteAscii(char asciiCharacter);
 
-        void WriteString(ReadOnlySpan<char> @string);
+        void WriteCharacter(char character);
+
+        void WriteEscapedCharacter(char escapeCharacter);
     }
 }
