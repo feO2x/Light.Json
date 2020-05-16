@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Light.GuardClauses;
 using Light.Json.Contracts;
-using Light.Json.Deserialization.Parsing;
+using Light.Json.Deserialization;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.Deserialization.Tokenization.Utf16;
 using Light.Json.Deserialization.Tokenization.Utf8;

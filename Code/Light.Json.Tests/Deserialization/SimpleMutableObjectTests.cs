@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
 using Light.Json.Contracts;
-using Light.Json.Deserialization.Parsing;
+using Light.Json.Deserialization;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Serialization.LowLevelWriting;
@@ -19,13 +19,14 @@ namespace Light.Json.Tests.Deserialization
 }";
 
         private readonly JsonSerializer _serializer =
-            new JsonSerializer(new ImmutableSerializationContractProvider(
-                                                                          new Dictionary<TypeKey, ISerializationContract>
-                                                                          {
-                                                                              [typeof(Person)] = new PersonContract()
-                                                                          }),
-                               new ArrayPoolBufferProvider<char>(),
-                               new ArrayPoolBufferProvider<byte>());
+            new JsonSerializer(
+                new ImmutableSerializationContractProvider(
+                    new Dictionary<TypeKey, ISerializationContract>
+                    {
+                        [typeof(Person)] = new PersonContract()
+                    }),
+                new ArrayPoolBufferProvider<char>(),
+                new ArrayPoolBufferProvider<byte>());
 
         [Fact]
         public void DeserializeSimpleObjectUtf16()

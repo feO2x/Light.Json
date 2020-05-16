@@ -1,6 +1,6 @@
 ﻿using Light.GuardClauses;
 
-namespace Light.Json.Deserialization.Parsing
+namespace Light.Json.Deserialization
 {
     public readonly struct DeserializationContext
     {
