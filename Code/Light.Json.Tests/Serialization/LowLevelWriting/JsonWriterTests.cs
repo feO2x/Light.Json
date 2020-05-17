@@ -80,6 +80,7 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         [InlineData("foo")]
         [InlineData("This is a really long string.")]
         [InlineData("A number: 300550152")]
+        [InlineData("")]
         [InlineData("🌹")]
         [InlineData("🐱‍👤")]
         [InlineData("🧖‍♀️")]
@@ -90,12 +91,12 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         public void WriteString(string @string)
         {
             Writer.WriteString(@string.AsSpan());
-            var expected = new char[@string.Length + 2];
+            Span<char> expected = stackalloc char[@string.Length + 2];
             expected[0] = '\"';
             // ReSharper disable once UseIndexFromEndExpression
             expected[expected.Length - 1] = '\"';
-            @string.CopyTo(0, expected, 1, @string.Length);
-            CheckResult(new string(expected));
+            @string.AsSpan().CopyTo(expected.Slice(1));
+            CheckResult(expected.ToString());
         }
 
         protected abstract void CheckResult(string expected);
