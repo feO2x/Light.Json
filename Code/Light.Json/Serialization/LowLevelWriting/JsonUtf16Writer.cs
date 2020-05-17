@@ -37,9 +37,21 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public void WriteAscii(char asciiCharacter) => WriteCharacter(asciiCharacter);
 
-        public void EnsureCapacityFromCurrentIndex(int numberOfRequiredBufferSlots)
+        public void WriteSurrogatePair(char highSurrogate, char lowSurrogate)
         {
-            EnsuredIndex = CurrentIndex + numberOfRequiredBufferSlots;
+            WriteCharacter(highSurrogate);
+            WriteCharacter(lowSurrogate);
+        }
+
+        public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
+        {
+            EnsuredIndex = CurrentIndex + numberOfAdditionalBufferSlots;
+            EnsureCapacity();
+        }
+
+        public void EnsureAdditionalCapacity(int numberOfAdditionalBufferSlots)
+        {
+            EnsuredIndex += numberOfAdditionalBufferSlots.MustBeGreaterThan(0, nameof(numberOfAdditionalBufferSlots));
             EnsureCapacity();
         }
 

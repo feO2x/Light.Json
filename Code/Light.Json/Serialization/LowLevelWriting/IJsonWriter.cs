@@ -18,12 +18,16 @@
 
         void WriteValueSeparator();
 
-        void EnsureCapacityFromCurrentIndex(int numberOfRequiredBufferSlots);
+        void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots);
+
+        void EnsureAdditionalCapacity(int numberOfAdditionalBufferSlots);
 
         void WriteAscii(char asciiCharacter);
 
         void WriteCharacter(char character);
 
         void WriteEscapedCharacter(char escapeCharacter);
+
+        void WriteSurrogatePair(char highSurrogate, char lowSurrogate);
     }
 }

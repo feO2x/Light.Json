@@ -80,6 +80,13 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         [InlineData("foo")]
         [InlineData("This is a really long string.")]
         [InlineData("A number: 300550152")]
+        [InlineData("🌹")]
+        [InlineData("🐱‍👤")]
+        [InlineData("🧖‍♀️")]
+        [InlineData("ह")]
+        [InlineData("€")]
+        [InlineData("한")]
+        [InlineData("𐍈")]
         public void WriteString(string @string)
         {
             Writer.WriteString(@string.AsSpan());
