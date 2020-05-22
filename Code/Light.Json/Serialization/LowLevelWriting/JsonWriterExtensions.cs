@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
-    public static class JsonWriterExtensions
+    public static partial class JsonWriterExtensions
     {
         public static void WriteSingleAsciiCharacter<TJsonWriter>(this ref TJsonWriter writer, char asciiCharacter)
             where TJsonWriter : struct, IJsonWriter

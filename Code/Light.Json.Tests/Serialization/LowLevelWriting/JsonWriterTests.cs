@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Light.Json.Serialization.LowLevelWriting;
 using Xunit;
 
@@ -97,6 +98,22 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
             expected[expected.Length - 1] = '\"';
             @string.AsSpan().CopyTo(expected.Slice(1));
             CheckResult(expected.ToString());
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(15)]
+        [InlineData(-102)]
+        [InlineData(1024)]
+        [InlineData(99475)]
+        [InlineData(-104459)]
+        [InlineData(-75_355_095)]
+        [InlineData(int.MaxValue)]
+        [InlineData(int.MinValue)]
+        public void WriteInt32(int integer)
+        {
+            Writer.WriteInt32(integer);
+            CheckResult(integer.ToString(CultureInfo.InvariantCulture));
         }
 
         protected abstract void CheckResult(string expected);
