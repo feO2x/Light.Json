@@ -69,18 +69,24 @@ namespace Light.Json.Serialization.LowLevelWriting
             writer.EnsureCapacityFromCurrentIndex(11);
             writer.WriteAscii('-');
             writer.WriteAscii('2');
+
+            // Millions
             writer.WriteAscii('1');
             writer.WriteAscii('4');
             writer.WriteAscii('7');
+
+            // Thousands
             writer.WriteAscii('4');
             writer.WriteAscii('8');
             writer.WriteAscii('3');
+
+            // Hundreds
             writer.WriteAscii('6');
             writer.WriteAscii('4');
             writer.WriteAscii('8');
         }
 
-        public static int DetermineNumberOfDigits(this uint number)
+        private static int DetermineNumberOfDigits(this uint number)
         {
             // uint.MaxValue is 4,294,967,295
             if (number < 10)

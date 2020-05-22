@@ -127,6 +127,30 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
             CheckResult(integer.ToString(CultureInfo.InvariantCulture));
         }
 
+        [Theory]
+        [InlineData(long.MaxValue)]
+        [InlineData(long.MinValue)]
+        [InlineData(0L)]
+        [InlineData(-1L)]
+        [InlineData(223578236811395807L)]
+        [InlineData(-832178934500807L)]
+        public void WriteInt64(long integer)
+        {
+            Writer.WriteInteger(integer);
+            CheckResult(integer.ToString(CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(ulong.MinValue)]
+        [InlineData(ulong.MaxValue)]
+        [InlineData(1UL)]
+        [InlineData(86321250909551615)]
+        public void WriteUInt64(ulong integer)
+        {
+            Writer.WriteInteger(integer);
+            CheckResult(integer.ToString(CultureInfo.InvariantCulture));
+        }
+
         protected abstract void CheckResult(string expected);
     }
 }
