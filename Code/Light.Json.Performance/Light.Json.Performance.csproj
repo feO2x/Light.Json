@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.1;net48</TargetFrameworks>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+    <LangVersion>8.0</LangVersion>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
@@ -20,11 +21,7 @@
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.*" />
     <PackageReference Include="System.Collections" Version="4.*" />
 
-    <ProjectReference Include="..\Light.Json\Light.Json.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="SerializationBenchmarks\" />
+    <ProjectReference Include="..\Light.Json.Tests\Light.Json.Tests.csproj" />
   </ItemGroup>
 
 </Project>
