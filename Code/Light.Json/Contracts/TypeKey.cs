@@ -8,7 +8,7 @@ namespace Light.Json.Contracts
         public TypeKey(Type type, string? key = null)
         {
             Type = type.MustNotBeNull(nameof(Type));
-            Key = key;
+            Key = key.IsNullOrWhiteSpace() ? null : key;
         }
 
         public Type Type { get; }

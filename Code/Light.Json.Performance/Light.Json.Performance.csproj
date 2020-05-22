@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Light.Json\Light.Json.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SerializationBenchmarks\" />
+  </ItemGroup>
+
 </Project>

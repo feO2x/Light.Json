@@ -3,12 +3,9 @@ using Light.Json.Deserialization.Tokenization;
 
 namespace Light.Json.Contracts
 {
-    public abstract class DeserializeOnlyContract<T> : IDeserializeOnlyContract<T>
+    public abstract class DeserializeOnlyContract<T> : BaseContract<T>, IDeserializeOnlyContract<T>
     {
-        protected DeserializeOnlyContract(string? contractKey = null) =>
-            TypeKey = new TypeKey(typeof(T), contractKey);
-
-        public TypeKey TypeKey { get; }
+        protected DeserializeOnlyContract(string? contractKey = null) : base(contractKey) { }
 
         public abstract T Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context,
                                                                   ref TJsonTokenizer tokenizer)
@@ -22,5 +19,7 @@ namespace Light.Json.Contracts
         {
             return Deserialize<TJsonTokenizer, TJsonToken>(context, ref tokenizer);
         }
+
+        public override string ToString() => "Deserialize-Only-Contract " + TypeKey;
     }
 }

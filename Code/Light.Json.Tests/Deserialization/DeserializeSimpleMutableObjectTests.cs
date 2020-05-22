@@ -5,11 +5,12 @@ using Light.Json.Deserialization;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Serialization.LowLevelWriting;
+using Light.Json.Tests.SerializationSubjects;
 using Xunit;
 
 namespace Light.Json.Tests.Deserialization
 {
-    public sealed class SimpleMutableObjectTests
+    public sealed class DeserializeSimpleMutableObjectTests
     {
         private const string Json = @"
 {
@@ -24,9 +25,11 @@ namespace Light.Json.Tests.Deserialization
                     new Dictionary<TypeKey, ISerializationContract>
                     {
                         [typeof(Person)] = new PersonContract()
-                    }),
+                    }
+                ),
                 new ArrayPoolBufferProvider<char>(),
-                new ArrayPoolBufferProvider<byte>());
+                new ArrayPoolBufferProvider<byte>()
+            );
 
         [Fact]
         public void DeserializeSimpleObjectUtf16()
@@ -45,20 +48,11 @@ namespace Light.Json.Tests.Deserialization
         private static void CheckDeserializedObject(Person deserializedObject) =>
             deserializedObject.Should().BeEquivalentTo(new Person { FirstName = "Kenny", LastName = "Pflug", Age = 33 });
 
-        public sealed class Person
-        {
-            public string? FirstName { get; set; }
-
-            public string? LastName { get; set; }
-
-            public int Age { get; set; }
-        }
-
         public sealed class PersonContract : DeserializeOnlyContract<Person>
         {
-            public readonly ContractConstant Age = "age";
-            public readonly ContractConstant FirstName = "firstName";
-            public readonly ContractConstant LastName = "lastName";
+            public readonly ContractConstant Age = nameof(Person.Age);
+            public readonly ContractConstant FirstName = nameof(Person.FirstName);
+            public readonly ContractConstant LastName = nameof(Person.LastName);
 
             public override Person Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
             {

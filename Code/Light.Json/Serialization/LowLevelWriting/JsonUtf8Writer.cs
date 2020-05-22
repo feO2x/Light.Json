@@ -33,6 +33,13 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public Memory<byte> ToUtf8Json() => new Memory<byte>(_buffer, 0, CurrentIndex);
 
+        public byte[] Finish()
+        {
+            var utf8Json = ToUtf8Json().ToArray();
+            _bufferProvider.Finish(_buffer);
+            return utf8Json;
+        }
+
         public void WriteCharacter(char character)
         {
             if (character < 128)

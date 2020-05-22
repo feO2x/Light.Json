@@ -8,14 +8,18 @@ namespace Light.Json.Contracts
     {
         public readonly string Utf16;
         public readonly ReadOnlyMemory<byte> Utf8;
+        public readonly bool ShouldFirstCharacterBeLowered;
 
-        public ContractConstant(string utf16)
+        public ContractConstant(string utf16, bool shouldFirstCharacterBeLowered = true)
         {
-            Utf16 = utf16.MustNotBeNullOrWhiteSpace(nameof(utf16));
-            Utf8 = utf16.ToUtf8();
+            ShouldFirstCharacterBeLowered = shouldFirstCharacterBeLowered;
+            utf16.MustNotBeNullOrWhiteSpace(nameof(utf16));
+            Utf16 = shouldFirstCharacterBeLowered ? utf16.LowerFirstCharacter() : utf16;
+            Utf8 = Utf16.ToUtf8();
         }
 
         public static implicit operator ContractConstant(string utf16) => new ContractConstant(utf16);
+
         public bool Equals(ContractConstant other) => other.Utf16 == Utf16;
 
         public override bool Equals(object? obj) =>

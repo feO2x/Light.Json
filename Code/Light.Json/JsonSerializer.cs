@@ -31,9 +31,17 @@ namespace Light.Json
         public static JsonSerializer CreateDefault() =>
             new JsonSerializer(new ImmutableSerializationContractProvider(new Dictionary<TypeKey, ISerializationContract>()), new ArrayPoolBufferProvider<char>(), new ArrayPoolBufferProvider<byte>());
 
-        public string SerializeUtf16<T>(T value, string? contractKey = null)
+        public string SerializeToUtf16<T>(T value, string? contractKey = null)
         {
             var writer = new JsonUtf16Writer(_utf16InMemoryBufferProvider);
+            var context = new SerializationContext();
+            Serialize(value, context, ref writer, contractKey);
+            return writer.Finish();
+        }
+
+        public byte[] SerializeToUtf8<T>(T value, string? contractKey = null)
+        {
+            var writer = new JsonUtf8Writer(_utf8InMemoryBufferProvider);
             var context = new SerializationContext();
             Serialize(value, context, ref writer, contractKey);
             return writer.Finish();

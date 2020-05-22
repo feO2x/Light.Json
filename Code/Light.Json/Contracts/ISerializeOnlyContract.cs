@@ -5,13 +5,13 @@ namespace Light.Json.Contracts
 {
     public interface ISerializeOnlyContract : ISerializationContract
     {
-        public void SerializeObject<TJsonWriter>(object @object, SerializationContext context, ref TJsonWriter writer)
+        void SerializeObject<TJsonWriter>(object @object, SerializationContext context, ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter;
     }
 
-    public interface ISerializeOnlyContract<in T> : ISerializationContract
+    public interface ISerializeOnlyContract<in T> : ISerializeOnlyContract
     {
-        public void Serialize<TJsonWriter>(T @object, SerializationContext context, ref TJsonWriter writer)
+        void Serialize<TJsonWriter>(T @object, SerializationContext context, ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter;
     }
 }
