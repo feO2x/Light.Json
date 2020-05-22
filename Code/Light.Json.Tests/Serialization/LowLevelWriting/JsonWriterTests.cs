@@ -112,7 +112,18 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         [InlineData(int.MinValue)]
         public void WriteInt32(int integer)
         {
-            Writer.WriteInt32(integer);
+            Writer.WriteInteger(integer);
+            CheckResult(integer.ToString(CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(uint.MinValue)]
+        [InlineData(uint.MaxValue)]
+        [InlineData(1U)]
+        [InlineData(294967295U)]
+        public void WriteUInt32(uint integer)
+        {
+            Writer.WriteInteger(integer);
             CheckResult(integer.ToString(CultureInfo.InvariantCulture));
         }
 

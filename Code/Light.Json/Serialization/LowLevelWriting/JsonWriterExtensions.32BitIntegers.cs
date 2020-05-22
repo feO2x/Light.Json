@@ -4,7 +4,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 {
     public static partial class JsonWriterExtensions
     {
-        public static void WriteInt32<TJsonWriter>(this ref TJsonWriter writer, int number)
+        public static void WriteInteger<TJsonWriter>(this ref TJsonWriter writer, int number)
             where TJsonWriter : struct, IJsonWriter
         {
             var numberOfBufferSlots = 0;
@@ -21,7 +21,8 @@ namespace Light.Json.Serialization.LowLevelWriting
                 number *= -1;
             }
 
-            numberOfBufferSlots += DetermineNumberOfDigits((uint) number);
+            var absoluteNumber = (uint) number;
+            numberOfBufferSlots += DetermineNumberOfDigits(absoluteNumber);
             writer.EnsureCapacityFromCurrentIndex(numberOfBufferSlots);
             if (isNegative)
             {
@@ -29,13 +30,27 @@ namespace Light.Json.Serialization.LowLevelWriting
                 --numberOfBufferSlots;
             }
 
-            if (numberOfBufferSlots == 1)
+            writer.WriteUInt32Internal(absoluteNumber, numberOfBufferSlots);
+        }
+
+        public static void WriteInteger<TJsonWriter>(this ref TJsonWriter writer, uint number)
+            where TJsonWriter : struct, IJsonWriter
+        {
+            var numberOfBufferSlots = DetermineNumberOfDigits(number);
+            writer.EnsureCapacityFromCurrentIndex(numberOfBufferSlots);
+            writer.WriteUInt32Internal(number, numberOfBufferSlots);
+        }
+
+        private static void WriteUInt32Internal<TJsonWriter>(this ref TJsonWriter writer, uint number, int numberOfDigits)
+            where TJsonWriter : struct, IJsonWriter
+        {
+            if (numberOfDigits == 1)
             {
                 writer.WriteAscii(number.ToDigitCharacter());
                 return;
             }
 
-            var divisor = (int) Math.Pow(10, numberOfBufferSlots - 1);
+            var divisor = (uint) Math.Pow(10, numberOfDigits - 1);
             while (divisor >= 10)
             {
                 var frontDigit = number / divisor;
@@ -90,6 +105,6 @@ namespace Light.Json.Serialization.LowLevelWriting
             return 10;
         }
 
-        public static char ToDigitCharacter(this int number) => (char) (number + '0');
+        private static char ToDigitCharacter(this uint number) => (char) (number + '0');
     }
 }
