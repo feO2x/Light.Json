@@ -1,5 +1,6 @@
 ﻿using System;
 using Light.GuardClauses;
+using Light.Json.Contracts;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
@@ -67,6 +68,16 @@ namespace Light.Json.Serialization.LowLevelWriting
             EnsureOneMore();
             WriteAscii('\\');
             WriteAscii(escapedCharacter);
+        }
+
+        public void WriteContractConstantAsObjectKey(in ContractConstant constant)
+        {
+            var utf16Constant = constant.Utf16;
+            EnsureCapacityFromCurrentIndex(utf16Constant.Length + 2);
+            WriteAscii('\"');
+            utf16Constant.CopyTo(0, _buffer, CurrentIndex, utf16Constant.Length);
+            CurrentIndex += utf16Constant.Length;
+            WriteAscii('\"');
         }
 
         private void EnsureOneMore()

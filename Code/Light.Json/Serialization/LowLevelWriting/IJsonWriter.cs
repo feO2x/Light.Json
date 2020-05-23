@@ -1,4 +1,6 @@
-﻿namespace Light.Json.Serialization.LowLevelWriting
+﻿using Light.Json.Contracts;
+
+namespace Light.Json.Serialization.LowLevelWriting
 {
     public interface IJsonWriter
     {
@@ -29,5 +31,7 @@
         void WriteEscapedCharacter(char escapeCharacter);
 
         void WriteSurrogatePair(char highSurrogate, char lowSurrogate);
+
+        void WriteContractConstantAsObjectKey(in ContractConstant constant);
     }
 }

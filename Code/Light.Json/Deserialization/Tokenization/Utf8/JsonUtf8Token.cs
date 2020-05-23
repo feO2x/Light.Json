@@ -26,7 +26,7 @@ namespace Light.Json.Deserialization.Tokenization.Utf8
         public int Position { get; }
 
         public bool Equals(in ContractConstant constant) =>
-            Memory.Length <= 2 ? constant.Utf8.IsEmpty : Memory.Slice(1, Memory.Length - 2).Span.SequenceEqual(constant.Utf8.Span);
+            Memory.Length <= 2 ? constant.Utf8.Length == 0 : Memory.Slice(1, Memory.Length - 2).Span.SequenceEqual(constant.Utf8);
 
         public bool Equals(JsonUtf8Token other) =>
             Type == other.Type && Memory.Equals(other.Memory) && Line == other.Line && Position == other.Position;

@@ -7,12 +7,10 @@ namespace Light.Json.Contracts
     public readonly struct ContractConstant : IEquatable<ContractConstant>
     {
         public readonly string Utf16;
-        public readonly ReadOnlyMemory<byte> Utf8;
-        public readonly bool ShouldFirstCharacterBeLowered;
+        public readonly byte[] Utf8;
 
         public ContractConstant(string utf16, bool shouldFirstCharacterBeLowered = true)
         {
-            ShouldFirstCharacterBeLowered = shouldFirstCharacterBeLowered;
             utf16.MustNotBeNullOrWhiteSpace(nameof(utf16));
             Utf16 = shouldFirstCharacterBeLowered ? utf16.LowerFirstCharacter() : utf16;
             Utf8 = Utf16.ToUtf8();
