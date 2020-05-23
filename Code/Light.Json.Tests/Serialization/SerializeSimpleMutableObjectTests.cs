@@ -52,17 +52,17 @@ namespace Light.Json.Tests.Serialization
             {
                 writer.WriteBeginOfObject();
 
-                writer.WriteString(FirstName.Utf16.AsSpan());
+                writer.WriteContractConstantAsObjectKey(FirstName);
                 writer.WriteKeyValueSeparator();
                 writer.WriteString(person.FirstName.AsSpan());
                 writer.WriteValueSeparator();
 
-                writer.WriteString(LastName.Utf16.AsSpan());
+                writer.WriteContractConstantAsObjectKey(LastName);
                 writer.WriteKeyValueSeparator();
                 writer.WriteString(person.LastName.AsSpan());
                 writer.WriteValueSeparator();
 
-                writer.WriteString(Age.Utf16.AsSpan());
+                writer.WriteContractConstantAsObjectKey(Age);
                 writer.WriteKeyValueSeparator();
                 writer.WriteInteger(person.Age);
 

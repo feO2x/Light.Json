@@ -75,8 +75,10 @@ namespace Light.Json.Serialization.LowLevelWriting
             var utf16Constant = constant.Utf16;
             EnsureCapacityFromCurrentIndex(utf16Constant.Length + 2);
             WriteAscii('\"');
-            utf16Constant.CopyTo(0, _buffer, CurrentIndex, utf16Constant.Length);
-            CurrentIndex += utf16Constant.Length;
+            for (var i = 0; i < utf16Constant.Length; i++)
+            {
+                WriteCharacter(utf16Constant[i]);
+            }
             WriteAscii('\"');
         }
 

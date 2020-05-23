@@ -21,6 +21,7 @@ namespace Light.Json.Performance
             var defaultConfig = DefaultConfig.Instance;
             return ManualConfig.CreateEmpty()
                                .AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
+                               .AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
                                .AddAnalyser(defaultConfig.GetAnalysers().ToArray())
                                .AddValidator(defaultConfig.GetValidators().ToArray())
                                .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
