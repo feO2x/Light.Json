@@ -19,16 +19,27 @@ namespace Light.Json.FrameworkExtensions
             if (@string.MustNotBeNull(nameof(@string)).Length == 0)
                 return @string;
 
-            if (char.IsLower(@string[0]))
-                return @string;
-
+            var firstCharacter = @string[0];
             var loweredCharacter = char.ToLower(@string[0], CultureInfo.CurrentCulture);
-            if (@string.Length == 0)
+            if (firstCharacter == loweredCharacter)
+                return @string;
+            if (@string.Length == 1)
                 return new string(loweredCharacter, 1);
 
             Span<char> characters = stackalloc char[@string.Length];
             characters[0] = loweredCharacter;
-            @string.AsSpan(1).CopyTo(characters.Slice(1));
+            if (@string.Length < 25)
+            {
+                for (var i = 1; i < @string.Length; i++)
+                {
+                    characters[i] = @string[i];
+                }
+            }
+            else
+            {
+                @string.AsSpan(1).CopyTo(characters.Slice(1));
+            }
+
             return characters.ToString();
         }
     }
