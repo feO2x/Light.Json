@@ -69,7 +69,7 @@ namespace Light.Json.Tests.Serialization
             utf16Json.Should().Be(ExpectedJson);
         }
 
-        private static async Task SerializePerson<TBufferWriter>(AsyncJsonWriter<TBufferWriter> jsonWriter, PersonContract contract)
+        public static async Task SerializePerson<TBufferWriter>(AsyncJsonWriter<TBufferWriter> jsonWriter, PersonContract contract)
             where TBufferWriter : struct, IBufferWriter
         {
             await jsonWriter.WriteBeginOfObjectAsync();

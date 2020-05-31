@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Light.GuardClauses;
 
@@ -16,9 +15,9 @@ namespace Light.Json.Contracts
             where TContract : class, ISerializationContract
         {
             if (_serializationContracts.TryGetValue(typeKey, out var serializationContract) &&
-                serializationContract is TContract serializeOnlyContract)
+                serializationContract is TContract castContract)
             {
-                contract = serializeOnlyContract;
+                contract = castContract;
                 return true;
             }
 
