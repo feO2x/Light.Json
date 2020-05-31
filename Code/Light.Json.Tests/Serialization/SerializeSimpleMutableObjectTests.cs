@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Light.Json.Buffers;
 using Light.Json.Contracts;
 using Light.Json.Serialization;
 using Light.Json.Serialization.LowLevelWriting;
@@ -40,6 +42,52 @@ namespace Light.Json.Tests.Serialization
             var json = _serializer.SerializeToUtf8(Person);
             var utf16Json = json.AsSpan().ConvertFromUtf8ToString();
             utf16Json.Should().Be(ExpectedJson);
+        }
+
+        [Fact]
+        public static async Task StreamingUtf16()
+        {
+            var contract = new PersonContract();
+            var jsonWriter = new AsyncJsonWriter<Utf16BufferWriter>(new Utf16BufferWriter(new InMemoryArrayPoolBufferWriterService<char>()));
+
+            await SerializePerson(jsonWriter, contract);
+
+            var utf16Json = jsonWriter.BufferWriter.Finish();
+            utf16Json.Should().Be(ExpectedJson);
+        }
+
+        [Fact]
+        public static async Task StreamingUtf8()
+        {
+            var contract = new PersonContract();
+            var jsonWriter = new AsyncJsonWriter<Utf8BufferWriter>(new Utf8BufferWriter(new InMemoryArrayPoolBufferWriterService<byte>()));
+
+            await SerializePerson(jsonWriter, contract);
+
+            var utf8Json = jsonWriter.BufferWriter.Finish();
+            var utf16Json = utf8Json.AsSpan().ConvertFromUtf8ToString();
+            utf16Json.Should().Be(ExpectedJson);
+        }
+
+        private static async Task SerializePerson<TBufferWriter>(AsyncJsonWriter<TBufferWriter> jsonWriter, PersonContract contract)
+            where TBufferWriter : struct, IBufferWriter
+        {
+            await jsonWriter.WriteBeginOfObjectAsync();
+
+            await jsonWriter.WriteStringAsync(contract.FirstName.Utf16);
+            await jsonWriter.WriteKeyValueSeparatorAsync();
+            await jsonWriter.WriteStringAsync(Person.FirstName);
+            await jsonWriter.WriteValueSeparatorAsync();
+
+            await jsonWriter.WriteStringAsync(contract.LastName.Utf16);
+            await jsonWriter.WriteKeyValueSeparatorAsync();
+            await jsonWriter.WriteStringAsync(Person.LastName);
+            await jsonWriter.WriteValueSeparatorAsync();
+
+            await jsonWriter.WriteStringAsync(contract.Age.Utf16);
+            await jsonWriter.WriteKeyValueSeparatorAsync();
+            await jsonWriter.WriteIntegerAsync(Person.Age);
+            await jsonWriter.WriteEndOfObjectAsync();
         }
 
         public sealed class PersonContract : SerializeOnlyContract<Person>

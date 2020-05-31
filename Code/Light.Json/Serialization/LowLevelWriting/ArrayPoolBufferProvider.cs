@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Runtime.Serialization;
 using Light.GuardClauses;
+using Light.Json.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
@@ -12,7 +13,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public ArrayPoolBufferProvider(int defaultArraySize = 262_144, ArrayPool<T>? arrayPool = null)
         {
-            _maximumArraySize = MaximumArraySize.GetMaximumArraySize<T>();
+            _maximumArraySize = MaximumArraySize.GetMaximumArraySizeInByte<T>();
             DefaultArraySize = defaultArraySize.MustBeIn(Range.FromExclusive(0).ToInclusive(_maximumArraySize), nameof(defaultArraySize));
             ArrayPool = arrayPool ?? ArrayPool<T>.Shared;
         }

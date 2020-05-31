@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Light.Json.Serialization.LowLevelWriting
+namespace Light.Json.Buffers
 {
     public static class MaximumArraySize
     {
@@ -9,7 +9,7 @@ namespace Light.Json.Serialization.LowLevelWriting
         public const int Byte32Bit = 2_130_702_268;
         public const int Char32Bit = 1_065_351_134;
 
-        public static int GetMaximumArraySize<T>()
+        public static int GetMaximumArraySizeInByte<T>()
         {
             if (typeof(T) == typeof(char))
                 return Environment.Is64BitProcess ? Char64Bit : Char32Bit;
