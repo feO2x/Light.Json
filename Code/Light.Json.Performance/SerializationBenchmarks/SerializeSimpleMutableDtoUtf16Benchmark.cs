@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
+using Light.Json.Buffers;
 using Light.Json.Contracts;
-using Light.Json.Serialization.LowLevelWriting;
 using Light.Json.Tests.Serialization;
 using Light.Json.Tests.SerializationSubjects;
 using Newtonsoft.Json;
@@ -13,8 +13,8 @@ namespace Light.Json.Performance.SerializationBenchmarks
 {
     public class SerializeSimpleMutableDtoUtf16Benchmark
     {
-        public LightJsonSerializer LightJsonSerializer;
         public static readonly Person Person = new Person { FirstName = "Kenny", LastName = "Pflug", Age = 33 };
+        public LightJsonSerializer LightJsonSerializer;
 
         [GlobalSetup(Target = nameof(LightJson))]
         public void SetupLightJsonSerializer()

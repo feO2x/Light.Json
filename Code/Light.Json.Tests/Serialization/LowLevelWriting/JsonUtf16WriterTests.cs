@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Light.Json.Buffers;
 using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.LowLevelWriting
@@ -8,6 +9,6 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         public JsonUtf16WriterTests() : base(new JsonUtf16Writer(new ArrayPoolBufferProvider<char>())) { }
 
         protected override void CheckResult(string expected) =>
-            Writer.ToUtf16Json().ToString().Should().Be(expected);
+            Writer.ToUtf16JsonMemory().ToString().Should().Be(expected);
     }
 }

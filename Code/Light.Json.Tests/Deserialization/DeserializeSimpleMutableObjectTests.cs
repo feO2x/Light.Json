@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
+using Light.Json.Buffers;
 using Light.Json.Contracts;
 using Light.Json.Deserialization;
 using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
-using Light.Json.Serialization.LowLevelWriting;
 using Light.Json.Tests.SerializationSubjects;
 using Xunit;
 
@@ -50,9 +50,9 @@ namespace Light.Json.Tests.Deserialization
 
         public sealed class PersonContract : DeserializeOnlyContract<Person>
         {
-            public readonly ContractConstant Age = nameof(Person.Age);
-            public readonly ContractConstant FirstName = nameof(Person.FirstName);
-            public readonly ContractConstant LastName = nameof(Person.LastName);
+            public readonly ConstantValue Age = nameof(Person.Age);
+            public readonly ConstantValue FirstName = nameof(Person.FirstName);
+            public readonly ConstantValue LastName = nameof(Person.LastName);
 
             public override Person Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
             {

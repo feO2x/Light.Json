@@ -1,109 +1,65 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Light.GuardClauses;
-using Light.Json.Contracts;
+using Light.Json.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
     public struct JsonUtf8Writer : IJsonWriter
     {
-        private readonly IInMemoryBufferProvider<byte> _bufferProvider;
-        private byte[] _buffer;
-
-        public JsonUtf8Writer(IInMemoryBufferProvider<byte> bufferProvider)
+        public JsonUtf8Writer(IBufferProvider<byte> bufferProvider)
         {
-            _bufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
-            _buffer = bufferProvider.GetInitialBuffer();
+            BufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
+            CurrentBuffer = bufferProvider.GetInitialBuffer();
             CurrentIndex = EnsuredIndex = 0;
         }
+
+        public IBufferProvider<byte> BufferProvider { get; }
+
+        public byte[] CurrentBuffer { get; private set; }
 
         public int CurrentIndex { get; private set; }
 
         public int EnsuredIndex { get; private set; }
 
-        public void WriteBeginOfObject() => this.WriteSingleAsciiCharacter('{');
+        public bool IsCompatibleWithOptimizedContract => true;
 
-        public void WriteEndOfObject() => this.WriteSingleAsciiCharacter('}');
+        public void WriteBeginOfObject() => WriteSingleAsciiCharacter('{');
 
-        public void WriteBeginOfArray() => this.WriteSingleAsciiCharacter('[');
+        public void WriteEndOfObject() => WriteSingleAsciiCharacter('}');
 
-        public void WriteEndOfArray() => this.WriteSingleAsciiCharacter(']');
+        public void WriteBeginOfArray() => WriteSingleAsciiCharacter('[');
 
-        public void WriteKeyValueSeparator() => this.WriteSingleAsciiCharacter(':');
+        public void WriteEndOfArray() => WriteSingleAsciiCharacter(']');
 
-        public void WriteValueSeparator() => this.WriteSingleAsciiCharacter(',');
+        public void WriteKeyValueSeparator() => WriteSingleAsciiCharacter(':');
 
-        public Memory<byte> ToUtf8Json() => new Memory<byte>(_buffer, 0, CurrentIndex);
+        public void WriteValueSeparator() => WriteSingleAsciiCharacter(',');
+
+        public override string ToString() => ToUtf8JsonSpan().ToString();
+
+        public Memory<byte> ToUtf8JsonMemory() => new Memory<byte>(CurrentBuffer, 0, CurrentIndex);
+
+        public Span<byte> ToUtf8JsonSpan() => new Span<byte>(CurrentBuffer, 0, CurrentIndex);
 
         public byte[] Finish()
         {
-            var utf8Json = ToUtf8Json().ToArray();
-            _bufferProvider.Finish(_buffer);
+            var utf8Json = ToUtf8JsonSpan().ToArray();
+            BufferProvider.Finish(CurrentBuffer);
             return utf8Json;
         }
 
         public void WriteCharacter(char character)
         {
             if (character < 128)
-                WriteCharacter((byte) character);
+                WriteByte((byte) character);
             else if (character < 2048)
                 WriteTwoByteCharacter(character);
             else
                 WriteThreeByteCharacter(character);
         }
 
-        private void WriteTwoByteCharacter(int character)
-        {
-            EnsureOneMoreAdditionalCapacity();
-            // The first byte holds the upper 5 bits, prefixed with binary 110
-            var firstByte = (byte) (0b1100_0000 | (character >> 6)); // The lower 6 bit are shifted out
-            // The second byte holds the lower 6 bits, prefixed with binary 10
-            var secondByte = (byte) (0b1000_0000 | (character & 0b0011_1111));
-            WriteCharacter(firstByte);
-            WriteCharacter(secondByte);
-        }
-
-        private void WriteThreeByteCharacter(int character)
-        {
-            EnsureAdditionalCapacity(2);
-            // The first byte holds the upper 4 bits, prefixed with binary 1110
-            var firstByte = (byte) (0b1110_0000 | (character >> 12)); // The lower 12 bits are shifted out
-            var secondByte = (byte) (0b1000_0000 | ((character >> 6) & 0b0011_1111)); // Take bits 7 to 12 and put them in the second byte
-            var thirdByte = (byte) (0b1000_0000 | (character & 0b0011_1111)); // Take the lowest six bits and put them in the third byte
-            WriteCharacter(firstByte);
-            WriteCharacter(secondByte);
-            WriteCharacter(thirdByte);
-        }
-
-        private void WriteFourByteCharacter(int character)
-        {
-            EnsureAdditionalCapacity(3);
-            var firstByte = (byte) (0b11110_000 | (character >> 18));
-            var secondByte = (byte) (0b1000_0000 | ((character >> 12) & 0b0011_1111));
-            var thirdByte = (byte) (0b1000_0000 | ((character >> 6) & 0b0011_1111));
-            var fourthByte = (byte) (0b1000_0000 | (character & 0b0011_1111));
-            WriteCharacter(firstByte);
-            WriteCharacter(secondByte);
-            WriteCharacter(thirdByte);
-            WriteCharacter(fourthByte);
-        }
-
-        private void WriteCharacter(byte character) => _buffer[CurrentIndex++] = character;
-
-        public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
-        {
-            EnsuredIndex = CurrentIndex + numberOfAdditionalBufferSlots;
-            EnsureCapacity();
-        }
-
-        private void EnsureCapacity()
-        {
-            if (EnsuredIndex < _buffer.Length)
-                return;
-
-            _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, EnsuredIndex - _buffer.Length + 1);
-        }
-
-        public void WriteAscii(char asciiCharacter) => WriteCharacter((byte) asciiCharacter);
+        public void WriteAscii(char asciiCharacter) => WriteByte((byte) asciiCharacter);
 
         public void WriteSurrogatePair(char highSurrogate, char lowSurrogate)
         {
@@ -114,23 +70,31 @@ namespace Light.Json.Serialization.LowLevelWriting
                 WriteFourByteCharacter(codePoint);
         }
 
-        public void WriteContractConstantAsObjectKey(in ContractConstant constant)
+        public void WriteConstantValueAsObjectKey(in ConstantValue constantValue)
         {
-            var utf8Constant = constant.Utf8;
+            var utf8Constant = constantValue.Utf8;
             EnsureCapacityFromCurrentIndex(utf8Constant.Length + 2);
             WriteAscii('\"');
-            for (var i = 0; i < utf8Constant.Length; i++)
-            {
-                WriteCharacter(utf8Constant[i]);
-            }
+            WriteRawBytes(utf8Constant);
             WriteAscii('\"');
         }
 
-        public void WriteEscapedCharacter(char escapedCharacter)
+        public void WriteConstantValue(in ConstantValue constant)
         {
-            EnsureOneMoreAdditionalCapacity();
-            WriteAscii('\\');
-            WriteAscii(escapedCharacter);
+            EnsureCapacityFromCurrentIndex(constant.Utf8.Length);
+            WriteRawBytes(constant.Utf8);
+        }
+
+        public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
+        {
+            EnsuredIndex = CurrentIndex + numberOfAdditionalBufferSlots;
+            EnsureCapacity();
+        }
+
+        public void EnsureAdditionalCapacity(int numberOfAdditionalBufferSlots)
+        {
+            EnsuredIndex += numberOfAdditionalBufferSlots.MustBeGreaterThan(0, nameof(numberOfAdditionalBufferSlots));
+            EnsureCapacity();
         }
 
         private void EnsureOneMoreAdditionalCapacity()
@@ -139,10 +103,117 @@ namespace Light.Json.Serialization.LowLevelWriting
             EnsureCapacity();
         }
 
-        public void EnsureAdditionalCapacity(int numberOfAdditionalBufferSlots)
+        private void EnsureCapacity()
         {
-            EnsuredIndex += numberOfAdditionalBufferSlots.MustBeGreaterThan(0, nameof(numberOfAdditionalBufferSlots));
-            EnsureCapacity();
+            if (EnsuredIndex < CurrentBuffer.Length)
+                return;
+
+            CurrentBuffer = BufferProvider.GetNewBufferWithIncreasedSize(CurrentBuffer, EnsuredIndex - CurrentBuffer.Length + 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteByte(byte character) => CurrentBuffer[CurrentIndex++] = character;
+
+        private void WriteTwoByteCharacter(int character)
+        {
+            EnsureOneMoreAdditionalCapacity();
+            // The first byte holds the upper 5 bits, prefixed with binary 110
+            var firstByte = (byte) (0b1100_0000 | (character >> 6)); // The lower 6 bit are shifted out
+            // The second byte holds the lower 6 bits, prefixed with binary 10
+            var secondByte = (byte) (0b1000_0000 | (character & 0b0011_1111));
+            WriteByte(firstByte);
+            WriteByte(secondByte);
+        }
+
+        private void WriteThreeByteCharacter(int character)
+        {
+            EnsureAdditionalCapacity(2);
+            // The first byte holds the upper 4 bits, prefixed with binary 1110
+            var firstByte = (byte) (0b1110_0000 | (character >> 12)); // The lower 12 bits are shifted out
+            var secondByte = (byte) (0b1000_0000 | ((character >> 6) & 0b0011_1111)); // Take bits 7 to 12 and put them in the second byte
+            var thirdByte = (byte) (0b1000_0000 | (character & 0b0011_1111)); // Take the lowest six bits and put them in the third byte
+            WriteByte(firstByte);
+            WriteByte(secondByte);
+            WriteByte(thirdByte);
+        }
+
+        private void WriteFourByteCharacter(int character)
+        {
+            EnsureAdditionalCapacity(3);
+            var firstByte = (byte) (0b11110_000 | (character >> 18));
+            var secondByte = (byte) (0b1000_0000 | ((character >> 12) & 0b0011_1111));
+            var thirdByte = (byte) (0b1000_0000 | ((character >> 6) & 0b0011_1111));
+            var fourthByte = (byte) (0b1000_0000 | (character & 0b0011_1111));
+            WriteByte(firstByte);
+            WriteByte(secondByte);
+            WriteByte(thirdByte);
+            WriteByte(fourthByte);
+        }
+
+        private void WriteSingleAsciiCharacter(char character)
+        {
+            EnsureCapacityFromCurrentIndex(1);
+            WriteByte((byte) character);
+        }
+
+        private void WriteRawBytes(in ReadOnlySpan<byte> bytes)
+        {
+            switch (bytes.Length)
+            {
+                case 0: return;
+                case 1:
+                    WriteByte(bytes[0]);
+                    return;
+                case 2:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    return;
+                case 3:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    WriteByte(bytes[2]);
+                    return;
+                case 4:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    WriteByte(bytes[2]);
+                    WriteByte(bytes[3]);
+                    return;
+                case 5:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    WriteByte(bytes[2]);
+                    WriteByte(bytes[3]);
+                    WriteByte(bytes[4]);
+                    return;
+                case 6:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    WriteByte(bytes[2]);
+                    WriteByte(bytes[3]);
+                    WriteByte(bytes[4]);
+                    WriteByte(bytes[5]);
+                    return;
+                case 7:
+                    WriteByte(bytes[0]);
+                    WriteByte(bytes[1]);
+                    WriteByte(bytes[2]);
+                    WriteByte(bytes[3]);
+                    WriteByte(bytes[4]);
+                    WriteByte(bytes[5]);
+                    WriteByte(bytes[6]);
+                    return;
+                default:
+                    CopyMemoryUnsafe(bytes);
+                    return;
+            }
+        }
+
+        private unsafe void CopyMemoryUnsafe(in ReadOnlySpan<byte> bytes)
+        {
+            fixed (void* source = &bytes[0], target = &CurrentBuffer[CurrentIndex])
+                Buffer.MemoryCopy(source, target, CurrentBuffer.Length - CurrentIndex, bytes.Length);
+            CurrentIndex += bytes.Length;
         }
     }
 }

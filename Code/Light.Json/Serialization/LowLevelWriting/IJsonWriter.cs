@@ -1,4 +1,4 @@
-﻿using Light.Json.Contracts;
+﻿using Light.Json.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
@@ -7,6 +7,8 @@ namespace Light.Json.Serialization.LowLevelWriting
         int CurrentIndex { get; }
 
         int EnsuredIndex { get; }
+
+        bool IsCompatibleWithOptimizedContract { get; }
 
         void WriteBeginOfObject();
 
@@ -28,10 +30,10 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         void WriteCharacter(char character);
 
-        void WriteEscapedCharacter(char escapeCharacter);
-
         void WriteSurrogatePair(char highSurrogate, char lowSurrogate);
 
-        void WriteContractConstantAsObjectKey(in ContractConstant constant);
+        void WriteConstantValueAsObjectKey(in ConstantValue constantValue);
+
+        void WriteConstantValue(in ConstantValue constantValue);
     }
 }

@@ -20,7 +20,6 @@
     <PackageReference Include="System.Runtime.Extensions" Version="4.*" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.*" />
     <PackageReference Include="System.Collections" Version="4.*" />
-
     <ProjectReference Include="..\Light.Json.Tests\Light.Json.Tests.csproj" />
   </ItemGroup>
 

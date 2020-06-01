@@ -2,13 +2,6 @@
 {
     public static partial class JsonWriterExtensions
     {
-        public static void WriteSingleAsciiCharacter<TJsonWriter>(this ref TJsonWriter writer, char asciiCharacter)
-            where TJsonWriter : struct, IJsonWriter
-        {
-            writer.EnsureCapacityFromCurrentIndex(1);
-            writer.WriteAscii(asciiCharacter);
-        }
-
         public static void WriteTrue<TJsonWriter>(this ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter
         {

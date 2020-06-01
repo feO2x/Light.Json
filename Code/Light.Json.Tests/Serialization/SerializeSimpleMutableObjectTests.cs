@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Light.Json.Buffers;
 using Light.Json.Contracts;
 using Light.Json.Serialization;
 using Light.Json.Serialization.LowLevelWriting;
@@ -44,25 +45,25 @@ namespace Light.Json.Tests.Serialization
 
         public sealed class PersonContract : SerializeOnlyContract<Person>
         {
-            public readonly ContractConstant Age = nameof(Person.Age);
-            public readonly ContractConstant FirstName = nameof(Person.FirstName);
-            public readonly ContractConstant LastName = nameof(Person.LastName);
+            public readonly ConstantValue Age = nameof(Person.Age);
+            public readonly ConstantValue FirstName = nameof(Person.FirstName);
+            public readonly ConstantValue LastName = nameof(Person.LastName);
 
             public override void Serialize<TJsonWriter>(Person person, SerializationContext context, ref TJsonWriter writer)
             {
                 writer.WriteBeginOfObject();
 
-                writer.WriteContractConstantAsObjectKey(FirstName);
+                writer.WriteConstantValueAsObjectKey(FirstName);
                 writer.WriteKeyValueSeparator();
                 writer.WriteString(person.FirstName.AsSpan());
                 writer.WriteValueSeparator();
 
-                writer.WriteContractConstantAsObjectKey(LastName);
+                writer.WriteConstantValueAsObjectKey(LastName);
                 writer.WriteKeyValueSeparator();
                 writer.WriteString(person.LastName.AsSpan());
                 writer.WriteValueSeparator();
 
-                writer.WriteContractConstantAsObjectKey(Age);
+                writer.WriteConstantValueAsObjectKey(Age);
                 writer.WriteKeyValueSeparator();
                 writer.WriteInteger(person.Age);
 

@@ -1,40 +1,43 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Light.GuardClauses;
-using Light.Json.Contracts;
+using Light.Json.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
     public struct JsonUtf16Writer : IJsonWriter
     {
-        private char[] _buffer;
-        private readonly IInMemoryBufferProvider<char> _bufferProvider;
-
-        public JsonUtf16Writer(IInMemoryBufferProvider<char> bufferProvider)
+        public JsonUtf16Writer(IBufferProvider<char> bufferProvider)
         {
-            _bufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
-            _buffer = bufferProvider.GetInitialBuffer();
+            BufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
+            CurrentBuffer = bufferProvider.GetInitialBuffer();
             CurrentIndex = EnsuredIndex = 0;
         }
+
+        public IBufferProvider<char> BufferProvider { get; }
+        public char[] CurrentBuffer { get; private set; }
 
         public int CurrentIndex { get; private set; }
 
         public int EnsuredIndex { get; private set; }
 
-        public void WriteBeginOfObject() => this.WriteSingleAsciiCharacter('{');
+        public bool IsCompatibleWithOptimizedContract => true;
 
-        public void WriteEndOfObject() => this.WriteSingleAsciiCharacter('}');
+        public void WriteBeginOfObject() => WriteSingleAsciiCharacter('{');
 
-        public void WriteBeginOfArray() => this.WriteSingleAsciiCharacter('[');
+        public void WriteEndOfObject() => WriteSingleAsciiCharacter('}');
 
-        public void WriteEndOfArray() => this.WriteSingleAsciiCharacter(']');
+        public void WriteBeginOfArray() => WriteSingleAsciiCharacter('[');
 
-        public void WriteKeyValueSeparator() => this.WriteSingleAsciiCharacter(':');
+        public void WriteEndOfArray() => WriteSingleAsciiCharacter(']');
 
-        public void WriteValueSeparator() => this.WriteSingleAsciiCharacter(',');
+        public void WriteKeyValueSeparator() => WriteSingleAsciiCharacter(':');
 
-        public Memory<char> ToUtf16Json() => new Memory<char>(_buffer, 0, CurrentIndex);
+        public void WriteValueSeparator() => WriteSingleAsciiCharacter(',');
 
-        public void WriteCharacter(char character) => _buffer[CurrentIndex++] = character;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteCharacter(char character) => CurrentBuffer[CurrentIndex++] = character;
+
 
         public void WriteAscii(char asciiCharacter) => WriteCharacter(asciiCharacter);
 
@@ -42,6 +45,34 @@ namespace Light.Json.Serialization.LowLevelWriting
         {
             WriteCharacter(highSurrogate);
             WriteCharacter(lowSurrogate);
+        }
+
+        public void WriteConstantValueAsObjectKey(in ConstantValue constantValue)
+        {
+            var utf16Constant = constantValue.Utf16;
+            EnsureCapacityFromCurrentIndex(utf16Constant.Length + 2);
+            WriteAscii('\"');
+            WriteRawCharacters(utf16Constant.AsSpan());
+            WriteAscii('\"');
+        }
+
+        public void WriteConstantValue(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(constantValue.Utf16.Length);
+            WriteRawCharacters(constantValue.Utf16.AsSpan());
+        }
+
+        public override string ToString() => ToUtf16JsonSpan().ToString();
+
+        public Span<char> ToUtf16JsonSpan() => new Span<char>(CurrentBuffer, 0, CurrentIndex);
+
+        public Memory<char> ToUtf16JsonMemory() => new Memory<char>(CurrentBuffer, 0, CurrentIndex);
+
+        public string Finish()
+        {
+            var json = ToString();
+            BufferProvider.Finish(CurrentBuffer);
+            return json;
         }
 
         public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
@@ -56,44 +87,78 @@ namespace Light.Json.Serialization.LowLevelWriting
             EnsureCapacity();
         }
 
-        public string Finish()
-        {
-            var json = ToUtf16Json().ToString();
-            _bufferProvider.Finish(_buffer);
-            return json;
-        }
-
-        public void WriteEscapedCharacter(char escapedCharacter)
-        {
-            EnsureOneMore();
-            WriteAscii('\\');
-            WriteAscii(escapedCharacter);
-        }
-
-        public void WriteContractConstantAsObjectKey(in ContractConstant constant)
-        {
-            var utf16Constant = constant.Utf16;
-            EnsureCapacityFromCurrentIndex(utf16Constant.Length + 2);
-            WriteAscii('\"');
-            for (var i = 0; i < utf16Constant.Length; i++)
-            {
-                WriteCharacter(utf16Constant[i]);
-            }
-            WriteAscii('\"');
-        }
-
-        private void EnsureOneMore()
-        {
-            ++EnsuredIndex;
-            EnsureCapacity();
-        }
-
         private void EnsureCapacity()
         {
-            if (EnsuredIndex < _buffer.Length)
+            if (EnsuredIndex < CurrentBuffer.Length)
                 return;
 
-            _buffer = _bufferProvider.GetNewBufferWithIncreasedSize(_buffer, EnsuredIndex - _buffer.Length + 1);
+            CurrentBuffer = BufferProvider.GetNewBufferWithIncreasedSize(CurrentBuffer, EnsuredIndex - CurrentBuffer.Length + 1);
+        }
+
+        private void WriteSingleAsciiCharacter(char character)
+        {
+            EnsureCapacityFromCurrentIndex(1);
+            WriteCharacter(character);
+        }
+
+        private void WriteRawCharacters(in ReadOnlySpan<char> characters)
+        {
+            switch (characters.Length)
+            {
+                case 0: return;
+                case 1:
+                    WriteCharacter(characters[0]);
+                    return;
+                case 2:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    return;
+                case 3:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    WriteCharacter(characters[2]);
+                    return;
+                case 4:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    WriteCharacter(characters[2]);
+                    WriteCharacter(characters[3]);
+                    return;
+                case 5:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    WriteCharacter(characters[2]);
+                    WriteCharacter(characters[3]);
+                    WriteCharacter(characters[4]);
+                    return;
+                case 6:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    WriteCharacter(characters[2]);
+                    WriteCharacter(characters[3]);
+                    WriteCharacter(characters[4]);
+                    WriteCharacter(characters[5]);
+                    return;
+                case 7:
+                    WriteCharacter(characters[0]);
+                    WriteCharacter(characters[1]);
+                    WriteCharacter(characters[2]);
+                    WriteCharacter(characters[3]);
+                    WriteCharacter(characters[4]);
+                    WriteCharacter(characters[5]);
+                    WriteCharacter(characters[6]);
+                    return;
+                default:
+                    CopyMemoryUnsafe(characters);
+                    return;
+            }
+        }
+
+        private unsafe void CopyMemoryUnsafe(in ReadOnlySpan<char> characters)
+        {
+            fixed (void* source = &characters[0], target = &CurrentBuffer[CurrentIndex])
+                Buffer.MemoryCopy(source, target, Buffer.ByteLength(CurrentBuffer) - CurrentIndex * 2, characters.Length * 2);
+            CurrentIndex += characters.Length;
         }
     }
 }

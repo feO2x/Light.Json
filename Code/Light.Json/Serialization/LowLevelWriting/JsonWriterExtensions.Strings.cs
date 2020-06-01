@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Runtime.Serialization;
 
 namespace Light.Json.Serialization.LowLevelWriting
@@ -18,36 +17,6 @@ namespace Light.Json.Serialization.LowLevelWriting
                 return;
             }
 
-            writer.WriteRestOfString(@string);
-        }
-
-        public static void WriteObjectKey<TJsonWriter>(this ref TJsonWriter writer, in ReadOnlySpan<char> @string, bool shouldFirstCharacterBeLowered = true)
-            where TJsonWriter : struct, IJsonWriter
-        {
-            writer.EnsureCapacityFromCurrentIndex(@string.Length + 2);
-
-            writer.WriteAscii('\"');
-
-            if (@string.IsEmpty)
-            {
-                writer.WriteAscii('\"');
-                return;
-            }
-
-            if (!shouldFirstCharacterBeLowered)
-            {
-                writer.WriteRestOfString(@string);
-                return;
-            }
-
-            var firstCharacter = char.ToLower(@string[0], CultureInfo.CurrentCulture);
-            writer.WriteCharacter(firstCharacter);
-            writer.WriteRestOfString(@string.Slice(1));
-        }
-
-        private static void WriteRestOfString<TJsonWriter>(this ref TJsonWriter writer, in ReadOnlySpan<char> @string)
-            where TJsonWriter : struct, IJsonWriter
-        {
             for (var i = 0; i < @string.Length; i++)
             {
                 var character = @string[i];
@@ -60,7 +29,9 @@ namespace Light.Json.Serialization.LowLevelWriting
                     case '\n':
                     case '\r':
                     case '\t':
-                        writer.WriteEscapedCharacter(character);
+                        writer.EnsureAdditionalCapacity(1);
+                        writer.WriteAscii('\"');
+                        writer.WriteAscii(character);
                         break;
                     default:
 

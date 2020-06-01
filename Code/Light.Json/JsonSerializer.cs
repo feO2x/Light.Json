@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Light.GuardClauses;
+using Light.Json.Buffers;
 using Light.Json.Contracts;
 using Light.Json.Deserialization;
 using Light.Json.Deserialization.Tokenization;
@@ -16,12 +17,12 @@ namespace Light.Json
     public sealed class JsonSerializer
     {
         private readonly ISerializationContractProvider _serializationContractProvider;
-        private readonly IInMemoryBufferProvider<char> _utf16InMemoryBufferProvider;
-        private readonly IInMemoryBufferProvider<byte> _utf8InMemoryBufferProvider;
+        private readonly IBufferProvider<char> _utf16InMemoryBufferProvider;
+        private readonly IBufferProvider<byte> _utf8InMemoryBufferProvider;
 
         public JsonSerializer(ISerializationContractProvider serializationContractProvider,
-                              IInMemoryBufferProvider<char> utf16InMemoryBufferProvider,
-                              IInMemoryBufferProvider<byte> utf8InMemoryBufferProvider)
+                              IBufferProvider<char> utf16InMemoryBufferProvider,
+                              IBufferProvider<byte> utf8InMemoryBufferProvider)
         {
             _utf16InMemoryBufferProvider = utf16InMemoryBufferProvider.MustNotBeNull(nameof(utf16InMemoryBufferProvider));
             _utf8InMemoryBufferProvider = utf8InMemoryBufferProvider.MustNotBeNull(nameof(utf8InMemoryBufferProvider));

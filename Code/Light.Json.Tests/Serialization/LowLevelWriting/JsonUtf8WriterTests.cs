@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using FluentAssertions;
+using Light.Json.Buffers;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Serialization.LowLevelWriting;
 using Xunit.Abstractions;
@@ -18,7 +19,7 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
 
         protected override void CheckResult(string expected)
         {
-            var utf8Json = Writer.ToUtf8Json().ToArray();
+            var utf8Json = Writer.ToUtf8JsonMemory().ToArray();
             var expectedUtf8 = expected.ToUtf8();
             var utf16Json = Encoding.UTF8.GetString(utf8Json);
             _output.WriteLine("Expected UTF-16: " + expected);

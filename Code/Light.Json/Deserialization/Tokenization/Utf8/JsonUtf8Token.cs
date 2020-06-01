@@ -1,5 +1,5 @@
 ﻿using System;
-using Light.Json.Contracts;
+using Light.Json.Buffers;
 using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.Deserialization.Tokenization.Utf8
@@ -25,7 +25,7 @@ namespace Light.Json.Deserialization.Tokenization.Utf8
 
         public int Position { get; }
 
-        public bool Equals(in ContractConstant constant) =>
+        public bool Equals(in ConstantValue constant) =>
             Memory.Length <= 2 ? constant.Utf8.Length == 0 : Memory.Slice(1, Memory.Length - 2).Span.SequenceEqual(constant.Utf8);
 
         public bool Equals(JsonUtf8Token other) =>
