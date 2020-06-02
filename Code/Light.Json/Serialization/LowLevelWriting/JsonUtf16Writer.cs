@@ -62,6 +62,87 @@ namespace Light.Json.Serialization.LowLevelWriting
             WriteRawCharacters(constantValue.Utf16.AsSpan());
         }
 
+        public void WriteConstantValue1(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(1);
+            WriteCharacter(constantValue.Utf16[0]);
+        }
+
+        public void WriteConstantValue2(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(2);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentIndex += 2;
+        }
+
+        public void WriteConstantValue3(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(3);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf16Constant[2];
+            CurrentIndex += 3;
+        }
+
+        public void WriteConstantValue4(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(4);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf16Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf16Constant[3];
+            CurrentIndex += 4;
+        }
+
+        public void WriteConstantValue5(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(5);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf16Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf16Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf16Constant[4];
+            CurrentIndex += 5;
+        }
+
+        public void WriteConstantValue6(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(6);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf16Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf16Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf16Constant[4];
+            CurrentBuffer[CurrentIndex + 5] = utf16Constant[5];
+            CurrentIndex += 6;
+        }
+
+        public void WriteConstantValue7(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(7);
+            var utf16Constant = constantValue.Utf16;
+            CurrentBuffer[CurrentIndex] = utf16Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf16Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf16Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf16Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf16Constant[4];
+            CurrentBuffer[CurrentIndex + 5] = utf16Constant[5];
+            CurrentBuffer[CurrentIndex + 6] = utf16Constant[6];
+            CurrentIndex += 7;
+        }
+
+        public void WriteConstantValueLarge(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(constantValue.Utf16.Length);
+            CopyMemoryUnsafe(constantValue.Utf16.AsSpan());
+        }
+
         public override string ToString() => ToUtf16JsonSpan().ToString();
 
         public Span<char> ToUtf16JsonSpan() => new Span<char>(CurrentBuffer, 0, CurrentIndex);

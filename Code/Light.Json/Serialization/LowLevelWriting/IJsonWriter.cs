@@ -35,5 +35,14 @@ namespace Light.Json.Serialization.LowLevelWriting
         void WriteConstantValueAsObjectKey(in ConstantValue constantValue);
 
         void WriteConstantValue(in ConstantValue constantValue);
+
+        void WriteConstantValue1(in ConstantValue constantValue);
+        void WriteConstantValue2(in ConstantValue constantValue);
+        void WriteConstantValue3(in ConstantValue constantValue);
+        void WriteConstantValue4(in ConstantValue constantValue);
+        void WriteConstantValue5(in ConstantValue constantValue);
+        void WriteConstantValue6(in ConstantValue constantValue);
+        void WriteConstantValue7(in ConstantValue constantValue);
+        void WriteConstantValueLarge(in ConstantValue constantValue);
     }
 }

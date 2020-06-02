@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Light.GuardClauses;
+using Light.GuardClauses.Exceptions;
 using Light.Json.Buffers;
 
 namespace Light.Json.Serialization.LowLevelWriting
@@ -14,9 +15,9 @@ namespace Light.Json.Serialization.LowLevelWriting
             CurrentIndex = EnsuredIndex = 0;
         }
 
-        public IBufferProvider<byte> BufferProvider { get; }
-
         public byte[] CurrentBuffer { get; private set; }
+
+        public IBufferProvider<byte> BufferProvider { get; }
 
         public int CurrentIndex { get; private set; }
 
@@ -85,15 +86,102 @@ namespace Light.Json.Serialization.LowLevelWriting
             WriteRawBytes(constant.Utf8);
         }
 
+        public void WriteConstantValue1(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(1);
+            WriteByte(constantValue.Utf8[0]);
+        }
+
+        public void WriteConstantValue2(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(2);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentIndex += 2;
+        }
+
+        public void WriteConstantValue3(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(3);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf8Constant[2];
+            CurrentIndex += 3;
+        }
+
+        public void WriteConstantValue4(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(4);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf8Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf8Constant[3];
+            CurrentIndex += 4;
+        }
+
+        public void WriteConstantValue5(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(5);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf8Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf8Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf8Constant[4];
+            CurrentIndex += 5;
+        }
+
+        public void WriteConstantValue6(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(6);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf8Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf8Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf8Constant[4];
+            CurrentBuffer[CurrentIndex + 5] = utf8Constant[5];
+            CurrentIndex += 6;
+        }
+
+        public void WriteConstantValue7(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(7);
+            var utf8Constant = constantValue.Utf8;
+            CurrentBuffer[CurrentIndex] = utf8Constant[0];
+            CurrentBuffer[CurrentIndex + 1] = utf8Constant[1];
+            CurrentBuffer[CurrentIndex + 2] = utf8Constant[2];
+            CurrentBuffer[CurrentIndex + 3] = utf8Constant[3];
+            CurrentBuffer[CurrentIndex + 4] = utf8Constant[4];
+            CurrentBuffer[CurrentIndex + 5] = utf8Constant[5];
+            CurrentBuffer[CurrentIndex + 6] = utf8Constant[6];
+            CurrentIndex += 7;
+        }
+
+        public void WriteConstantValueLarge(in ConstantValue constantValue)
+        {
+            EnsureCapacityFromCurrentIndex(constantValue.Utf8.Length);
+            CopyMemoryUnsafe(constantValue.Utf8);
+        }
+
         public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
         {
+            if (numberOfAdditionalBufferSlots < 1)
+                Throw.MustBeGreaterThan(numberOfAdditionalBufferSlots, 0, nameof(numberOfAdditionalBufferSlots));
+
             EnsuredIndex = CurrentIndex + numberOfAdditionalBufferSlots;
             EnsureCapacity();
         }
 
         public void EnsureAdditionalCapacity(int numberOfAdditionalBufferSlots)
         {
-            EnsuredIndex += numberOfAdditionalBufferSlots.MustBeGreaterThan(0, nameof(numberOfAdditionalBufferSlots));
+            if (numberOfAdditionalBufferSlots < 1)
+                Throw.MustBeGreaterThan(numberOfAdditionalBufferSlots, 0, nameof(numberOfAdditionalBufferSlots));
+
+            EnsuredIndex += numberOfAdditionalBufferSlots;
             EnsureCapacity();
         }
 
@@ -156,7 +244,7 @@ namespace Light.Json.Serialization.LowLevelWriting
             WriteByte((byte) character);
         }
 
-        private void WriteRawBytes(in ReadOnlySpan<byte> bytes)
+        private void WriteRawBytes(byte[] bytes)
         {
             switch (bytes.Length)
             {
@@ -209,7 +297,7 @@ namespace Light.Json.Serialization.LowLevelWriting
             }
         }
 
-        private unsafe void CopyMemoryUnsafe(in ReadOnlySpan<byte> bytes)
+        private unsafe void CopyMemoryUnsafe(byte[] bytes)
         {
             fixed (void* source = &bytes[0], target = &CurrentBuffer[CurrentIndex])
                 Buffer.MemoryCopy(source, target, CurrentBuffer.Length - CurrentIndex, bytes.Length);

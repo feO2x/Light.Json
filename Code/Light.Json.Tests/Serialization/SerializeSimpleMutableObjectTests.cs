@@ -48,9 +48,25 @@ namespace Light.Json.Tests.Serialization
             public readonly ConstantValue Age = nameof(Person.Age);
             public readonly ConstantValue FirstName = nameof(Person.FirstName);
             public readonly ConstantValue LastName = nameof(Person.LastName);
+            public readonly ConstantValue Segment1;
+            public readonly ConstantValue Segment2;
+            public readonly ConstantValue Segment3;
+
+            public PersonContract()
+            {
+                Segment1 = ConstantValue.Unaltered("{\"" + FirstName + "\":");
+                Segment2 = ConstantValue.Unaltered(",\"" + LastName + "\":");
+                Segment3 = ConstantValue.Unaltered(",\"" + Age + "\":");
+            }
 
             public override void Serialize<TJsonWriter>(Person person, SerializationContext context, ref TJsonWriter writer)
             {
+                if (writer.IsCompatibleWithOptimizedContract)
+                {
+                    SerializeFast(person, ref writer);
+                    return;
+                }
+
                 writer.WriteBeginOfObject();
 
                 writer.WriteConstantValueAsObjectKey(FirstName);
@@ -67,6 +83,18 @@ namespace Light.Json.Tests.Serialization
                 writer.WriteKeyValueSeparator();
                 writer.WriteInteger(person.Age);
 
+                writer.WriteEndOfObject();
+            }
+
+            private void SerializeFast<TJsonWriter>(Person person, ref TJsonWriter writer)
+                where TJsonWriter : struct, IJsonWriter
+            {
+                writer.WriteConstantValueLarge(Segment1);
+                writer.WriteString(person.FirstName.AsSpan());
+                writer.WriteConstantValueLarge(Segment2);
+                writer.WriteString(person.LastName.AsSpan());
+                writer.WriteConstantValue7(Segment3);
+                writer.WriteInteger(person.Age);
                 writer.WriteEndOfObject();
             }
         }
