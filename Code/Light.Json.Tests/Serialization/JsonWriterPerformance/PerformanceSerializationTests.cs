@@ -13,7 +13,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public static readonly byte[] Segment1 = Encoding.UTF8.GetBytes("{\"firstName\":");
         public static readonly byte[] Segment2 = Encoding.UTF8.GetBytes(",\"lastName\":");
         public static readonly byte[] Segment3 = Encoding.UTF8.GetBytes(",\"age\":");
-        public static readonly ArrayPoolBufferProvider<byte> BufferProvider = new ArrayPoolBufferProvider<byte>();
+        public static readonly IBufferProvider<byte> BufferProvider = new ThreadStaticByteBufferProvider();
 
         [Fact]
         public static void SerializeUtf8()
