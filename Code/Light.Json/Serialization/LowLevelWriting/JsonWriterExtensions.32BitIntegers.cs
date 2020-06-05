@@ -86,7 +86,7 @@ namespace Light.Json.Serialization.LowLevelWriting
             writer.WriteAscii('8');
         }
 
-        private static int DetermineNumberOfDigits(this uint number)
+        public static int DetermineNumberOfDigits(this uint number)
         {
             // uint.MaxValue is 4,294,967,295
             if (number < 10)
@@ -111,6 +111,6 @@ namespace Light.Json.Serialization.LowLevelWriting
             return 10;
         }
 
-        private static char ToDigitCharacter(this uint number) => (char) (number + '0');
+        public static char ToDigitCharacter(this uint number) => (char) (number + '0');
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
-using Light.Json.Tests.Serialization;
+using Light.Json.Tests.Serialization.JsonWriterPerformance;
 using Light.Json.Tests.SerializationSubjects;
 using Utf8JsonSerializer = Utf8Json.JsonSerializer;
 
