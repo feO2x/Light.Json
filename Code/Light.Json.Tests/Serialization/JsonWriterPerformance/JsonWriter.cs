@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 {
@@ -123,62 +124,62 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
                 if (number5 < 1000)
                     goto Digit19;
 
-                WriteByte((byte) ('0' + (div = (number5 * 8389UL) >> 23)));
+                WriteByte((div = (number5 * 8389UL) >> 23).ToUtf8DigitCharacter());
                 number5 -= div * 1000;
             }
 
             Digit19:
-            WriteByte((byte) ('0' + (div = (number5 * 5243UL) >> 19)));
+            WriteByte((div = (number5 * 5243UL) >> 19).ToUtf8DigitCharacter());
             number5 -= div * 100;
             Digit18:
-            WriteByte((byte) ('0' + (div = (number5 * 6554UL) >> 16)));
+            WriteByte((div = (number5 * 6554UL) >> 16).ToUtf8DigitCharacter());
             number5 -= div * 10;
             Digit17:
-            WriteByte((byte) ('0' + (number5)));
+            WriteByte(number5.ToUtf8DigitCharacter());
             Digit16:
-            WriteByte((byte) ('0' + (div = (number4 * 8389UL) >> 23)));
+            WriteByte((div = (number4 * 8389UL) >> 23).ToUtf8DigitCharacter());
             number4 -= div * 1000;
             Digit15:
-            WriteByte((byte) ('0' + (div = (number4 * 5243UL) >> 19)));
+            WriteByte((div = (number4 * 5243UL) >> 19).ToUtf8DigitCharacter());
             number4 -= div * 100;
             Digit14:
-            WriteByte((byte) ('0' + (div = (number4 * 6554UL) >> 16)));
+            WriteByte((div = (number4 * 6554UL) >> 16).ToUtf8DigitCharacter());
             number4 -= div * 10;
             Digit13:
-            WriteByte((byte) ('0' + (number4)));
+            WriteByte((number4).ToUtf8DigitCharacter());
             Digit12:
-            WriteByte((byte) ('0' + (div = (number3 * 8389UL) >> 23)));
+            WriteByte((div = (number3 * 8389UL) >> 23).ToUtf8DigitCharacter());
             number3 -= div * 1000;
             Digit11:
-            WriteByte((byte) ('0' + (div = (number3 * 5243UL) >> 19)));
+            WriteByte((div = (number3 * 5243UL) >> 19).ToUtf8DigitCharacter());
             number3 -= div * 100;
             Digit10:
-            WriteByte((byte) ('0' + (div = (number3 * 6554UL) >> 16)));
+            WriteByte((div = (number3 * 6554UL) >> 16).ToUtf8DigitCharacter());
             number3 -= div * 10;
             Digit9:
-            WriteByte((byte) ('0' + (number3)));
+            WriteByte(number3.ToUtf8DigitCharacter());
             Digit8:
-            WriteByte((byte) ('0' + (div = (number2 * 8389UL) >> 23)));
+            WriteByte((div = (number2 * 8389UL) >> 23).ToUtf8DigitCharacter());
             number2 -= div * 1000;
             Digit7:
-            WriteByte((byte) ('0' + (div = (number2 * 5243UL) >> 19)));
+            WriteByte((div = (number2 * 5243UL) >> 19).ToUtf8DigitCharacter());
             number2 -= div * 100;
             Digit6:
-            WriteByte((byte) ('0' + (div = (number2 * 6554UL) >> 16)));
+            WriteByte((div = (number2 * 6554UL) >> 16).ToUtf8DigitCharacter());
             number2 -= div * 10;
             Digit5:
-            WriteByte((byte) ('0' + (number2)));
+            WriteByte((number2).ToUtf8DigitCharacter());
             Digit4:
-            WriteByte((byte) ('0' + (div = (number * 8389UL) >> 23)));
+            WriteByte((div = (number * 8389UL) >> 23).ToUtf8DigitCharacter());
             number -= div * 1000;
             Digit3:
-            WriteByte((byte) ('0' + (div = (number * 5243UL) >> 19)));
+            WriteByte((div = (number * 5243UL) >> 19).ToUtf8DigitCharacter());
             number -= div * 100;
             Digit2:
-            WriteByte((byte) ('0' + (div = (number * 6554UL) >> 16)));
+            WriteByte((div = (number * 6554UL) >> 16).ToUtf8DigitCharacter());
             number -= div * 10;
             Digit1:
-            WriteByte((byte) ('0' + (number)));
+            WriteByte(number.ToUtf8DigitCharacter());
         }
 
         private void WriteInt32MinValue()

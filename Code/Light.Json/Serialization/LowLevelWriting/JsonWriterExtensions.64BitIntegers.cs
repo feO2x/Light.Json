@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Light.Json.Serialization.LowLevelWriting
 {
@@ -132,6 +133,9 @@ namespace Light.Json.Serialization.LowLevelWriting
             writer.WriteAscii('8');
         }
 
-        private static char ToDigitCharacter(this ulong number) => (char) (number + '0');
+        public static char ToDigitCharacter(this ulong number) => (char) (number + '0');
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ToUtf8DigitCharacter(this ulong digit) => (byte) (digit + '0');
     }
 }
