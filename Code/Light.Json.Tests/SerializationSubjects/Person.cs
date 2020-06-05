@@ -8,5 +8,17 @@
         public string? LastName { get; set; }
 
         public int Age { get; set; }
+
+        public static Person CreateDefaultInstance()
+        {
+            return new Person
+            {
+                FirstName = "Kenny",
+                LastName = "Pflug",
+                Age = 33
+            };
+        }
+
+        public const string DefaultMinifiedJson = "{\"firstName\":\"Kenny\",\"lastName\":\"Pflug\",\"age\":33}";
     }
 }

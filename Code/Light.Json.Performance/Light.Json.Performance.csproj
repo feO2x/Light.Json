@@ -6,6 +6,7 @@
     <LangVersion>8.0</LangVersion>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>True</DebugSymbols>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,10 +21,6 @@
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
     <ProjectReference Include="..\Light.Json.Tests\Light.Json.Tests.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="BenchmarkDotNet.Artifacts\" />
   </ItemGroup>
 
 </Project>
