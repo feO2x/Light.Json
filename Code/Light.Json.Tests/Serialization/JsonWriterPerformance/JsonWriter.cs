@@ -25,6 +25,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public unsafe void WriteString(ReadOnlySpan<char> value)
         {
+            EnsureCapacity(Encoding.UTF8.GetMaxByteCount(value.Length) + 2);
             WriteCharacter('\"');
             fixed (char* source = &value[0])
             fixed (byte* target = &CurrentBuffer[CurrentIndex])
@@ -37,6 +38,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public unsafe void WriteRaw(ReadOnlySpan<byte> bytes)
         {
+            EnsureCapacity(bytes.Length);
             fixed (void* source = &bytes[0], target = &CurrentBuffer[CurrentIndex])
                 Buffer.MemoryCopy(source, target, CurrentBuffer.Length - CurrentIndex, bytes.Length);
             CurrentIndex += bytes.Length;
@@ -52,6 +54,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
                     return;
                 }
 
+                EnsureCapacity(1);
                 WriteCharacter('-');
                 number = -number;
             }
@@ -66,12 +69,24 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             if (number < 10000)
             {
                 if (number < 10)
+                {
+                    EnsureCapacity(1);
                     goto Digit1;
-                if (number < 100)
-                    goto Digit2;
-                if (number < 1000)
-                    goto Digit3;
+                }
 
+                if (number < 100)
+                {
+                    EnsureCapacity(2);
+                    goto Digit2;
+                }
+
+                if (number < 1000)
+                {
+                    EnsureCapacity(3);
+                    goto Digit3;
+                }
+
+                EnsureCapacity(4);
                 goto Digit4;
             }
 
@@ -79,11 +94,25 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             number -= number2 * 10000;
             if (number2 < 10000)
             {
-                if (number2 < 10) goto Digit5;
+                if (number2 < 10)
+                {
+                    EnsureCapacity(5);
+                    goto Digit5;
+                }
+
                 if (number2 < 100)
+                {
+                    EnsureCapacity(6);
                     goto Digit6;
+                }
+
                 if (number2 < 1000)
+                {
+                    EnsureCapacity(7);
                     goto Digit7;
+                }
+
+                EnsureCapacity(8);
                 goto Digit8;
             }
 
@@ -92,11 +121,24 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             if (number3 < 10000)
             {
                 if (number3 < 10)
+                {
+                    EnsureCapacity(9);
                     goto Digit9;
+                }
+
                 if (number3 < 100)
+                {
+                    EnsureCapacity(10);
                     goto Digit10;
+                }
+
                 if (number3 < 1000)
+                {
+                    EnsureCapacity(11);
                     goto Digit11;
+                }
+
+                EnsureCapacity(12);
                 goto Digit12;
             }
 
@@ -105,11 +147,24 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             if (number4 < 10000)
             {
                 if (number4 < 10)
+                {
+                    EnsureCapacity(13);
                     goto Digit13;
+                }
+
                 if (number4 < 100)
+                {
+                    EnsureCapacity(14);
                     goto Digit14;
+                }
+
                 if (number4 < 1000)
+                {
+                    EnsureCapacity(15);
                     goto Digit15;
+                }
+
+                EnsureCapacity(16);
                 goto Digit16;
             }
 
@@ -118,12 +173,24 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             if (number5 < 10000)
             {
                 if (number5 < 10)
+                {
+                    EnsureCapacity(17);
                     goto Digit17;
-                if (number5 < 100)
-                    goto Digit18;
-                if (number5 < 1000)
-                    goto Digit19;
+                }
 
+                if (number5 < 100)
+                {
+                    EnsureCapacity(18);
+                    goto Digit18;
+                }
+
+                if (number5 < 1000)
+                {
+                    EnsureCapacity(19);
+                    goto Digit19;
+                }
+
+                EnsureCapacity(20);
                 WriteByte((div = (number5 * 8389UL) >> 23).ToUtf8DigitCharacter());
                 number5 -= div * 1000;
             }
@@ -206,5 +273,14 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public void WriteEndOfObject() => WriteCharacter('}');
 
         public Memory<byte> GetUtf8Json() => new Memory<byte>(CurrentBuffer, 0, CurrentIndex);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureCapacity(int numberOfSlots)
+        {
+            if (CurrentIndex + numberOfSlots < CurrentBuffer.Length)
+                return;
+
+            throw new NotImplementedException();
+        }
     }
 }
