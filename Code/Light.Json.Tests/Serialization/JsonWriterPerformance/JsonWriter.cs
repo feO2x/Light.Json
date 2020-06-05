@@ -42,7 +42,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             CurrentIndex += bytes.Length;
         }
 
-        public void WriteNumber(int number)
+        public void WriteNumber(long number)
         {
             if (number < 0)
             {
