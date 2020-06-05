@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Text;
-using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 {
@@ -16,7 +16,11 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public int CurrentIndex { get; private set; }
 
-        public void WriteCharacter(char character) => CurrentBuffer[CurrentIndex++] = (byte) character;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteCharacter(char character) => WriteByte((byte) character);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteByte(byte character) => CurrentBuffer[CurrentIndex++] = character;
 
         public unsafe void WriteString(ReadOnlySpan<char> value)
         {
@@ -39,9 +43,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public void WriteNumber(int number)
         {
-            var numberOfBufferSlots = 0;
-            var isNegative = number < 0;
-            if (isNegative)
+            if (number < 0)
             {
                 if (number == int.MinValue) // This needs to be done because "int.MinValue * -1 = int.MinValue" in unchecked mode
                 {
@@ -49,39 +51,134 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
                     return;
                 }
 
-                ++numberOfBufferSlots;
-                number *= -1;
-            }
-
-            var absoluteNumber = (uint) number;
-            numberOfBufferSlots += absoluteNumber.DetermineNumberOfDigits();
-            if (isNegative)
-            {
                 WriteCharacter('-');
-                --numberOfBufferSlots;
+                number = -number;
             }
 
-            WriteUInt32Internal(absoluteNumber, numberOfBufferSlots);
+            WriteUInt32Internal((ulong) number);
         }
 
-        private void WriteUInt32Internal(uint number, int numberOfDigits)
+        private void WriteUInt32Internal(ulong number)
         {
-            if (numberOfDigits == 1)
+            ulong div;
+
+            if (number < 10000)
             {
-                WriteCharacter(number.ToDigitCharacter());
-                return;
+                if (number < 10)
+                    goto Digit1;
+                if (number < 100)
+                    goto Digit2;
+                if (number < 1000)
+                    goto Digit3;
+
+                goto Digit4;
             }
 
-            var divisor = (uint) Math.Pow(10, numberOfDigits - 1);
-            while (divisor >= 10)
+            var number2 = number / 10000;
+            number -= number2 * 10000;
+            if (number2 < 10000)
             {
-                var frontDigit = number / divisor;
-                WriteCharacter(frontDigit.ToDigitCharacter());
-                number -= frontDigit * divisor;
-                divisor /= 10;
+                if (number2 < 10) goto Digit5;
+                if (number2 < 100)
+                    goto Digit6;
+                if (number2 < 1000)
+                    goto Digit7;
+                goto Digit8;
             }
 
-            WriteCharacter(number.ToDigitCharacter());
+            var number3 = number2 / 10000;
+            number2 -= number3 * 10000;
+            if (number3 < 10000)
+            {
+                if (number3 < 10)
+                    goto Digit9;
+                if (number3 < 100)
+                    goto Digit10;
+                if (number3 < 1000)
+                    goto Digit11;
+                goto Digit12;
+            }
+
+            var number4 = number3 / 10000;
+            number3 -= number4 * 10000;
+            if (number4 < 10000)
+            {
+                if (number4 < 10)
+                    goto Digit13;
+                if (number4 < 100)
+                    goto Digit14;
+                if (number4 < 1000)
+                    goto Digit15;
+                goto Digit16;
+            }
+
+            var number5 = number4 / 10000;
+            number4 -= number5 * 10000;
+            if (number5 < 10000)
+            {
+                if (number5 < 10)
+                    goto Digit17;
+                if (number5 < 100)
+                    goto Digit18;
+                if (number5 < 1000)
+                    goto Digit19;
+
+                WriteByte((byte) ('0' + (div = (number5 * 8389UL) >> 23)));
+                number5 -= div * 1000;
+            }
+
+            Digit19:
+            WriteByte((byte) ('0' + (div = (number5 * 5243UL) >> 19)));
+            number5 -= div * 100;
+            Digit18:
+            WriteByte((byte) ('0' + (div = (number5 * 6554UL) >> 16)));
+            number5 -= div * 10;
+            Digit17:
+            WriteByte((byte) ('0' + (number5)));
+            Digit16:
+            WriteByte((byte) ('0' + (div = (number4 * 8389UL) >> 23)));
+            number4 -= div * 1000;
+            Digit15:
+            WriteByte((byte) ('0' + (div = (number4 * 5243UL) >> 19)));
+            number4 -= div * 100;
+            Digit14:
+            WriteByte((byte) ('0' + (div = (number4 * 6554UL) >> 16)));
+            number4 -= div * 10;
+            Digit13:
+            WriteByte((byte) ('0' + (number4)));
+            Digit12:
+            WriteByte((byte) ('0' + (div = (number3 * 8389UL) >> 23)));
+            number3 -= div * 1000;
+            Digit11:
+            WriteByte((byte) ('0' + (div = (number3 * 5243UL) >> 19)));
+            number3 -= div * 100;
+            Digit10:
+            WriteByte((byte) ('0' + (div = (number3 * 6554UL) >> 16)));
+            number3 -= div * 10;
+            Digit9:
+            WriteByte((byte) ('0' + (number3)));
+            Digit8:
+            WriteByte((byte) ('0' + (div = (number2 * 8389UL) >> 23)));
+            number2 -= div * 1000;
+            Digit7:
+            WriteByte((byte) ('0' + (div = (number2 * 5243UL) >> 19)));
+            number2 -= div * 100;
+            Digit6:
+            WriteByte((byte) ('0' + (div = (number2 * 6554UL) >> 16)));
+            number2 -= div * 10;
+            Digit5:
+            WriteByte((byte) ('0' + (number2)));
+            Digit4:
+            WriteByte((byte) ('0' + (div = (number * 8389UL) >> 23)));
+            number -= div * 1000;
+            Digit3:
+            WriteByte((byte) ('0' + (div = (number * 5243UL) >> 19)));
+            number -= div * 100;
+            Digit2:
+            WriteByte((byte) ('0' + (div = (number * 6554UL) >> 16)));
+            number -= div * 10;
+            Digit1:
+            WriteByte((byte) ('0' + (number)));
         }
 
         private void WriteInt32MinValue()
@@ -105,12 +202,8 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             WriteCharacter('8');
         }
 
-        public void WriteEndOfObject()
-        {
-            WriteCharacter('}');
-        }
+        public void WriteEndOfObject() => WriteCharacter('}');
 
-        public Memory<byte> GetUtf8Json() =>
-            new Memory<byte>(CurrentBuffer, 0, CurrentIndex);
+        public Memory<byte> GetUtf8Json() => new Memory<byte>(CurrentBuffer, 0, CurrentIndex);
     }
 }
