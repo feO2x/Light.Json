@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Light.GuardClauses;
+using Light.Json.Buffers;
 using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 {
     public struct JsonWriter
     {
-        public JsonWriter(byte[] currentBuffer)
+        public JsonWriter(IBufferProvider<byte> bufferProvider)
         {
-            CurrentBuffer = currentBuffer;
+            BufferProvider = bufferProvider.MustNotBeNull(nameof(bufferProvider));
+            CurrentBuffer = bufferProvider.GetInitialBuffer();
             CurrentIndex = 0;
         }
 
-        public byte[] CurrentBuffer { get; }
+        public IBufferProvider<byte> BufferProvider { get; }
+
+        public byte[] CurrentBuffer { get; private set; }
 
         public int CurrentIndex { get; private set; }
 
@@ -272,15 +277,17 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public void WriteEndOfObject() => WriteCharacter('}');
 
-        public Memory<byte> GetUtf8Json() => new Memory<byte>(CurrentBuffer, 0, CurrentIndex);
+        public SerializationResult<byte> GetUtf8Json() =>
+            new SerializationResult<byte>(new Memory<byte>(CurrentBuffer, 0, CurrentIndex), CurrentBuffer, BufferProvider);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EnsureCapacity(int numberOfSlots)
         {
-            if (CurrentIndex + numberOfSlots < CurrentBuffer.Length)
+            var newSize = CurrentIndex + numberOfSlots;
+            if (newSize < CurrentBuffer.Length)
                 return;
 
-            throw new NotImplementedException();
+            CurrentBuffer = BufferProvider.GetNewBufferWithIncreasedSize(CurrentBuffer, newSize - CurrentBuffer.Length);
         }
     }
 }

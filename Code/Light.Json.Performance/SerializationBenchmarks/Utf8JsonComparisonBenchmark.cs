@@ -13,7 +13,8 @@ namespace Light.Json.Performance.SerializationBenchmarks
         [Benchmark]
         public Memory<byte> MyImplementation()
         {
-            return PerformanceSerializationTests.Serialize(Person);
+            using var result = PerformanceSerializationTests.Serialize(Person);
+            return result.Json;
         }
 
         [Benchmark]
