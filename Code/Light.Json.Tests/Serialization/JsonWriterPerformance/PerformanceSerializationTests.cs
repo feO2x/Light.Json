@@ -12,10 +12,10 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
     {
         public static readonly IBufferProvider<byte> BufferProvider = new ThreadStaticByteBufferProvider();
 
-        public static readonly Dictionary<int, ISerializationContract> Contracts =
-            new Dictionary<int, ISerializationContract>
+        public static readonly Dictionary<TypeKey, ISerializationContract> Contracts =
+            new Dictionary<TypeKey, ISerializationContract>(TypeKey.EqualityComparer.Instance)
             {
-                [1] = new PersonContract()
+                [typeof(Person)] = new PersonContract()
             };
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public static SerializationResult<byte> Serialize(Person person)
         {
-            if (!Contracts.TryGetValue(1, out var contract) ||
+            if (!Contracts.TryGetValue(typeof(Person), out var contract) ||
                 !(contract is ISerializeOnlyContract<Person> personContract))
                 throw new SerializationException();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Light.GuardClauses;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
@@ -105,6 +106,15 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             if (Key == null)
                 return Type.Name;
             return $"{Type.Name} (\"{Key}\")";
+        }
+
+        public sealed class EqualityComparer : IEqualityComparer<TypeKey>
+        {
+            public static readonly EqualityComparer Instance = new EqualityComparer();
+
+            public bool Equals(TypeKey x, TypeKey y) => x.Type == y.Type && x.Key == y.Key;
+
+            public int GetHashCode(TypeKey typeKey) => typeKey._hashCode;
         }
     }
 
