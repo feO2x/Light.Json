@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using FluentAssertions;
 using Light.Json.Buffers;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Tests.SerializationSubjects;
@@ -9,7 +11,12 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
     public static class PerformanceSerializationTests
     {
         public static readonly IBufferProvider<byte> BufferProvider = new ThreadStaticByteBufferProvider();
-        public static readonly PersonContract Contract = new PersonContract();
+
+        public static readonly Dictionary<TypeKey, ISerializationContract> Contracts =
+            new Dictionary<TypeKey, ISerializationContract>
+            {
+                [typeof(Person)] = new PersonContract()
+            };
 
         [Fact]
         public static void SerializeUtf8()
@@ -23,9 +30,14 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public static SerializationResult<byte> Serialize(Person person)
         {
+            TypeKey typeKey = typeof(Person);
+            if (!Contracts.TryGetValue(typeKey, out var contract) ||
+                !(contract is ISerializeOnlyContract<Person> personContract))
+                throw new SerializationException();
+
             var writer = new JsonWriter(BufferProvider);
             var context = new SerializationContext();
-            Contract.Serialize(person, context, ref writer);
+            personContract.Serialize(person, context, ref writer);
             return writer.GetUtf8Json();
         }
     }

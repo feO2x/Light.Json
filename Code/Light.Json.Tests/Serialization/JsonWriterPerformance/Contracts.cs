@@ -58,7 +58,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public override string ToString() => "Serialize-Only-Contract " + TypeKey;
     }
 
-    public readonly struct TypeKey : IEquatable<Contracts.TypeKey>
+    public readonly struct TypeKey : IEquatable<TypeKey>
     {
         private readonly int _hashCode;
 
@@ -84,7 +84,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public string? Key { get; }
 
-        public bool Equals(Contracts.TypeKey other) =>
+        public bool Equals(TypeKey other) =>
             Type == other.Type && Key == other.Key;
 
         public override bool Equals(object? obj) =>
