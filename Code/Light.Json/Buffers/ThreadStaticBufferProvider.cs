@@ -8,7 +8,7 @@ namespace Light.Json.Buffers
         [ThreadStatic] private static byte[]? _buffer;
 
         public ThreadStaticByteBufferProvider(IIncreaseBufferSizeStrategy? increaseBufferSizeStrategy = null,
-                                              int initialBufferSizeInByte = 84975,
+                                              int initialBufferSizeInByte = 10240,
                                               int? maximumArraySizeInByte = null)
         {
             IncreaseBufferSizeStrategy = increaseBufferSizeStrategy ?? new MultiplyBufferSizeStrategy();
@@ -16,7 +16,6 @@ namespace Light.Json.Buffers
             if (_buffer == null || _buffer.Length < initialBufferSizeInByte.MustBeGreaterThan(0, nameof(initialBufferSizeInByte)))
                 _buffer = new byte[initialBufferSizeInByte];
         }
-
 
         public IIncreaseBufferSizeStrategy IncreaseBufferSizeStrategy { get; }
         public int MaximumArraySizeInByte { get; }
