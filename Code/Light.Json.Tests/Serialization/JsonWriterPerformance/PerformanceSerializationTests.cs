@@ -24,7 +24,8 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public static SerializationResult<byte> Serialize(Person person)
         {
             var writer = new JsonWriter(BufferProvider);
-            Contract.Serialize(person, ref writer);
+            var context = new SerializationContext();
+            Contract.Serialize(person, context, ref writer);
             return writer.GetUtf8Json();
         }
     }
