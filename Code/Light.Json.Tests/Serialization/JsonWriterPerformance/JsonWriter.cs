@@ -7,7 +7,7 @@ using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 {
-    public struct JsonWriter
+    public struct JsonWriter : IJsonWriter
     {
         public JsonWriter(IBufferProvider<byte> bufferProvider)
         {

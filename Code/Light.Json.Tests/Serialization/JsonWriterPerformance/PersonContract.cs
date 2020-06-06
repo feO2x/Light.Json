@@ -10,7 +10,8 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public static readonly byte[] Segment2 = Encoding.UTF8.GetBytes(",\"lastName\":");
         public static readonly byte[] Segment3 = Encoding.UTF8.GetBytes(",\"age\":");
 
-        public void Serialize(Person person, ref JsonWriter writer)
+        public void Serialize<TJsonWriter>(Person person, ref TJsonWriter writer)
+            where TJsonWriter : struct, IJsonWriter
         {
             writer.WriteRaw(Segment1);
             writer.WriteString(person.FirstName.AsSpan());
