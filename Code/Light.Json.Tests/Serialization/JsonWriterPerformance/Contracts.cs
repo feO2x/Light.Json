@@ -4,12 +4,30 @@ using Light.GuardClauses;
 
 namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 {
-    public interface ISerializationContract
+    public abstract class BaseContract : IEquatable<BaseContract>
     {
-        TypeKey TypeKey { get; }
+        protected BaseContract(TypeKey typeKey)
+        {
+            TypeKey = typeKey;
+        }
+
+        public TypeKey TypeKey { get; }
+
+
+        public bool Equals(BaseContract? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return TypeKey.Equals(other.TypeKey);
+        }
+
+        public override bool Equals(object? obj) =>
+            obj is BaseContract contract && Equals(contract);
+
+        public override int GetHashCode() => TypeKey.GetHashCode();
     }
 
-    public interface ISerializeOnlyContract : ISerializationContract
+    public interface ISerializeOnlyContract
     {
         void SerializeObject<TJsonWriter>(object @object, SerializationContext context, ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter;
@@ -21,31 +39,9 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
             where TJsonWriter : struct, IJsonWriter;
     }
 
-    public abstract class BaseContract<T> : ISerializationContract, IEquatable<ISerializationContract>
+    public abstract class SerializeOnlyContract<T> : BaseContract, ISerializeOnlyContract<T>
     {
-        protected BaseContract(string? contractKey = null) =>
-            TypeKey = new TypeKey(typeof(T), contractKey);
-
-        public TypeKey TypeKey { get; }
-
-        public bool Equals(ISerializationContract? other)
-        {
-            if (ReferenceEquals(this, other))
-                return true;
-            if (other is null)
-                return false;
-            return TypeKey.Equals(other.TypeKey);
-        }
-
-        public override bool Equals(object? obj) =>
-            obj is ISerializationContract contract && Equals(contract);
-
-        public override int GetHashCode() => TypeKey.GetHashCode();
-    }
-
-    public abstract class SerializeOnlyContract<T> : BaseContract<T>, ISerializeOnlyContract<T>
-    {
-        protected SerializeOnlyContract(string? contractKey = null) : base(contractKey) { }
+        protected SerializeOnlyContract(string? contractKey = null) : base(new TypeKey(typeof(T), contractKey)) { }
 
         public void SerializeObject<TJsonWriter>(object @object, SerializationContext context, ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter
@@ -61,29 +57,28 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
     public readonly struct TypeKey : IEquatable<TypeKey>
     {
-        private readonly int _hashCode;
-
         public TypeKey(Type type, string? key = null)
         {
             Type = type.MustNotBeNull(nameof(Type));
             if (key.IsNullOrWhiteSpace())
             {
                 Key = null;
-                _hashCode = Type.GetHashCode();
+                HashCode = unchecked((uint) Type.GetHashCode());
             }
             else
             {
                 Key = key;
                 unchecked
                 {
-                    _hashCode = (type.GetHashCode() * 397) ^ key!.GetHashCode();
+                    HashCode = (uint) ((type.GetHashCode() * 397) ^ key!.GetHashCode());
                 }
             }
         }
 
-        public Type Type { get; }
 
+        public uint HashCode { get; }
         public string? Key { get; }
+        public Type Type { get; }
 
         public bool Equals(TypeKey other) =>
             Type == other.Type && Key == other.Key;
@@ -91,7 +86,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
         public override bool Equals(object? obj) =>
             obj is Contracts.TypeKey other && Equals(other);
 
-        public override int GetHashCode() => _hashCode;
+        public override int GetHashCode() => (int) HashCode;
 
         public static bool operator ==(TypeKey x, TypeKey y) => x.Equals(y);
 
@@ -114,7 +109,7 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
             public bool Equals(TypeKey x, TypeKey y) => x.Type == y.Type && x.Key == y.Key;
 
-            public int GetHashCode(TypeKey typeKey) => typeKey._hashCode;
+            public int GetHashCode(TypeKey typeKey) => unchecked((int) typeKey.HashCode);
         }
     }
 

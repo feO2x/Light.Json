@@ -12,11 +12,14 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
     {
         public static readonly IBufferProvider<byte> BufferProvider = new ThreadStaticByteBufferProvider();
 
-        public static readonly Dictionary<TypeKey, ISerializationContract> Contracts =
-            new Dictionary<TypeKey, ISerializationContract>(TypeKey.EqualityComparer.Instance)
-            {
-                [typeof(Person)] = new PersonContract()
-            };
+        public static readonly ContractsDictionary Contracts =
+            new ContractsDictionary().Add(new PersonContract());
+
+        //public static readonly Dictionary<TypeKey, BaseContract> Contracts =
+        //    new Dictionary<TypeKey, BaseContract>(TypeKey.EqualityComparer.Instance)
+        //    {
+        //        [typeof(Person)] = new PersonContract()
+        //    };
 
         [Fact]
         public static void SerializeUtf8()
@@ -30,13 +33,12 @@ namespace Light.Json.Tests.Serialization.JsonWriterPerformance
 
         public static SerializationResult<byte> Serialize(Person person)
         {
-            if (!Contracts.TryGetValue(typeof(Person), out var contract) ||
-                !(contract is ISerializeOnlyContract<Person> personContract))
+            if (!Contracts.TryGetContract<ISerializeOnlyContract<Person>>(typeof(Person), out var contract))
                 throw new SerializationException();
 
             var writer = new JsonWriter(BufferProvider);
             var context = new SerializationContext();
-            personContract.Serialize(person, context, ref writer);
+            contract.Serialize(person, context, ref writer);
             return writer.GetUtf8Json();
         }
     }
