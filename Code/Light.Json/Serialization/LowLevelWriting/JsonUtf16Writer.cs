@@ -38,7 +38,7 @@ namespace Light.Json.Serialization.LowLevelWriting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteCharacter(char character) => CurrentBuffer[CurrentIndex++] = character;
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteAscii(char asciiCharacter) => WriteCharacter(asciiCharacter);
 
         public void WriteSurrogatePair(char highSurrogate, char lowSurrogate)
@@ -149,6 +149,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public Memory<char> ToUtf16JsonMemory() => new Memory<char>(CurrentBuffer, 0, CurrentIndex);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Utf16SerializationResult GetResult() => new Utf16SerializationResult(ToUtf16JsonMemory(), CurrentBuffer, BufferProvider);
 
         public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)

@@ -43,6 +43,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public Span<byte> ToUtf8JsonSpan() => new Span<byte>(CurrentBuffer, 0, CurrentIndex);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Utf8SerializationResult GetResult() => new Utf8SerializationResult(ToUtf8JsonMemory(), CurrentBuffer, BufferProvider);
 
         public void WriteCharacter(char character)
@@ -55,6 +56,7 @@ namespace Light.Json.Serialization.LowLevelWriting
                 WriteThreeByteCharacter(character);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteAscii(char asciiCharacter) => WriteByte((byte) asciiCharacter);
 
         public void WriteSurrogatePair(char highSurrogate, char lowSurrogate)
@@ -162,6 +164,7 @@ namespace Light.Json.Serialization.LowLevelWriting
             CopyMemoryUnsafe(constantValue.Utf8);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
         {
             if (numberOfAdditionalBufferSlots < 1)
