@@ -31,15 +31,15 @@ namespace Light.Json.Tests.Serialization
         [Fact]
         public void SerializeSimpleObjectUtf16()
         {
-            var json = _serializer.SerializeToUtf16(Person);
-            json.Should().Be(ExpectedJson);
+            var result = _serializer.SerializeToUtf16(Person);
+            result.GetJsonAsStringAndDisposeResult().Should().Be(ExpectedJson);
         }
 
         [Fact]
         public void SerializeSimpleObjectUtf8()
         {
-            var json = _serializer.SerializeToUtf8(Person);
-            var utf16Json = json.AsSpan().ConvertFromUtf8ToString();
+            using var result = _serializer.SerializeToUtf8(Person);
+            var utf16Json = result.Json.Span.ConvertFromUtf8ToString();
             utf16Json.Should().Be(ExpectedJson);
         }
 

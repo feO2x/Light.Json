@@ -43,12 +43,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public Span<byte> ToUtf8JsonSpan() => new Span<byte>(CurrentBuffer, 0, CurrentIndex);
 
-        public byte[] Finish()
-        {
-            var utf8Json = ToUtf8JsonSpan().ToArray();
-            BufferProvider.Finish(CurrentBuffer);
-            return utf8Json;
-        }
+        public Utf8SerializationResult GetResult() => new Utf8SerializationResult(ToUtf8JsonMemory(), CurrentBuffer, BufferProvider);
 
         public void WriteCharacter(char character)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
@@ -50,7 +51,12 @@ namespace Light.Json.Performance.SerializationBenchmarks
         }
 
         [Benchmark]
-        public byte[] LightJson() => LightJsonSerializer.SerializeToUtf8(Person);
+        public Memory<byte> LightJson()
+        {
+            var result = LightJsonSerializer.SerializeToUtf8(Person);
+            result.Dispose();
+            return result.Json;
+        }
 
         [Benchmark]
         public byte[] SystemTextJson() => SystemTextJsonSerializer.SerializeToUtf8Bytes(Person);

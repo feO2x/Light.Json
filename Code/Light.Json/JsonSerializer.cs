@@ -14,7 +14,7 @@ using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json
 {
-    public sealed class JsonSerializer
+    public class JsonSerializer
     {
         private readonly ISerializationContractProvider _serializationContractProvider;
         private readonly IBufferProvider<char> _utf16InMemoryBufferProvider;
@@ -32,20 +32,20 @@ namespace Light.Json
         public static JsonSerializer CreateDefault() =>
             new JsonSerializer(new ImmutableSerializationContractProvider(new Dictionary<TypeKey, ISerializationContract>()), new ArrayPoolBufferProvider<char>(), new ArrayPoolBufferProvider<byte>());
 
-        public string SerializeToUtf16<T>(T value, string? contractKey = null)
+        public Utf16SerializationResult SerializeToUtf16<T>(T value, string? contractKey = null)
         {
             var writer = new JsonUtf16Writer(_utf16InMemoryBufferProvider);
             var context = new SerializationContext();
             Serialize(value, context, ref writer, contractKey);
-            return writer.Finish();
+            return writer.GetResult();
         }
 
-        public byte[] SerializeToUtf8<T>(T value, string? contractKey = null)
+        public Utf8SerializationResult SerializeToUtf8<T>(T value, string? contractKey = null)
         {
             var writer = new JsonUtf8Writer(_utf8InMemoryBufferProvider);
             var context = new SerializationContext();
             Serialize(value, context, ref writer, contractKey);
-            return writer.Finish();
+            return writer.GetResult();
         }
 
         public void Serialize<TValue, TJsonWriter>(TValue value, SerializationContext context, ref TJsonWriter writer, string? contractKey)

@@ -149,12 +149,7 @@ namespace Light.Json.Serialization.LowLevelWriting
 
         public Memory<char> ToUtf16JsonMemory() => new Memory<char>(CurrentBuffer, 0, CurrentIndex);
 
-        public string Finish()
-        {
-            var json = ToString();
-            BufferProvider.Finish(CurrentBuffer);
-            return json;
-        }
+        public Utf16SerializationResult GetResult() => new Utf16SerializationResult(ToUtf16JsonMemory(), CurrentBuffer, BufferProvider);
 
         public void EnsureCapacityFromCurrentIndex(int numberOfAdditionalBufferSlots)
         {
