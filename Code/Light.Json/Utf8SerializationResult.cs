@@ -17,7 +17,7 @@ namespace Light.Json
 
         public Memory<byte> Json { get; }
 
-        public void Dispose() => _currentBufferProvider.Finish(_currentBuffer);
+        public void Dispose() => _currentBufferProvider.ReturnBuffer(_currentBuffer);
 
         public byte[] GetJsonAsByteArrayAndDisposeResult()
         {

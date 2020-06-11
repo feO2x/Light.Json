@@ -32,6 +32,6 @@ namespace Light.Json.Buffers
             return newBuffer;
         }
 
-        public void Finish(T[] currentBuffer) => ArrayPool.Return(currentBuffer);
+        public void ReturnBuffer(T[] currentBuffer) => ArrayPool.Return(currentBuffer);
     }
 }

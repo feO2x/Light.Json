@@ -25,7 +25,7 @@ namespace Light.Json
             return jsonString;
         }
 
-        public void Dispose() => _currentBufferProvider.Finish(_currentBuffer);
+        public void Dispose() => _currentBufferProvider.ReturnBuffer(_currentBuffer);
 
         public override string ToString() => Json.ToString();
     }

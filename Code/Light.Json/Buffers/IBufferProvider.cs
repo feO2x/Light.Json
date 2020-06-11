@@ -6,6 +6,6 @@
 
         T[] GetNewBufferWithIncreasedSize(T[] currentBuffer, int numberOfAdditionalSlots);
 
-        void Finish(T[] currentBuffer);
+        void ReturnBuffer(T[] currentBuffer);
     }
 }
