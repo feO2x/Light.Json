@@ -14,7 +14,7 @@ using Light.Json.Serialization.LowLevelWriting;
 
 namespace Light.Json
 {
-    public class JsonSerializer
+    public sealed class JsonSerializer
     {
         private readonly IContractProvider _contractProvider;
         private readonly IBufferProvider<char> _utf16InMemoryBufferProvider;
