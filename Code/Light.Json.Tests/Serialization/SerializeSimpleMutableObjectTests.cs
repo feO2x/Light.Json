@@ -18,7 +18,7 @@ namespace Light.Json.Tests.Serialization
 
         private readonly JsonSerializer _serializer =
             new JsonSerializer(
-                new ImmutableSerializationContractProvider(
+                new ImmutableContractProvider(
                     new Dictionary<TypeKey, ISerializationContract>
                     {
                         [typeof(Person)] = new PersonContract()

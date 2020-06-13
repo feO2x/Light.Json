@@ -5,11 +5,11 @@ using Light.GuardClauses;
 
 namespace Light.Json.Contracts
 {
-    public sealed class ImmutableSerializationContractProvider : ISerializationContractProvider
+    public sealed class ImmutableContractProvider : IContractProvider
     {
         private readonly Dictionary<TypeKey, ISerializationContract> _serializationContracts;
 
-        public ImmutableSerializationContractProvider(Dictionary<TypeKey, ISerializationContract> serializationContracts) =>
+        public ImmutableContractProvider(Dictionary<TypeKey, ISerializationContract> serializationContracts) =>
             _serializationContracts = serializationContracts.MustNotBeNull(nameof(serializationContracts));
 
         public bool TryGetContract<TContract>(TypeKey typeKey, [NotNullWhen(true)] out TContract? contract)

@@ -16,21 +16,21 @@ namespace Light.Json
 {
     public class JsonSerializer
     {
-        private readonly ISerializationContractProvider _serializationContractProvider;
+        private readonly IContractProvider _contractProvider;
         private readonly IBufferProvider<char> _utf16InMemoryBufferProvider;
         private readonly IBufferProvider<byte> _utf8InMemoryBufferProvider;
 
-        public JsonSerializer(ISerializationContractProvider serializationContractProvider,
+        public JsonSerializer(IContractProvider contractProvider,
                               IBufferProvider<char> utf16InMemoryBufferProvider,
                               IBufferProvider<byte> utf8InMemoryBufferProvider)
         {
             _utf16InMemoryBufferProvider = utf16InMemoryBufferProvider.MustNotBeNull(nameof(utf16InMemoryBufferProvider));
             _utf8InMemoryBufferProvider = utf8InMemoryBufferProvider.MustNotBeNull(nameof(utf8InMemoryBufferProvider));
-            _serializationContractProvider = serializationContractProvider.MustNotBeNull(nameof(serializationContractProvider));
+            _contractProvider = contractProvider.MustNotBeNull(nameof(contractProvider));
         }
 
         public static JsonSerializer CreateDefault() =>
-            new JsonSerializer(new ImmutableSerializationContractProvider(new Dictionary<TypeKey, ISerializationContract>()), new ArrayPoolBufferProvider<char>(), new ArrayPoolBufferProvider<byte>());
+            new JsonSerializer(new ImmutableContractProvider(new Dictionary<TypeKey, ISerializationContract>()), new ArrayPoolBufferProvider<char>(), new ArrayPoolBufferProvider<byte>());
 
         public Utf16SerializationResult SerializeToUtf16<T>(T value, string? contractKey = null)
         {
@@ -52,7 +52,7 @@ namespace Light.Json
             where TJsonWriter : struct, IJsonWriter
         {
             var targetType = typeof(TValue);
-            if (!_serializationContractProvider.TryGetContract(new TypeKey(targetType, contractKey), out ISerializeOnlyContract<TValue>? contract))
+            if (!_contractProvider.TryGetContract(new TypeKey(targetType, contractKey), out ISerializeOnlyContract<TValue>? contract))
                 throw new SerializationException($"The type \"${targetType}\" cannot be serialized because there is no contract registered with the serializer.");
 
             contract.Serialize(value, context, ref writer);
@@ -93,7 +93,7 @@ namespace Light.Json
             }
 
             var targetType = typeof(TResult);
-            if (!_serializationContractProvider.TryGetContract(new TypeKey(targetType, contractKey), out IDeserializeOnlyContract<TResult>? contract))
+            if (!_contractProvider.TryGetContract(new TypeKey(targetType, contractKey), out IDeserializeOnlyContract<TResult>? contract))
                 throw new SerializationException($"The type \"${targetType}\" cannot be deserialized because there is no corresponding contract registered with the serializer.");
 
             return contract.Deserialize<TJsonTokenizer, TJsonToken>(context, ref tokenizer);

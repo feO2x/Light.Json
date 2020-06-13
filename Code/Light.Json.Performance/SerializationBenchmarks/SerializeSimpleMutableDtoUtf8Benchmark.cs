@@ -30,7 +30,7 @@ namespace Light.Json.Performance.SerializationBenchmarks
         public void SetupLightJson()
         {
             LightJsonSerializer = new LightJsonSerializer(
-                new ImmutableSerializationContractProvider(
+                new ImmutableContractProvider(
                     new Dictionary<TypeKey, ISerializationContract>
                     {
                         [typeof(Person)] = new SerializeSimpleMutableObjectTests.PersonContract()
