@@ -12,7 +12,7 @@ namespace Light.Json.Tests.Serialization.LowLevelWriting
         private readonly ITestOutputHelper _output;
 
         public JsonUtf8WriterTests(ITestOutputHelper output)
-            : base(new JsonUtf8Writer(new ArrayPoolBufferProvider<byte>()))
+            : base(new JsonUtf8Writer(new ThreadStaticByteBufferProvider()))
         {
             _output = output;
         }

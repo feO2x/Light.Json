@@ -23,7 +23,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -34,10 +34,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public string JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(ShortUtf16Json))
-            {
-                return _jsonNetSerializer.Deserialize<string>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(ShortUtf16Json);
+            return _jsonNetSerializer.Deserialize<string>(reader);
         }
 
         [Benchmark]
@@ -57,7 +55,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -68,10 +66,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public string JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(LongUtf16Json))
-            {
-                return _jsonNetSerializer.Deserialize<string>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(LongUtf16Json);
+            return _jsonNetSerializer.Deserialize<string>(reader);
         }
 
         [Benchmark]
@@ -91,7 +87,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -103,10 +99,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public string JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(ShortUtf8Json))
-            {
-                return _jsonNetSerializer.Deserialize<string>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(ShortUtf8Json);
+            return _jsonNetSerializer.Deserialize<string>(reader);
         }
 
         [Benchmark]
@@ -126,7 +120,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public string JsonNetConvert()
@@ -138,10 +132,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public string JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(LongUtf8Json))
-            {
-                return _jsonNetSerializer.Deserialize<string>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(LongUtf8Json);
+            return _jsonNetSerializer.Deserialize<string>(reader);
         }
 
         [Benchmark]

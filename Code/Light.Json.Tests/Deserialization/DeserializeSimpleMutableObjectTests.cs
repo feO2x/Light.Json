@@ -21,14 +21,13 @@ namespace Light.Json.Tests.Deserialization
 
         private readonly JsonSerializer _serializer =
             new JsonSerializer(
-                new ImmutableContractProvider(
-                    new Dictionary<TypeKey, ISerializationContract>
-                    {
-                        [typeof(Person)] = new PersonContract()
-                    }
-                ),
-                new ArrayPoolBufferProvider<char>(),
-                new ArrayPoolBufferProvider<byte>()
+                new JsonSerializerSettings
+                {
+                    ContractProvider =
+                        new ImmutableContractProvider(
+                            new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new PersonContract() }
+                        )
+                }
             );
 
         [Fact]

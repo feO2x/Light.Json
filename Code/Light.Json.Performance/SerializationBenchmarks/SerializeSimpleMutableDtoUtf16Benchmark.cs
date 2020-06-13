@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
-using Light.Json.Buffers;
 using Light.Json.Contracts;
-using Light.Json.Tests.Serialization;
+using Light.Json.Tests.Deserialization;
 using Light.Json.Tests.SerializationSubjects;
 using Newtonsoft.Json;
 using LightJsonSerializer = Light.Json.JsonSerializer;
@@ -21,14 +20,12 @@ namespace Light.Json.Performance.SerializationBenchmarks
         public void SetupLightJsonSerializer()
         {
             LightJsonSerializer = new LightJsonSerializer(
-                new ImmutableContractProvider(
-                    new Dictionary<TypeKey, ISerializationContract>
-                    {
-                        [typeof(Person)] = new SerializeSimpleMutableObjectTests.PersonContract()
-                    }
-                ),
-                new ArrayPoolBufferProvider<char>(),
-                new ArrayPoolBufferProvider<byte>()
+                new JsonSerializerSettings
+                {
+                    ContractProvider = new ImmutableContractProvider(
+                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new DeserializeSimpleMutableObjectTests.PersonContract() }
+                    )
+                }
             );
         }
 

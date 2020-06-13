@@ -26,7 +26,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public int SystemTextJson() => SystemTextJsonSerializer.Deserialize<int>(Json);
@@ -37,10 +37,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public int JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(Json))
-            {
-                return _jsonNetSerializer.Deserialize<int>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(Json);
+            return _jsonNetSerializer.Deserialize<int>(reader);
         }
 
         [Benchmark]
@@ -69,7 +67,7 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         public void GlobalJsonNetSerializerSetup() => _jsonNetSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
 
         [GlobalSetup(Target = nameof(LightJson))]
-        public void GlobalLightJsonSetup() => _lightJsonSerializer = JsonSerializer.CreateDefault();
+        public void GlobalLightJsonSetup() => _lightJsonSerializer = new JsonSerializer();
 
         [Benchmark(Baseline = true)]
         public int SystemTextJson() => SystemTextJsonSerializer.Deserialize<int>(JsonSource.Utf8Json);
@@ -80,10 +78,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
         [Benchmark]
         public int JsonNetSerializer()
         {
-            using (var reader = JsonNet.CreateJsonNetTextReader(JsonSource.Utf8Json))
-            {
-                return _jsonNetSerializer.Deserialize<int>(reader);
-            }
+            using var reader = JsonNet.CreateJsonNetTextReader(JsonSource.Utf8Json);
+            return _jsonNetSerializer.Deserialize<int>(reader);
         }
 
         [Benchmark]

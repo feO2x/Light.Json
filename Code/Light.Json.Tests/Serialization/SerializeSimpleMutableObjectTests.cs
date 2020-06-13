@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Light.Json.Buffers;
 using Light.Json.Contracts;
+using Light.Json.FrameworkExtensions;
 using Light.Json.Serialization;
 using Light.Json.Serialization.LowLevelWriting;
-using Light.Json.FrameworkExtensions;
 using Light.Json.Tests.SerializationSubjects;
 using Xunit;
 
@@ -18,14 +18,12 @@ namespace Light.Json.Tests.Serialization
 
         private readonly JsonSerializer _serializer =
             new JsonSerializer(
-                new ImmutableContractProvider(
-                    new Dictionary<TypeKey, ISerializationContract>
-                    {
-                        [typeof(Person)] = new PersonContract()
-                    }
-                ),
-                new ArrayPoolBufferProvider<char>(),
-                new ArrayPoolBufferProvider<byte>()
+                new JsonSerializerSettings
+                {
+                    ContractProvider = new ImmutableContractProvider(
+                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new PersonContract() }
+                    )
+                }
             );
 
         [Fact]
