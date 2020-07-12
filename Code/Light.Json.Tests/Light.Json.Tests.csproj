@@ -10,11 +10,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Light.Json\Light.Json.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
     <PackageReference Include="xunit" Version="2.*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
     <PackageReference Include="FluentAssertions" Version="5.*" />
-    <PackageReference Include="Light.GuardClauses" Version="7.*" />
+    <PackageReference Include="Light.GuardClauses" Version="8.*" />
   </ItemGroup>
 
 </Project>

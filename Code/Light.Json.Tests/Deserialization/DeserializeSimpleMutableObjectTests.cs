@@ -53,7 +53,7 @@ namespace Light.Json.Tests.Deserialization
             public readonly ConstantValue FirstName = nameof(Person.FirstName);
             public readonly ConstantValue LastName = nameof(Person.LastName);
 
-            public override Person Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
+            public override Person Deserialize<TJsonTokenizer, TJsonToken>(DeserializationContext context, ref TJsonTokenizer tokenizer)
             {
                 tokenizer.ReadBeginOfObject();
                 var person = new Person();
