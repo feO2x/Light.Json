@@ -5,15 +5,15 @@ namespace Light.Json.Contracts
 {
     public abstract class DeserializeOnlyContract<T> : BaseContract<T>, IDeserializeOnlyContract<T>
     {
-        protected DeserializeOnlyContract(string? contractKey = null) : base(contractKey) { }
+        protected DeserializeOnlyContract(string? contractKey = null) : base(ContractKind.DeserializeOnly, contractKey) { }
 
-        public abstract T Deserialize<TJsonTokenizer, TJsonToken>(in DeserializationContext context,
+        public abstract T Deserialize<TJsonTokenizer, TJsonToken>(DeserializationContext context,
                                                                   ref TJsonTokenizer tokenizer)
             where TJsonTokenizer : struct, IJsonTokenizer<TJsonToken>
             where TJsonToken : struct, IJsonToken;
 
 
-        public object? DeserializeObject<TJsonTokenizer, TJsonToken>(in DeserializationContext context, ref TJsonTokenizer tokenizer)
+        public object? DeserializeObject<TJsonTokenizer, TJsonToken>(DeserializationContext context, ref TJsonTokenizer tokenizer)
             where TJsonTokenizer : struct, IJsonTokenizer<TJsonToken>
             where TJsonToken : struct, IJsonToken
         {

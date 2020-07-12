@@ -4,10 +4,15 @@ namespace Light.Json.Contracts
 {
     public abstract class BaseContract<T> : ISerializationContract, IEquatable<ISerializationContract>
     {
-        protected BaseContract(string? contractKey = null) =>
+        protected BaseContract(ContractKind kind, string? contractKey = null)
+        {
             TypeKey = new TypeKey(typeof(T), contractKey);
+            Kind = kind;
+        }
 
         public TypeKey TypeKey { get; }
+
+        public ContractKind Kind { get; }
 
         public bool Equals(ISerializationContract? other)
         {

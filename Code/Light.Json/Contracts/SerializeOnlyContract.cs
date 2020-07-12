@@ -5,7 +5,7 @@ namespace Light.Json.Contracts
 {
     public abstract class SerializeOnlyContract<T> : BaseContract<T>, ISerializeOnlyContract<T>
     {
-        protected SerializeOnlyContract(string? contractKey = null) : base(contractKey) { }
+        protected SerializeOnlyContract(string? contractKey = null) : base(ContractKind.SerializeOnly, contractKey) { }
 
         public void SerializeObject<TJsonWriter>(object @object, SerializationContext context, ref TJsonWriter writer)
             where TJsonWriter : struct, IJsonWriter
