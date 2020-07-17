@@ -47,26 +47,26 @@ namespace Light.Json.CodeGeneration
             {
                 ContractKind.SerializeOnly => new SyntaxList<UsingDirectiveSyntax>(new[]
                 {
-                    UsingDirective(IdentifierName("Light.Json.Contracts")),
-                    UsingDirective(IdentifierName("Light.Json.Serialization")),
-                    UsingDirective(IdentifierName("Light.Json.Serialization.LowLevelWriting")),
-                    UsingDirective(IdentifierName(serializationTypeNamespace))
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Contracts")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Serialization")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Serialization.LowLevelWriting")),
+                    UsingDirective(NamespaceToNameSyntax(serializationTypeNamespace))
                 }),
                 ContractKind.DeserializeOnly => new SyntaxList<UsingDirectiveSyntax>(new[]
                 {
-                    UsingDirective(IdentifierName("Light.Json.Contracts")),
-                    UsingDirective(IdentifierName("Light.Json.Deserialization")),
-                    UsingDirective(IdentifierName("Light.Json.Deserialization.Tokenization")),
-                    UsingDirective(IdentifierName(serializationTypeNamespace))
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Contracts")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Deserialization")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Deserialization.Tokenization")),
+                    UsingDirective(NamespaceToNameSyntax(serializationTypeNamespace))
                 }),
                 ContractKind.Full => new SyntaxList<UsingDirectiveSyntax>(new[]
                 {
-                    UsingDirective(IdentifierName("Light.Json.Contracts")),
-                    UsingDirective(IdentifierName("Light.Json.Serialization")),
-                    UsingDirective(IdentifierName("Light.Json.Serialization.LowLevelWriting")),
-                    UsingDirective(IdentifierName("Light.Json.Deserialization")),
-                    UsingDirective(IdentifierName("Light.Json.Deserialization.Tokenization")),
-                    UsingDirective(IdentifierName(serializationTypeNamespace))
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Contracts")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Serialization")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Serialization.LowLevelWriting")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Deserialization")),
+                    UsingDirective(NamespaceToNameSyntax("Light.Json.Deserialization.Tokenization")),
+                    UsingDirective(NamespaceToNameSyntax(serializationTypeNamespace))
                 }),
                 _ => throw new ArgumentOutOfRangeException(nameof(contractKind), contractKind, null)
             };
@@ -88,16 +88,15 @@ namespace Light.Json.CodeGeneration
             while (true)
             {
                 var indexOfNextDot = @namespace.IndexOf('.', indexOfLastDot + 1);
+                IdentifierNameSyntax right;
                 if (indexOfNextDot == -1)
                 {
-                    return QualifiedName(
-                        left,
-                        IdentifierName(@namespace.Substring(indexOfLastDot + 1))
-                    );
+                    right = IdentifierName(@namespace.Substring(indexOfLastDot + 1));
+                    return QualifiedName(left, right);
                 }
 
                 var rightStartIndex = indexOfLastDot + 1;
-                var right = IdentifierName(@namespace.Substring(rightStartIndex, indexOfNextDot - rightStartIndex));
+                right = IdentifierName(@namespace.Substring(rightStartIndex, indexOfNextDot - rightStartIndex));
                 left = QualifiedName(left, right);
                 indexOfLastDot = indexOfNextDot;
             }

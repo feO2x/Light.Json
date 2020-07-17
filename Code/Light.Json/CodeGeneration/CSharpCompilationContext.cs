@@ -79,7 +79,8 @@ namespace Light.Json.CodeGeneration
             return new CSharpCompilationContext(
                 assemblyName,
                 targetNamespace,
-                assemblyMetadataReferences: metadataReferences);
+                assemblyMetadataReferences: metadataReferences
+            );
         }
     }
 }

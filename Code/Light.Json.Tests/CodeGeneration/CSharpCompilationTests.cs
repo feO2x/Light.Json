@@ -18,7 +18,7 @@ namespace Light.Json.Tests.CodeGeneration
         }
 
         [Fact]
-        public void AddingSameMetadataReferenceTwice()
+        public void CompileContract()
         {
             var context = CSharpCompilationContext.CreateDefault("SerializationContracts")
                                                   .AddMetadataReferencesForType(typeof(Person));
