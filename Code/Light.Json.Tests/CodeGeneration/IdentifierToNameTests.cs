@@ -6,12 +6,12 @@ using static Light.Json.CodeGeneration.ContractSyntaxFactory;
 
 namespace Light.Json.Tests.CodeGeneration
 {
-    public static class NamespaceToNameSyntaxTests
+    public static class IdentifierToNameTests
     {
         [Fact]
         public static void SimpleNamespace()
         {
-            var namespaceSyntax = NamespaceToNameSyntax("Foo");
+            var namespaceSyntax = IdentifierToName("Foo");
 
             namespaceSyntax.MustHaveIdentifierName("Foo");
         }
@@ -19,7 +19,7 @@ namespace Light.Json.Tests.CodeGeneration
         [Fact]
         public static void TwoPartsNamespace()
         {
-            var namespaceSyntax = NamespaceToNameSyntax("Foo.Bar");
+            var namespaceSyntax = IdentifierToName("Foo.Bar");
 
             var qualifiedName = namespaceSyntax.MustBeOfType<QualifiedNameSyntax>();
             qualifiedName.Left.MustHaveIdentifierName("Foo");
@@ -29,7 +29,7 @@ namespace Light.Json.Tests.CodeGeneration
         [Fact]
         public static void ThreePartsNamespace()
         {
-            var namespaceSyntax = NamespaceToNameSyntax("Foo.Bar.Baz");
+            var namespaceSyntax = IdentifierToName("Foo.Bar.Baz");
 
             var outerQualifiedName = namespaceSyntax.MustBeOfType<QualifiedNameSyntax>();
             var innerQualifiedName = outerQualifiedName.Left.MustBeOfType<QualifiedNameSyntax>();
