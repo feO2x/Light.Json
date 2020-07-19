@@ -6,19 +6,20 @@ namespace Light.Json.CodeGeneration.Syntax
         where T : HierarchicalSyntaxNode<T>
     {
         private readonly T _this;
+
         protected HierarchicalSyntaxNode(List<SyntaxNode>? childNodes = null)
         {
             ChildNodes = childNodes ?? new List<SyntaxNode>();
             _this = (T) this;
         }
 
-        public List<SyntaxNode> ChildNodes { get; }
-
         public IEnumerable<SyntaxNode> DescendantNodes =>
             new SyntaxNodeEnumerator(this, false);
 
         public IEnumerable<SyntaxNode> DescendantNodesAndSelf =>
             new SyntaxNodeEnumerator(this, true);
+
+        public List<SyntaxNode> ChildNodes { get; }
 
         public T AddChildNode(SyntaxNode childNode)
         {
@@ -31,9 +32,21 @@ namespace Light.Json.CodeGeneration.Syntax
 
         protected void WriteChildNodes(CodeSink sink)
         {
-            foreach (var childNode in ChildNodes)
+            for (var i = 0; i < ChildNodes.Count; i++)
             {
+                var childNode = ChildNodes[i];
                 childNode.WriteSyntax(sink);
+
+                switch (childNode.SuffixNewLineMode)
+                {
+                    case NewLineMode.NewLineIfNotLastNode:
+                        if (i < ChildNodes.Count - 1)
+                            sink.WriteLine();
+                        break;
+                    case NewLineMode.AlwaysNewLine:
+                        sink.WriteLine();
+                        break;
+                }
             }
         }
 

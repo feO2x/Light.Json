@@ -7,6 +7,7 @@ namespace Light.Json.CodeGeneration.Syntax
         public Constructor(string typeName)
         {
             TypeName = typeName.MustNotBeNullOrWhiteSpace(nameof(typeName));
+            SuffixNewLineMode = NewLineMode.NewLineIfNotLastNode;
         }
 
         public string? Modifiers { get; set; } = "public";
