@@ -8,15 +8,15 @@ namespace Light.Json.CodeGeneration
 {
     public static class AssemblyMetadataResolver
     {
-        public static void AddMetadataReferencesFromType(Type type, Dictionary<string, MetadataReference> metadataReferences)
+        public static void AddMetadataReferencesFromType(this Dictionary<string, MetadataReference> metadataReferences, Type type)
         {
             type.MustNotBeNull(nameof(type));
             metadataReferences.MustNotBeNull(nameof(metadataReferences));
 
-            AddMetadataReferencesRecursively(type.Assembly, metadataReferences);
+            metadataReferences.AddMetadataReferencesRecursively(type.Assembly);
         }
 
-        private static void AddMetadataReferencesRecursively(Assembly assembly, Dictionary<string, MetadataReference> metadataReferences)
+        private static void AddMetadataReferencesRecursively(this Dictionary<string, MetadataReference> metadataReferences, Assembly assembly)
         {
             if (metadataReferences.ContainsKey(assembly.FullName!))
                 return;
@@ -25,7 +25,7 @@ namespace Light.Json.CodeGeneration
             foreach (var assemblyName in assembly.GetReferencedAssemblies())
             {
                 var referencedAssembly = Assembly.Load(assemblyName.FullName);
-                AddMetadataReferencesRecursively(referencedAssembly, metadataReferences);
+                metadataReferences.AddMetadataReferencesRecursively(referencedAssembly);
             }
         }
     }
