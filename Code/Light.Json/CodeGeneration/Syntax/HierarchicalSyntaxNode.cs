@@ -29,12 +29,23 @@ namespace Light.Json.CodeGeneration.Syntax
         public bool RemoveChildNode(SyntaxNode childNode) =>
             ChildNodes.Remove(childNode);
 
-        protected virtual void WriteChildNodes(CodeSink sink)
+        protected void WriteChildNodes(CodeSink sink)
         {
             foreach (var childNode in ChildNodes)
             {
                 childNode.WriteSyntax(sink);
             }
+        }
+
+        protected void WriteChildNodesInNewScope(CodeSink sink)
+        {
+            sink.WriteLine("{")
+                .IncreaseIndentation();
+
+            WriteChildNodes(sink);
+
+            sink.DecreaseIndentation()
+                .WriteLine("}");
         }
     }
 }

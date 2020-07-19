@@ -11,14 +11,8 @@ namespace Light.Json.CodeGeneration.Syntax
 
         public override void WriteSyntax(CodeSink sink)
         {
-            sink.WriteLine("namespace " + Name)
-                .WriteLine("{")
-                .IncreaseIndentation();
-
-            WriteChildNodes(sink);
-
-            sink.DecreaseIndentation()
-                .WriteLine("}");
+            sink.WriteLine("namespace " + Name);
+            WriteChildNodesInNewScope(sink);
         }
     }
 }

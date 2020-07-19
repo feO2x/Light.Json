@@ -32,14 +32,9 @@ namespace Light.Json.CodeGeneration.Syntax
                     .Write(BaseList);
             }
 
-            sink.WriteLine()
-                .WriteLine("{")
-                .IncreaseIndentation();
+            sink.WriteLine();
 
-            WriteChildNodes(sink);
-
-            sink.DecreaseIndentation()
-                .WriteLine("}");
+            WriteChildNodesInNewScope(sink);
         }
     }
 }
