@@ -11,16 +11,20 @@ namespace Light.Json.Tests.CodeGeneration.Syntax
         public SyntaxNodeTests()
         {
             UsingStatements = new UsingStatementsBlock().Add("Light.Json");
-            Class1 = new Class("Bar");
+            Field1 = new Field("string", "Text");
+            Class1 = new Class("Bar").AddChildNode(Field1);
             Namespace1 = new Namespace("Foo").AddChildNode(Class1);
             Class2 = new Class("Qux");
             Namespace2 = new Namespace("Baz").AddChildNode(Class2);
             Document = new Document().AddChildNode(UsingStatements)
-                                      .AddChildNode(Namespace1)
-                                      .AddChildNode(Namespace2);
+                                     .AddChildNode(Namespace1)
+                                     .AddChildNode(Namespace2);
         }
 
+
         private UsingStatementsBlock UsingStatements { get; }
+
+        public Field Field1 { get; }
 
         private Class Class1 { get; }
 
@@ -43,6 +47,7 @@ namespace Light.Json.Tests.CodeGeneration.Syntax
                 UsingStatements,
                 Namespace1,
                 Class1,
+                Field1,
                 Namespace2,
                 Class2
             };
@@ -59,6 +64,7 @@ namespace Light.Json.Tests.CodeGeneration.Syntax
                 UsingStatements,
                 Namespace1,
                 Class1,
+                Field1,
                 Namespace2,
                 Class2
             };
