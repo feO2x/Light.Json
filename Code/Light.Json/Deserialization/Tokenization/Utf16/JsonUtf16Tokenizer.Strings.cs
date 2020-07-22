@@ -208,7 +208,6 @@ namespace Light.Json.Deserialization.Tokenization.Utf16
                 case 'n':
                 case 'r':
                 case 't':
-                    ++currentIndex;
                     return 1;
                 case 'u':
                     currentIndex += 4;

@@ -155,7 +155,6 @@ namespace Light.Json.Deserialization.Tokenization.Utf8
                 case (byte) 'n':
                 case (byte) 'r':
                 case (byte) 't':
-                    ++currentIndex;
                     return 1;
                 case (byte) 'u':
                     currentIndex += 4;

@@ -41,7 +41,10 @@ namespace Light.Json.Tests.Deserialization
                 { "\"Bar\"", "Bar" },
                 { "  \"Baz\" ", "Baz" },
                 { "\t\"Qux\"", "Qux" },
-                { "\"K\\u0065nny\"", "Kenny" }
+                { "\"K\\u0065nny\"", "Kenny" },
+                { "\"\\\"When the sun rises in the west and sets in the east\\\", she said sadly.\"", "\"When the sun rises in the west and sets in the east\", she said sadly." },
+                { "\"\\\"When the sun rises in the west and sets in the east,\\\" she said sadly. \\\"When the seas go dry and mountains blow in the wind like leaves. When my womb quickens again, and I bear a living child. Then you will return, my sun-and-stars, and not before.\\\"\"",
+                    "\"When the sun rises in the west and sets in the east,\" she said sadly. \"When the seas go dry and mountains blow in the wind like leaves. When my womb quickens again, and I bear a living child. Then you will return, my sun-and-stars, and not before.\"" }
             };
 
         [Theory]
