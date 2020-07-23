@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Light.Json.Contracts;
-using Light.Json.Tests.Serialization;
 using Light.Json.Tests.SerializationSubjects;
 using JsonNetSerializer = Newtonsoft.Json.JsonSerializer;
 using LightJsonSerializer = Light.Json.JsonSerializer;
@@ -32,7 +31,7 @@ namespace Light.Json.Performance.SerializationBenchmarks
                 new JsonSerializerSettings
                 {
                     ContractProvider = new ImmutableContractProvider(
-                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new SerializeSimpleMutableObjectTests.PersonContract() }
+                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new PersonContract() }
                     )
                 }
             );

@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using Light.Json.Buffers;
 using Light.Json.Contracts;
-using Light.Json.Deserialization;
-using Light.Json.Deserialization.Tokenization;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Tests.SerializationSubjects;
 using Xunit;
@@ -46,35 +43,5 @@ namespace Light.Json.Tests.Deserialization
 
         private static void CheckDeserializedObject(Person deserializedObject) =>
             deserializedObject.Should().BeEquivalentTo(new Person { FirstName = "Kenny", LastName = "Pflug", Age = 33 });
-
-        public sealed class PersonContract : DeserializeOnlyContract<Person>
-        {
-            public readonly ConstantValue Age = nameof(Person.Age);
-            public readonly ConstantValue FirstName = nameof(Person.FirstName);
-            public readonly ConstantValue LastName = nameof(Person.LastName);
-
-            public override Person Deserialize<TJsonTokenizer, TJsonToken>(DeserializationContext context, ref TJsonTokenizer tokenizer)
-            {
-                tokenizer.ReadBeginOfObject();
-                var person = new Person();
-                while (true)
-                {
-                    var nameToken = tokenizer.ReadNameToken();
-                    if (nameToken.Equals(FirstName))
-                        person.FirstName = tokenizer.ReadString();
-                    else if (nameToken.Equals(LastName))
-                        person.LastName = tokenizer.ReadString();
-                    else if (nameToken.Equals(Age))
-                        person.Age = tokenizer.ReadInt32();
-
-                    var token = tokenizer.GetNextToken();
-                    if (token.Type == JsonTokenType.EndOfObject)
-                        break;
-                    token.MustBeOfType(JsonTokenType.EntrySeparator);
-                }
-
-                return person;
-            }
-        }
     }
 }

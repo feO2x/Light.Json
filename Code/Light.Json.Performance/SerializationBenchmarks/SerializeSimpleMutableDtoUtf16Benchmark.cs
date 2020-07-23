@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Light.Json.Contracts;
-using Light.Json.Tests.Deserialization;
 using Light.Json.Tests.SerializationSubjects;
 using Newtonsoft.Json;
 using LightJsonSerializer = Light.Json.JsonSerializer;
@@ -23,7 +22,7 @@ namespace Light.Json.Performance.SerializationBenchmarks
                 new JsonSerializerSettings
                 {
                     ContractProvider = new ImmutableContractProvider(
-                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new DeserializeSimpleMutableObjectTests.PersonContract() }
+                        new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new PersonContract() }
                     )
                 }
             );
