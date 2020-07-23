@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using Light.Json.FrameworkExtensions;
 using Newtonsoft.Json;
 using Utf8JsonSerializer = Utf8Json.JsonSerializer;
+using SystemTextJsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Light.Json.Performance.PrimitiveBenchmarks
 {
@@ -43,6 +44,9 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
         [Benchmark]
         public string Utf8Json() => Utf8JsonSerializer.Deserialize<string>(ShortUtf16Json);
+
+        [Benchmark]
+        public string SystemTextJson() => SystemTextJsonSerializer.Deserialize<string>(ShortUtf16Json);
     }
 
     public class LongUtf16JsonStringBenchmark
@@ -75,6 +79,9 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
         [Benchmark]
         public string Utf8Json() => Utf8JsonSerializer.Deserialize<string>(LongUtf16Json);
+
+        [Benchmark]
+        public string SystemTextJson() => SystemTextJsonSerializer.Deserialize<string>(LongUtf16Json);
     }
 
     public class ShortUtf8JsonStringBenchmark
@@ -108,6 +115,9 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
         [Benchmark]
         public string Utf8Json() => Utf8JsonSerializer.Deserialize<string>(ShortUtf8Json);
+
+        [Benchmark]
+        public string SystemTextJson() => SystemTextJsonSerializer.Deserialize<string>(ShortUtf8Json);
     }
 
     public class LongUtf8JsonStringBenchmark
@@ -141,5 +151,8 @@ namespace Light.Json.Performance.PrimitiveBenchmarks
 
         [Benchmark]
         public string Utf8Json() => Utf8JsonSerializer.Deserialize<string>(LongUtf8Json);
+
+        [Benchmark]
+        public string SystemTextJson() => SystemTextJsonSerializer.Deserialize<string>(LongUtf8Json);
     }
 }
