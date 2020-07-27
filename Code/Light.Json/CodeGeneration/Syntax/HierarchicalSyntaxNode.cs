@@ -63,5 +63,18 @@ namespace Light.Json.CodeGeneration.Syntax
             sink.DecreaseIndentation()
                 .WriteLine("}");
         }
+
+        protected void WriteChildNodesInOptionalScope(CodeSink sink)
+        {
+            if (ChildNodes.Count != 1)
+            {
+                WriteChildNodesInNewScope(sink);
+                return;
+            }
+
+            sink.IncreaseIndentation();
+            ChildNodes[0].WriteSyntax(sink);
+            sink.DecreaseIndentation();
+        }
     }
 }
