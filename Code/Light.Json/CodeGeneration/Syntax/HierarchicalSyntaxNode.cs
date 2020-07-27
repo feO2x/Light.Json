@@ -2,32 +2,35 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public abstract class HierarchicalSyntaxNode<T> : SyntaxNode, IHierarchicalSyntaxNode
-        where T : HierarchicalSyntaxNode<T>
+    public abstract class HierarchicalSyntaxNode<T, TChild> : SyntaxNode, IHierarchicalSyntaxNode
+        where T : HierarchicalSyntaxNode<T, TChild>
+        where TChild : class, ISyntaxNode
     {
         private readonly T _this;
 
-        protected HierarchicalSyntaxNode(List<SyntaxNode>? childNodes = null)
+        protected HierarchicalSyntaxNode(List<TChild>? childNodes = null)
         {
-            ChildNodes = childNodes ?? new List<SyntaxNode>();
+            ChildNodes = childNodes ?? new List<TChild>();
             _this = (T) this;
         }
 
-        public IEnumerable<SyntaxNode> DescendantNodes =>
+        public IEnumerable<ISyntaxNode> DescendantNodes =>
             new SyntaxNodeEnumerator(this, false);
 
-        public IEnumerable<SyntaxNode> DescendantNodesAndSelf =>
+        public IEnumerable<ISyntaxNode> DescendantNodesAndSelf =>
             new SyntaxNodeEnumerator(this, true);
 
-        public List<SyntaxNode> ChildNodes { get; }
+        public List<TChild> ChildNodes { get; }
 
-        public T AddChildNode(SyntaxNode childNode)
+        IReadOnlyList<ISyntaxNode> IHierarchicalSyntaxNode.ChildNodes => ChildNodes;
+
+        public T AddChildNode(TChild childNode)
         {
             ChildNodes.Add(childNode);
             return _this;
         }
 
-        public bool RemoveChildNode(SyntaxNode childNode) =>
+        public bool RemoveChildNode(TChild childNode) =>
             ChildNodes.Remove(childNode);
 
         protected void WriteChildNodes(CodeSink sink)

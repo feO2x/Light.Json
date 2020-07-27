@@ -2,7 +2,7 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Constructor : HierarchicalSyntaxNode<Constructor>
+    public sealed class Constructor : HierarchicalSyntaxNode<Constructor, IStatement>
     {
         public Constructor(string typeName)
         {

@@ -46,6 +46,28 @@ namespace Light.Json.CodeGeneration.Syntax
             return this;
         }
 
+        public CodeSink WriteIfPresentWithSuffix(string? value, string? suffix = " ")
+        {
+            if (value.IsNullOrEmpty())
+                return this;
+
+            Write(value);
+            if (suffix != null)
+                Write(suffix);
+            return this;
+        }
+
+        public CodeSink WriteIfPresentWithPrefix(string? value, string? prefix = " ")
+        {
+            if (value.IsNullOrEmpty())
+                return this;
+
+            if (prefix != null)
+                Write(prefix);
+            Write(value);
+            return this;
+        }
+
         public CodeSink WriteLine(string value)
         {
             Write(value);

@@ -3,7 +3,9 @@ using Light.GuardClauses;
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public readonly struct UsingStatement : ISyntaxWriter, IEquatable<UsingStatement>, IComparable<UsingStatement>
+    public readonly struct UsingStatement : ISyntaxWriter,
+                                            IEquatable<UsingStatement>,
+                                            IComparable<UsingStatement>
     {
         public UsingStatement(string @namespace) =>
             Namespace = @namespace.MustNotBeNullOrWhiteSpace(nameof(@namespace));

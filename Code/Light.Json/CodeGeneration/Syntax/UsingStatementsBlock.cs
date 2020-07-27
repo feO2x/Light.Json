@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class UsingStatementsBlock : SyntaxNode
+    public sealed class UsingStatementsBlock : SyntaxNode, IDocumentChild
     {
         public HashSet<UsingStatement> UsingStatements { get; } = new HashSet<UsingStatement>();
 

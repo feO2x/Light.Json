@@ -2,7 +2,7 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Namespace : HierarchicalSyntaxNode<Namespace>
+    public sealed class Namespace : HierarchicalSyntaxNode<Namespace, INamespaceChild>, IDocumentChild
     {
         public Namespace(string name) =>
             Name = name.MustNotBeNullOrWhiteSpace(nameof(name));

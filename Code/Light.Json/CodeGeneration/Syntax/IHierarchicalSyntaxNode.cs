@@ -4,6 +4,6 @@ namespace Light.Json.CodeGeneration.Syntax
 {
     public interface IHierarchicalSyntaxNode
     {
-        List<SyntaxNode> ChildNodes { get; }
+        IReadOnlyList<ISyntaxNode> ChildNodes { get; }
     }
 }

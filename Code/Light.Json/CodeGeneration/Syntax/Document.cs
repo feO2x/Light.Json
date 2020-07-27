@@ -2,7 +2,7 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Document : HierarchicalSyntaxNode<Document>
+    public sealed class Document : HierarchicalSyntaxNode<Document, IDocumentChild>
     {
         public override void WriteSyntax(CodeSink sink) => WriteChildNodes(sink);
 

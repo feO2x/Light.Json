@@ -5,7 +5,7 @@ using Light.Json.FrameworkExtensions;
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class SyntaxNodeEnumerator : IEnumerator<SyntaxNode>, IEnumerable<SyntaxNode>
+    public sealed class SyntaxNodeEnumerator : IEnumerator<ISyntaxNode>, IEnumerable<ISyntaxNode>
     {
         private readonly bool _includeRootNode;
         private readonly SyntaxNode _rootNode;
@@ -18,7 +18,7 @@ namespace Light.Json.CodeGeneration.Syntax
             _includeRootNode = includeRootNode;
         }
 
-        public IEnumerator<SyntaxNode> GetEnumerator() => this;
+        public IEnumerator<ISyntaxNode> GetEnumerator() => this;
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -93,7 +93,7 @@ namespace Light.Json.CodeGeneration.Syntax
         // Current node can be null depending on the state of the enumerator
 #pragma warning disable CS8766
 #pragma warning disable 8613
-        public SyntaxNode? Current { get; private set; }
+        public ISyntaxNode? Current { get; private set; }
 #pragma warning restore 8613
 #pragma warning restore CS8766
 

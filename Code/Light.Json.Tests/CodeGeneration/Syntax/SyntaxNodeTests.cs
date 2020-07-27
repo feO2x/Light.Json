@@ -24,7 +24,7 @@ namespace Light.Json.Tests.CodeGeneration.Syntax
 
         private UsingStatementsBlock UsingStatements { get; }
 
-        public Field Field1 { get; }
+        private Field Field1 { get; }
 
         private Class Class1 { get; }
 

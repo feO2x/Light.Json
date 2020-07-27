@@ -2,7 +2,7 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Field : SyntaxNode
+    public sealed class Field : SyntaxNode, IClassMember
     {
         public Field(string type, string name)
         {

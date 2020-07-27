@@ -1,6 +1,6 @@
 ﻿namespace Light.Json.CodeGeneration.Syntax
 {
-    public abstract class SyntaxNode : ISyntaxWriter
+    public abstract class SyntaxNode : ISyntaxNode
     {
         public NewLineMode SuffixNewLineMode { get; set; } = NewLineMode.None;
 

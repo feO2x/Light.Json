@@ -2,11 +2,12 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Class : HierarchicalSyntaxNode<Class>
+    public sealed class Class : HierarchicalSyntaxNode<Class, IClassMember>, INamespaceChild
     {
         public Class(string name)
         {
             Name = name.MustNotBeNullOrWhiteSpace(nameof(name));
+            SuffixNewLineMode = NewLineMode.NewLineIfNotLastNode;
         }
 
         public string? Modifiers { get; set; } = "public sealed";
@@ -17,22 +18,11 @@ namespace Light.Json.CodeGeneration.Syntax
 
         public override void WriteSyntax(CodeSink sink)
         {
-            if (!Modifiers.IsNullOrEmpty())
-            {
-                sink.Write(Modifiers);
-                sink.Write(" ");
-            }
-
-            sink.Write("class ")
-                .Write(Name);
-
-            if (!BaseList.IsNullOrEmpty())
-            {
-                sink.Write(" ")
-                    .Write(BaseList);
-            }
-
-            sink.WriteLine();
+            sink.WriteIfPresentWithSuffix(Modifiers)
+                .Write("class ")
+                .Write(Name)
+                .WriteIfPresentWithPrefix(BaseList)
+                .WriteLine();
 
             WriteChildNodesInNewScope(sink);
         }

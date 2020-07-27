@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Light.Json.CodeGeneration.Syntax
 {
     public static class CollectionExtensions
     {
-        public static bool TryGetFirst<T>(this List<SyntaxNode> syntaxNodes, [NotNullWhen(true)] out T? node)
+        public static bool TryGetFirst<T>(this IList syntaxNodes, [NotNullWhen(true)] out T? node)
             where T : class
         {
             if (syntaxNodes == null)
