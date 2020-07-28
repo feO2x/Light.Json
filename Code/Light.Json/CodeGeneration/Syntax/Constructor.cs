@@ -2,7 +2,7 @@
 
 namespace Light.Json.CodeGeneration.Syntax
 {
-    public sealed class Constructor : HierarchicalSyntaxNode<Constructor, IStatement>
+    public sealed class Constructor : HierarchicalSyntaxNode<Constructor, IStatement>, IClassMember
     {
         public Constructor(string typeName)
         {
@@ -10,7 +10,7 @@ namespace Light.Json.CodeGeneration.Syntax
             SuffixNewLineMode = NewLineMode.NewLineIfNotLastNode;
         }
 
-        public string? Modifiers { get; set; } = "public";
+        public string? Modifiers { get; set; } = Syntax.Modifiers.Public;
 
         public string TypeName { get; }
 

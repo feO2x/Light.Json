@@ -10,7 +10,7 @@ namespace Light.Json.CodeGeneration.Syntax
             Name = name.MustNotBeNullOrWhiteSpace(nameof(name));
         }
 
-        public string? Modifiers { get; set; } = "public readonly";
+        public string? Modifiers { get; set; } = Syntax.Modifiers.Private;
 
         public string Type { get; }
 

@@ -84,5 +84,11 @@ namespace Light.Json.CodeGeneration.Syntax
         }
 
         public override string ToString() => _stringBuilder.ToString();
+
+        public CodeSink Reset()
+        {
+            _stringBuilder.Clear();
+            return this;
+        }
     }
 }

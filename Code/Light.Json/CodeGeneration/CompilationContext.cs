@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Light.GuardClauses;
+using Light.Json.CodeGeneration.Syntax;
+using Light.Json.FrameworkExtensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -13,13 +16,13 @@ namespace Light.Json.CodeGeneration
 
         public CompilationContext(string targetAssemblyName,
                                   string targetNamespace,
-                                  OptimizationLevel optimizationLevel = OptimizationLevel.Release,
+                                  CSharpCompilationOptions? compilationOptions,
                                   Dictionary<string, MetadataReference>? assemblyMetadataReferences = null,
                                   List<SyntaxTree>? syntaxTrees = null)
         {
             TargetAssemblyName = targetAssemblyName.MustNotBeNullOrWhiteSpace(nameof(targetAssemblyName));
             TargetNamespace = targetNamespace.MustNotBeNullOrWhiteSpace(nameof(targetNamespace));
-            OptimizationLevel = optimizationLevel;
+            CompilationOptions = compilationOptions.MustNotBeNull(nameof(compilationOptions));
             _metadataReferences = assemblyMetadataReferences ?? new Dictionary<string, MetadataReference>();
             _syntaxTrees = syntaxTrees ?? new List<SyntaxTree>();
         }
@@ -28,12 +31,37 @@ namespace Light.Json.CodeGeneration
 
         public string TargetNamespace { get; }
 
-        public OptimizationLevel OptimizationLevel { get; }
+        public CSharpCompilationOptions? CompilationOptions { get; }
+
+        private CodeSink CodeSink { get; } = new CodeSink(new StringBuilder());
 
         public CompilationContext AddMetadataReferencesForType(Type type)
         {
             _metadataReferences.AddMetadataReferencesFromType(type);
             return this;
+        }
+
+        public ContractContext CreateContract(Type contractType)
+        {
+            var usingStatements = new UsingStatementsBlock().Add("System")
+                                                            .Add("Light.Json.Buffers")
+                                                            .Add("Light.Json.Contracts")
+                                                            .Add("Light.Json.Deserialization")
+                                                            .Add("Light.Json.Deserialization.Tokenization")
+                                                            .Add("Light.Json.Serialization")
+                                                            .Add("Light.Json.Serialization.LowLevelWriter");
+            var contractClass = new Class(contractType.Name + "Contract");
+            var document = new Document().AddChildNode(usingStatements)
+                                         .AddChildNode(new Namespace("SerializationContracts").AddChildNode(contractClass));
+            return new ContractContext(
+                contractType.Name,
+                contractType.Name.LowerFirstCharacter(),
+                this,
+                document,
+                usingStatements,
+                contractClass,
+                CodeSink.Reset()
+            );
         }
 
         public CompilationContext AddSyntaxTree(SyntaxTree syntaxTree)
@@ -48,7 +76,7 @@ namespace Light.Json.CodeGeneration
                 TargetAssemblyName,
                 _syntaxTrees,
                 _metadataReferences.Values,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel)
+                CompilationOptions
             );
         }
 
@@ -61,8 +89,12 @@ namespace Light.Json.CodeGeneration
             return new CompilationContext(
                 assemblyName,
                 targetNamespace,
-                assemblyMetadataReferences: metadataReferences
+                CreateDefaultCompilationOptions(),
+                metadataReferences
             );
         }
+
+        public static CSharpCompilationOptions CreateDefaultCompilationOptions() =>
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release);
     }
 }
