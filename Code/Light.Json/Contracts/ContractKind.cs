@@ -7,6 +7,6 @@ namespace Light.Json.Contracts
     {
         SerializeOnly = 1,
         DeserializeOnly = 2,
-        Full = SerializeOnly | DeserializeOnly
+        TwoWay = SerializeOnly | DeserializeOnly
     }
 }
