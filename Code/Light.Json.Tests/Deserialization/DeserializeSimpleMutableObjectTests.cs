@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using FluentAssertions;
-using Light.Json.Contracts;
+﻿using FluentAssertions;
 using Light.Json.FrameworkExtensions;
 using Light.Json.Tests.SerializationSubjects;
 using Xunit;
@@ -16,16 +14,7 @@ namespace Light.Json.Tests.Deserialization
     ""age"": 33
 }";
 
-        private readonly JsonSerializer _serializer =
-            new JsonSerializer(
-                new JsonSerializerSettings
-                {
-                    ContractProvider =
-                        new ImmutableContractProvider(
-                            new Dictionary<TypeKey, ISerializationContract> { [typeof(Person)] = new PersonContract() }
-                        )
-                }
-            );
+        private readonly JsonSerializer _serializer = new JsonSerializer();
 
         [Fact]
         public void DeserializeSimpleObjectUtf16()

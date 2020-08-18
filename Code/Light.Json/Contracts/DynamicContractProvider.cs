@@ -1,49 +1,57 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
-using Light.GuardClauses;
+﻿using Light.GuardClauses;
 
 namespace Light.Json.Contracts
 {
-    public sealed class DynamicContractProvider : IExtendedContractProvider
+    public sealed class DynamicContractProvider : IContractProvider
     {
-        private readonly ICompiledContractProviderFactory _contractProviderFactory;
-        private IExtendedContractProvider _compiledContractProvider;
+        private readonly IDictionaryContractProviderFactory _contractProviderFactory;
+        private IDictionaryContractProvider _contractProvider;
 
-        public DynamicContractProvider(IExtendedContractProvider compiledContractProvider, ICompiledContractProviderFactory contractProviderFactory)
+        public DynamicContractProvider(IDictionaryContractProvider contractProvider, IDictionaryContractProviderFactory contractProviderFactory)
         {
-            _compiledContractProvider = compiledContractProvider.MustNotBeNull(nameof(compiledContractProvider));
+            _contractProvider = contractProvider.MustNotBeNull(nameof(contractProvider));
             _contractProviderFactory = contractProviderFactory.MustNotBeNull(nameof(contractProviderFactory));
         }
 
-        public bool TryGetContract<TContract>(TypeKey typeKey, [NotNullWhen(true)] out TContract? contract)
+        public TContract GetContract<TType, TContract>(string? contractKey)
             where TContract : class, ISerializationContract =>
-            _compiledContractProvider.TryGetContract(typeKey, out contract) || CompileNewContractProvider(typeKey, out contract);
+            _contractProvider.TryGetContract<TType, TContract>(contractKey, out var contract) ? contract : TryExtendContractProvider<TType, TContract>(contractKey);
 
-        public bool TryGetContract<TType, TContract>([NotNullWhen(true)] out TContract? contract)
+        public TContract GetContract<TType, TContract>(TType instance, string? contractKey)
             where TContract : class, ISerializationContract =>
-            _compiledContractProvider.TryGetContract<TType, TContract>(out contract) || CompileNewContractProvider(typeof(TType), out contract);
+            _contractProvider.TryGetContract<TType, TContract>(instance, contractKey, out var contract) ? contract : TryExtendContractProvider<TType, TContract>(instance, contractKey);
 
-        public bool TryGetContract<TType, TContract>(string contractKey, [NotNullWhen(true)] out TContract? contract)
-            where TContract : class, ISerializationContract =>
-            _compiledContractProvider.TryGetContract<TType, TContract>(contractKey, out contract) || CompileNewContractProvider(new TypeKey(typeof(TType), contractKey), out contract);
-
-        public bool TryGetContract<TType, TContract>(TType instance, [NotNullWhen(true)] out TContract? contract)
-            where TContract : class, ISerializationContract =>
-            _compiledContractProvider.TryGetContract(instance, out contract) || CompileNewContractProvider(instance!.GetType(), out contract);
-
-        public bool TryGetContract<TType, TContract>(TType instance, string contractKey, [NotNullWhen(true)] out TContract? contract) where TContract : class, ISerializationContract =>
-            _compiledContractProvider.TryGetContract(instance, contractKey, out contract) || CompileNewContractProvider(instance!.GetType(), out contract);
-
-        private bool CompileNewContractProvider<TContract>(TypeKey typeKey, [NotNullWhen(true)] out TContract? contract)
+        private TContract TryExtendContractProvider<TType, TContract>(string? contractKey)
             where TContract : class, ISerializationContract
         {
-            var (contractProvider, serializationContract) = _contractProviderFactory.CompileNewContractProvider(typeKey);
-            _compiledContractProvider = contractProvider;
-            if (!(serializationContract is TContract castContract))
-                throw new SerializationException($"Could not compile new contract provider for contract \"{typeKey}\".");
+            var currentProvider = _contractProvider;
+            lock (_contractProviderFactory)
+            {
+                var possiblyExchangedProvider = _contractProvider;
+                if (!ReferenceEquals(currentProvider, possiblyExchangedProvider) && possiblyExchangedProvider.TryGetContract<TType, TContract>(contractKey, out var contract))
+                    return contract;
 
-            contract = castContract;
-            return true;
+                var (newProvider, newContract) = _contractProviderFactory.ExtendContractProvider(currentProvider, new TypeKey(typeof(TType), contractKey));
+                _contractProvider = newProvider;
+                return (TContract) newContract;
+            }
+        }
+
+        private TContract TryExtendContractProvider<TType, TContract>(TType instance, string? contractKey)
+            where TContract : class, ISerializationContract
+        {
+            var currentProvider = _contractProvider;
+            lock (_contractProviderFactory)
+            {
+                var possiblyExchangedProvider = _contractProvider;
+                if (!ReferenceEquals(currentProvider, possiblyExchangedProvider) && possiblyExchangedProvider.TryGetContract<TType, TContract>(instance, contractKey, out var contract))
+                    return contract;
+
+                var targetType = instance?.GetType() ?? typeof(TType);
+                var (newProvider, newContract) = _contractProviderFactory.ExtendContractProvider(currentProvider, new TypeKey(targetType, contractKey));
+                _contractProvider = newProvider;
+                return (TContract) newContract;
+            }
         }
     }
 }

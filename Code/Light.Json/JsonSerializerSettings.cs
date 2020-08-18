@@ -13,7 +13,7 @@ namespace Light.Json
 
         public JsonSerializerSettings()
         {
-            _contractProvider = new ImmutableContractProvider(new Dictionary<TypeKey, ISerializationContract>());
+            _contractProvider = new DynamicContractProvider();
             var increaseBufferSizeStrategy = new DoubleArraySizeStrategy();
             _utf16BufferProvider = new ArrayPoolCharBufferProvider(increaseBufferSizeStrategy: increaseBufferSizeStrategy);
             _utf8BufferProvider = new ArrayPoolByteBufferProvider(increaseBufferSizeStrategy: increaseBufferSizeStrategy);

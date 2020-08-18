@@ -4,25 +4,33 @@ using Light.GuardClauses;
 
 namespace Light.Json.Contracts
 {
-    public sealed class ImmutableContractProvider : IContractProvider
+    public abstract class BaseImmutableContractProvider : IContractProvider
     {
-        private readonly Dictionary<TypeKey, ISerializationContract> _serializationContracts;
+        protected BaseImmutableContractProvider(Dictionary<TypeKey, ISerializationContract> serializationContracts)
+        {
+            SerializationContracts = serializationContracts.MustNotBeNull(nameof(serializationContracts));
+        }
 
-        public ImmutableContractProvider(Dictionary<TypeKey, ISerializationContract> serializationContracts) =>
-            _serializationContracts = serializationContracts.MustNotBeNull(nameof(serializationContracts));
+        protected Dictionary<TypeKey, ISerializationContract> SerializationContracts { get; }
 
         public bool TryGetContract<TContract>(TypeKey typeKey, [NotNullWhen(true)] out TContract? contract)
             where TContract : class, ISerializationContract
         {
-            if (_serializationContracts.TryGetValue(typeKey, out var serializationContract) &&
-                serializationContract is TContract serializeOnlyContract)
+            if (SerializationContracts.TryGetValue(typeKey, out var serializationContract))
             {
-                contract = serializeOnlyContract;
-                return true;
+                contract = serializationContract as TContract;
+                return contract != null;
             }
 
             contract = default;
             return false;
         }
+    }
+
+    public sealed class ImmutableContractProvider : BaseImmutableContractProvider
+    {
+
+        public ImmutableContractProvider(Dictionary<TypeKey, ISerializationContract> serializationContracts)
+            : base(serializationContracts) { }
     }
 }

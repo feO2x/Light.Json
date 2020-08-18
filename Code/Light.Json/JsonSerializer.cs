@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using Light.GuardClauses;
 using Light.Json.Contracts;
 using Light.Json.Deserialization;
@@ -45,10 +44,7 @@ namespace Light.Json
         public void Serialize<TValue, TJsonWriter>(TValue value, SerializationContext context, ref TJsonWriter writer, string? contractKey)
             where TJsonWriter : struct, IJsonWriter
         {
-            var targetType = typeof(TValue);
-            if (!Settings.ContractProvider.TryGetContract(new TypeKey(targetType, contractKey), out ISerializeOnlyContract<TValue>? contract))
-                throw new SerializationException($"The type \"${targetType}\" cannot be serialized because there is no contract registered with the serializer.");
-
+            var contract = Settings.ContractProvider.GetContract<TValue, ISerializeOnlyContract<TValue>>(value, contractKey);
             contract.Serialize(value, context, ref writer);
         }
 
@@ -86,10 +82,7 @@ namespace Light.Json
                 return Unsafe.As<int, TResult>(ref int32);
             }
 
-            var targetType = typeof(TResult);
-            if (!Settings.ContractProvider.TryGetContract(new TypeKey(targetType, contractKey), out IDeserializeOnlyContract<TResult>? contract))
-                throw new SerializationException($"The type \"${targetType}\" cannot be deserialized because there is no corresponding contract registered with the serializer.");
-
+            var contract = Settings.ContractProvider.GetContract<TResult, IDeserializeOnlyContract<TResult>>(contractKey);
             return contract.Deserialize<TJsonTokenizer, TJsonToken>(context, ref tokenizer);
         }
     }
